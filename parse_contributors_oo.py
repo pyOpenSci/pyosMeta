@@ -151,6 +151,7 @@ class processContributors:
         """
         all_user_info = {}
         for gh_user in gh_usernames:
+            print("Getting data for: ", gh_user)
             all_user_info[gh_user] = self.get_user_info(gh_user, API_TOKEN)
         return all_user_info
 
@@ -178,6 +179,27 @@ class processContributors:
                 # Stupid that the gh name is there twice??
                 item[akey] = gh_data[gh_name][gh_name][akey]
         return contrib_data
+
+    def format_url(self, url: str) -> str:
+        """Append https to the beginning of URL if it doesn't exist
+        If the url doesn't have https add it
+        If the url starts with http change it to https
+        Else do nothing
+
+        Parameters
+        ----------
+        url : str
+            String representing the url grabbed from the GH api
+
+        """
+        if not url:
+            return url  # returns empty string if url is empty
+        elif url.startswith("https://"):
+            return url
+        elif url.startswith("http://"):
+            return "https://" + url[7:]
+        else:
+            return "https://" + url
 
     def create_new_contrib_file(self, filename: str, contrib_data: dict):
         """Update website contrib file with the information grabbed from GitHub
@@ -272,12 +294,20 @@ gh_data = process_contribs.get_gh_data(all_gh_usernames, API_TOKEN)
 # Update user yaml file data from GitHub API
 update_keys = ["twitter", "website", "location", "bio", "organization", "email"]
 final_filename = "contributors.yml"
+
+
 updated_contrib = process_contribs.update_contrib_data(
     web_contrib_dict, gh_data, update_keys
 )
+
+# Clean website urls make sure it starts with https
+for i, item in enumerate(updated_contrib):
+    item["website"] = process_contribs.format_url(item["website"])
+
+
 # Create final updated YAML file from the updated data above and clean that file
 # to match the website
 process_contribs.create_new_contrib_file(
-    filename=final_filename, contrib_data=web_contrib_dict
+    filename=final_filename, contrib_data=updated_contrib
 )
 process_contribs.clean_yaml_file(final_filename)
