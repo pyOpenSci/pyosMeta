@@ -58,13 +58,19 @@ class processContributors:
                     entry[key] = ""
 
                 # Add the entry to the processed data dictionary
-                # NOTE: this adds the GH username as a key for each dict entry - might now want this
+                # NOTE: this adds the GH username as a key for each dict entry
                 processed_data[entry["github_username"]] = entry
         return processed_data
 
     # So here i think if i've instantiated the class with json files i can call it as self?
     def combine_json_data(self) -> dict:
-        """deserialize and clean a list of json file url's."""
+        """Deserialize and clean a list of json file url's.
+
+        Returns
+        -------
+            Dictionary containing json data for all contributors across
+            the website
+        """
         # Create an empty dictionary to hold the combined data
         combined_data = {}
 
@@ -155,9 +161,27 @@ class processContributors:
             all_user_info[gh_user] = self.get_user_info(gh_user, API_TOKEN)
         return all_user_info
 
+    def _check_url(self, url: str) -> bool:
+        """Test a url and return true if it works, false if not
+
+        Parameters
+        ----------
+        url : str
+            String for a url to a website to test.
+
+        """
+
+        try:
+            response = requests.get(url, timeout=6)
+            return response.status_code == 200
+        except:
+            print("Oops, ", url, "is not valid, removing it")
+            return False
+
     def update_contrib_data(self, contrib_data, gh_data, update_keys):
         """Update contributor data from the GH API return.
-        # GitHub will be the truth source for our contrib metadata here
+
+        GitHub will be the truth source for our contrib metadata here
 
         Parameters
         ----------
@@ -170,14 +194,27 @@ class processContributors:
 
         for i, item in enumerate(contrib_data):
             gh_name = item["github_username"]
+            print(i, gh_name)
             # Update the key:value pairs for data pulled from GitHub
             # Note that some data needs to be manual updated such as which
             # packages someone has reviewed. Cut if our team updates
             # the google doc or another file maybe i can automate that too?
             # TODO: I could parse github issues for reviewer names? and author names??!
             for akey in update_keys:
-                # Stupid that the gh name is there twice??
-                item[akey] = gh_data[gh_name][gh_name][akey]
+                # Test if url works
+                if akey == "website":
+                    url = gh_data[gh_name][gh_name][akey]
+                    # Fix the url format and check to see if it works online
+                    url = self.format_url(url)
+                    # It url is valid, add to dict
+                    print("Checking: ", url)
+                    if self._check_url(url):
+                        item[akey] = url
+                    else:
+                        item[akey] = ""
+                else:
+                    # Stupid that the gh name is there twice
+                    item[akey] = gh_data[gh_name][gh_name][akey]
         return contrib_data
 
     def format_url(self, url: str) -> str:
@@ -192,13 +229,17 @@ class processContributors:
             String representing the url grabbed from the GH api
 
         """
+        print("fixing", url)
         if not url:
             return url  # returns empty string if url is empty
         elif url.startswith("https://"):
+            print("https already, no fix needed", url)
             return url
         elif url.startswith("http://"):
+            print("fixing", url, "https://" + url[7:])
             return "https://" + url[7:]
         else:
+            print("fixing", url)
             return "https://" + url
 
     def create_new_contrib_file(self, filename: str, contrib_data: dict):
@@ -262,6 +303,9 @@ process_contribs = processContributors(json_files, API_TOKEN)
 all_contribs_dict = process_contribs.combine_json_data()
 
 # Open the web contrib file (could also be a method)
+# This returns a list of dict objects - whereas combine json returns a dict
+# w gh users nam as the key - it might be cleaner if both returned objects were
+# similarly formatted
 with urllib.request.urlopen(web_contrib_path) as f:
     web_contrib_dict = ruamel.yaml.safe_load(f)
 
@@ -273,8 +317,6 @@ for item in web_contrib_dict:
     except:
         # Check if there is a missing gh username in our website listing
         print(item["name"], "is missing a github username")
-
-# TODO: stopped work here!!
 
 # Combine the web contrib with the cross-website contribs
 # making sure the web content is first
@@ -295,14 +337,17 @@ gh_data = process_contribs.get_gh_data(all_gh_usernames, API_TOKEN)
 update_keys = ["twitter", "website", "location", "bio", "organization", "email"]
 final_filename = "contributors.yml"
 
-
+# TODO - this is not fixing one url now - http://zehuachen.com not sure why
+# This also takes a minute as it's using requests to check url data
+# should add some progress here too
 updated_contrib = process_contribs.update_contrib_data(
     web_contrib_dict, gh_data, update_keys
 )
 
-# Clean website urls make sure it starts with https
-for i, item in enumerate(updated_contrib):
-    item["website"] = process_contribs.format_url(item["website"])
+# # Clean website urls make sure it starts with https
+# I think this is now handled when the gh data are updated!
+# for i, item in enumerate(updated_contrib):
+#     item["website"] = process_contribs.format_url(item["website"])
 
 
 # Create final updated YAML file from the updated data above and clean that file

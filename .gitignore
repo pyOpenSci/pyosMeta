@@ -1,8 +1,7 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
+.DS_Store
+contributors.yml
+import-token.py
+packages.yml
 # C extensions
 *.so
 
