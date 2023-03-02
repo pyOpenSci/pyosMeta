@@ -7,9 +7,24 @@ import requests
 class ProcessContributors:
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
-    def __init__(self, json_files: list, API_TOKEN: str):
+    def __init__(self, json_files: list, web_yml: str, API_TOKEN: str):
+        """
+        Parameters
+        ----------
+
+        json_files : list
+            A list of string objects each of which represents a URL to a JSON
+            file to be parsed
+        web_yml : str
+            A string containing a path to a online website yml file
+            This file contains contributor data used to build the website contribs list
+        API_TOKEN : str
+            A string containing your API token needed to access the github API
+        """
+
         self.json_files = json_files
         self.API_TOKEN = API_TOKEN
+        self.web_yml = web_yml
 
     def process_json_file(self, json_file: str) -> dict:
         """Deserialize a JSON file from a URL and cleanup data
@@ -298,7 +313,7 @@ json_files = [
 web_contrib_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
 
 
-process_contribs = processContributors(json_files, API_TOKEN)
+process_contribs = processContributors(json_files, web_contrib_path, API_TOKEN)
 # Combine the cross-repo contribut data
 all_contribs_dict = process_contribs.combine_json_data()
 
