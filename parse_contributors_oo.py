@@ -26,6 +26,15 @@ class ProcessContributors:
         self.API_TOKEN = API_TOKEN
         self.web_yml = web_yml
 
+    # Open the web contrib file (could also be a method)
+    # This returns a list of dict objects - whereas combine json returns a dict
+    # w gh users nam as the key - it might be cleaner if both returned objects were
+    # similarly formatted
+    def load_yml_file(self) -> dict:
+        """Description here"""
+        with urllib.request.urlopen(self.web_yml) as f:
+            return ruamel.yaml.safe_load(f)
+
     def process_json_file(self, json_file: str) -> dict:
         """Deserialize a JSON file from a URL and cleanup data
 
@@ -310,23 +319,24 @@ json_files = [
 ]
 
 # Get contribs from website
-web_contrib_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
+web_yaml_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
 
 
-process_contribs = processContributors(json_files, web_contrib_path, API_TOKEN)
+process_contribs = ProcessContributors(json_files, web_yaml_path, API_TOKEN)
 # Combine the cross-repo contribut data
 all_contribs_dict = process_contribs.combine_json_data()
-
-# Open the web contrib file (could also be a method)
-# This returns a list of dict objects - whereas combine json returns a dict
-# w gh users nam as the key - it might be cleaner if both returned objects were
-# similarly formatted
-with urllib.request.urlopen(web_contrib_path) as f:
-    web_contrib_dict = ruamel.yaml.safe_load(f)
+# Returns a list of dict objects
+# TODO have this return a dict with key being gh username and value being the dict
+# Then i can parse on keys() in the same way i do with the json file dict.
+web_yml_dict = process_contribs.load_yml_file()
 
 # Create a list of all gh usernames contributors from the website YAML
+# the JSON file method returns a dictionary with GH username as a key
+# TODO - once i update the web yml return to be a dict i can use the game
+# get gh users method here as i did above and just add a try/ except.
+
 all_web_contribs = []
-for item in web_contrib_dict:
+for item in web_yml_dict:
     try:
         all_web_contribs.append(item["github_username"].lower())
     except:
@@ -335,15 +345,16 @@ for item in web_contrib_dict:
 
 # Combine the web contrib with the cross-website contribs
 # making sure the web content is first
-# TODO: turn into function
+# TODO: turn into method - also if the web_yml_dict becomes and actual dict not a list
+# then i can use a different method .add instead of append?
 for aitem in all_contribs_dict.keys():
     if aitem.lower() not in all_web_contribs:
         # Add index to dict
-        web_contrib_dict.append(all_contribs_dict[aitem])
+        web_yml_dict.append(all_contribs_dict[aitem])
 
 # Get a list of all gh usernames from the updated contrib data
 # This can then be used to hit the GH api and update user metadata
-all_gh_usernames = process_contribs.get_gh_usernames(web_contrib_dict)
+all_gh_usernames = process_contribs.get_gh_usernames(web_yml_dict)
 # Now, update user data from GitHub profile via API - this will take a moment
 # TODO: maybe add a processing bar to this
 gh_data = process_contribs.get_gh_data(all_gh_usernames, API_TOKEN)
@@ -356,13 +367,8 @@ final_filename = "contributors.yml"
 # This also takes a minute as it's using requests to check url data
 # should add some progress here too
 updated_contrib = process_contribs.update_contrib_data(
-    web_contrib_dict, gh_data, update_keys
+    web_yml_dict, gh_data, update_keys
 )
-
-# # Clean website urls make sure it starts with https
-# I think this is now handled when the gh data are updated!
-# for i, item in enumerate(updated_contrib):
-#     item["website"] = process_contribs.format_url(item["website"])
 
 
 # Create final updated YAML file from the updated data above and clean that file
