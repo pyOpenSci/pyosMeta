@@ -4,7 +4,7 @@ import urllib.request
 import requests
 
 
-class processContributors:
+class ProcessContributors:
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
     def __init__(self, json_files: list, API_TOKEN: str):
