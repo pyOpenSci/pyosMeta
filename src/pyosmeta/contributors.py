@@ -3,7 +3,11 @@ import ruamel.yaml
 import urllib.request
 import requests
 
+# SOLID guidelines to improve code
 
+
+# TODO: a class should do one thing
+# i could potentially create a data opening / parser class and inherit here
 class ProcessContributors:
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
@@ -28,12 +32,34 @@ class ProcessContributors:
 
     # Open the web contrib file (could also be a method)
     # This returns a list of dict objects - whereas combine json returns a dict
-    # w gh users nam as the key - it might be cleaner if both returned objects were
+    # w gh users name as the key - it might be cleaner if both returned objects were
     # similarly formatted
-    def load_yml_file(self) -> dict:
+    def _open_yml_file(self) -> dict:
         """Description here"""
         with urllib.request.urlopen(self.web_yml) as f:
             return ruamel.yaml.safe_load(f)
+
+    def _list_to_dict(self, aList: list) -> dict:
+        """Takes a yaml file opened and turns into a dictionary
+        The dict structure is key (gh_username) and then a dictionary
+        containing all information for the username
+
+        aList : list
+            A list of dictionary objects returned from load website yaml
+
+        """
+        final_dict = {}
+        for dict in aList:
+            final_dict[dict["github_username"]] = dict
+        return final_dict
+
+    def load_website_yml(self):
+        """
+        This opens a website contrib yaml file and turns it in a
+        dictionary
+        """
+        yml_list = self._open_yml_file()
+        return self._list_to_dict(yml_list)
 
     def process_json_file(self, json_file: str) -> dict:
         """Deserialize a JSON file from a URL and cleanup data
@@ -55,35 +81,48 @@ class ProcessContributors:
         # Create a dictionary to hold the processed data
         processed_data = {}
         # Loop through each entry in the JSON file
+        # TODO: SOLID - avoid massive structures with conditional statements
+        # TODO: if entry["login"] not in processed_data: change to
+        # if entry[] in processed data:
+        #     continue
         for entry in data["contributors"]:
             # Check if the login value is already in the dictionary
-            if entry["login"] not in processed_data:
-                # Rename the login key to github_username
-                entry["github_username"] = entry.pop("login")
+            if entry["login"] in processed_data:
+                # Continue will go to the next iteration in a loop
+                continue
+            # Rename the login key to github_username
+            entry["github_username"] = entry.pop("login")
 
-                # Rename the profile key to website
-                entry["website"] = entry.pop("profile")
+            # Rename the profile key to website
+            entry["website"] = entry.pop("profile")
 
-                # Process github image avatar id
-                entry["avatar_url"] = int(
-                    entry["avatar_url"].rsplit("/", 1)[-1].rsplit("?", 1)[0]
-                )
-                entry["github_image_id"] = entry.pop("avatar_url")
-                # Add empty values for the new keys
-                for key in [
-                    "mastodon",
-                    "twitter",
-                    "bio",
-                    "orcidid",
-                    "contributor_type",
-                    "packages-submitted",
-                    "packages-reviewed",
-                ]:
-                    entry[key] = ""
+            # Process github image avatar id
+            entry["avatar_url"] = int(
+                entry["avatar_url"].rsplit("/", 1)[-1].rsplit("?", 1)[0]
+            )
+            entry["github_image_id"] = entry.pop("avatar_url")
+            # Add empty values for the new keys
+            # TODO: Tuple - consumes less memory -- ("mastodon",
+            # "twitter",
+            # "bio",
+            # "orcidid",
+            # "contributor_type",
+            # "packages-submitted",
+            # "packages-reviewed",)
+            for key in [
+                "mastodon",
+                "twitter",
+                "bio",
+                "orcidid",
+                "contributor_type",
+                "packages-submitted",
+                "packages-reviewed",
+            ]:
+                entry[key] = ""
 
-                # Add the entry to the processed data dictionary
-                # NOTE: this adds the GH username as a key for each dict entry
-                processed_data[entry["github_username"]] = entry
+            # Add the entry to the processed data dictionary
+            # NOTE: this adds the GH username as a key for each dict entry
+            processed_data[entry["github_username"]] = entry
         return processed_data
 
     # So here i think if i've instantiated the class with json files i can call it as self?
@@ -163,6 +202,23 @@ class ProcessContributors:
 
         return user_data
 
+    def combine_users(self, repoDict: dict, webDict: dict) -> dict:
+        """
+        Method that combines website yaml users with contribs across
+        other repos into a single dictionary
+
+        """
+
+        # Turn webDict keys
+        web_usernames = [key.lower() for key in webDict.keys()]
+
+        for aitem in repoDict.keys():
+            if aitem.lower() not in web_usernames:
+                # Add index to dict
+                print("adding: ", aitem)
+                web_contribs[aitem] = repo_contribs_dict[aitem]
+        return webDict
+
     def get_gh_data(self, gh_usernames: list, API_TOKEN: str) -> list:
         """Parses through each github username and hits the GitHub
         API to grab user information.
@@ -199,46 +255,48 @@ class ProcessContributors:
             response = requests.get(url, timeout=6)
             return response.status_code == 200
         except:
-            print("Oops, ", url, "is not valid, removing it")
+            print("Oops, url", url, "is not valid, removing it")
             return False
 
-    def update_contrib_data(self, contrib_data, gh_data, update_keys):
+    def update_contrib_data(self, contrib_data: dict, gh_data: dict, update_keys: list):
         """Update contributor data from the GH API return.
 
         GitHub will be the truth source for our contrib metadata here
 
         Parameters
         ----------
-        user_data : dict
+        contrib_data : dict
             All contributor data from the website
+        gh_data : dict
+            Updated contributor data pulled from github API
         update_keys : list
-            List of string values representing the key value pair items to
-            be updates
+            List of strings representing the key  items to
+            update from github data in each dictionary entry
         """
 
-        for i, item in enumerate(contrib_data):
-            gh_name = item["github_username"]
+        for i, gh_name in enumerate(contrib_data.keys()):
             print(i, gh_name)
+            gh_name_lower = gh_name.lower()
             # Update the key:value pairs for data pulled from GitHub
             # Note that some data needs to be manual updated such as which
-            # packages someone has reviewed. Cut if our team updates
-            # the google doc or another file maybe i can automate that too?
-            # TODO: I could parse github issues for reviewer names? and author names??!
+            # packages someone has reviewed.
             for akey in update_keys:
                 # Test if url works
                 if akey == "website":
-                    url = gh_data[gh_name][gh_name][akey]
+                    url = gh_data[gh_name_lower][gh_name_lower][akey]
                     # Fix the url format and check to see if it works online
                     url = self.format_url(url)
                     # It url is valid, add to dict
                     print("Checking: ", url)
                     if self._check_url(url):
-                        item[akey] = url
+                        contrib_data[gh_name][akey] = url
                     else:
-                        item[akey] = ""
+                        contrib_data[gh_name][akey] = ""
                 else:
                     # Stupid that the gh name is there twice
-                    item[akey] = gh_data[gh_name][gh_name][akey]
+                    contrib_data[gh_name][akey] = gh_data[gh_name_lower][gh_name_lower][
+                        akey
+                    ]
         return contrib_data
 
     def format_url(self, url: str) -> str:
@@ -307,73 +365,3 @@ class ProcessContributors:
 
         with open(filename, "w") as f:
             f.write(cleaned_text)
-
-
-"""Begin actual script """
-# Get all contribs across repos
-# Should this be an attribute in my class or is it better served as a list here?
-json_files = [
-    "https://raw.githubusercontent.com/pyOpenSci/python-package-guide/main/.all-contributorsrc",
-    "https://raw.githubusercontent.com/pyOpenSci/software-peer-review/main/.all-contributorsrc",
-    "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/.all-contributorsrc",
-]
-
-# Get contribs from website
-web_yaml_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
-
-
-process_contribs = ProcessContributors(json_files, web_yaml_path, API_TOKEN)
-# Combine the cross-repo contribut data
-all_contribs_dict = process_contribs.combine_json_data()
-# Returns a list of dict objects
-# TODO have this return a dict with key being gh username and value being the dict
-# Then i can parse on keys() in the same way i do with the json file dict.
-web_yml_dict = process_contribs.load_yml_file()
-
-# Create a list of all gh usernames contributors from the website YAML
-# the JSON file method returns a dictionary with GH username as a key
-# TODO - once i update the web yml return to be a dict i can use the game
-# get gh users method here as i did above and just add a try/ except.
-
-all_web_contribs = []
-for item in web_yml_dict:
-    try:
-        all_web_contribs.append(item["github_username"].lower())
-    except:
-        # Check if there is a missing gh username in our website listing
-        print(item["name"], "is missing a github username")
-
-# Combine the web contrib with the cross-website contribs
-# making sure the web content is first
-# TODO: turn into method - also if the web_yml_dict becomes and actual dict not a list
-# then i can use a different method .add instead of append?
-for aitem in all_contribs_dict.keys():
-    if aitem.lower() not in all_web_contribs:
-        # Add index to dict
-        web_yml_dict.append(all_contribs_dict[aitem])
-
-# Get a list of all gh usernames from the updated contrib data
-# This can then be used to hit the GH api and update user metadata
-all_gh_usernames = process_contribs.get_gh_usernames(web_yml_dict)
-# Now, update user data from GitHub profile via API - this will take a moment
-# TODO: maybe add a processing bar to this
-gh_data = process_contribs.get_gh_data(all_gh_usernames, API_TOKEN)
-
-# Update user yaml file data from GitHub API
-update_keys = ["twitter", "website", "location", "bio", "organization", "email"]
-final_filename = "contributors.yml"
-
-# TODO - this is not fixing one url now - http://zehuachen.com not sure why
-# This also takes a minute as it's using requests to check url data
-# should add some progress here too
-updated_contrib = process_contribs.update_contrib_data(
-    web_yml_dict, gh_data, update_keys
-)
-
-
-# Create final updated YAML file from the updated data above and clean that file
-# to match the website
-process_contribs.create_new_contrib_file(
-    filename=final_filename, contrib_data=updated_contrib
-)
-process_contribs.clean_yaml_file(final_filename)

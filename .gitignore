@@ -2,6 +2,8 @@
 contributors.yml
 import-token.py
 packages.yml
+
+__pycache__
 # C extensions
 *.so
 
