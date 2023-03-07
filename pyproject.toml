@@ -1,0 +1,19 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "pyosmeta"
+version = "0.1.0"
+description = "Tools for contributors"
+authors = [
+    {name = "Leah Wasser", email = "leah@pyopensci.org"},
+]
+dependencies = [
+    "ruamel-yaml>=0.17.21",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.pdm]
