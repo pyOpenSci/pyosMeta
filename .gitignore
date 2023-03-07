@@ -1,6 +1,5 @@
 .DS_Store
 contributors.yml
-import-token.py
 packages.yml
 
 __pycache__

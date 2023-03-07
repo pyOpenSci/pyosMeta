@@ -1,7 +1,8 @@
 import json
-import ruamel.yaml
 import urllib.request
+
 import requests
+import ruamel.yaml
 
 # SOLID guidelines to improve code
 
@@ -125,7 +126,6 @@ class ProcessContributors:
             processed_data[entry["github_username"]] = entry
         return processed_data
 
-    # So here i think if i've instantiated the class with json files i can call it as self?
     def combine_json_data(self) -> dict:
         """Deserialize and clean a list of json file url's.
 
@@ -276,14 +276,13 @@ class ProcessContributors:
 
         for i, gh_name in enumerate(contrib_data.keys()):
             print(i, gh_name)
-            gh_name_lower = gh_name.lower()
             # Update the key:value pairs for data pulled from GitHub
             # Note that some data needs to be manual updated such as which
             # packages someone has reviewed.
             for akey in update_keys:
                 # Test if url works
                 if akey == "website":
-                    url = gh_data[gh_name_lower][gh_name_lower][akey]
+                    url = gh_data[gh_name][gh_name][akey]
                     # Fix the url format and check to see if it works online
                     url = self.format_url(url)
                     # It url is valid, add to dict
@@ -294,9 +293,7 @@ class ProcessContributors:
                         contrib_data[gh_name][akey] = ""
                 else:
                     # Stupid that the gh name is there twice
-                    contrib_data[gh_name][akey] = gh_data[gh_name_lower][gh_name_lower][
-                        akey
-                    ]
+                    contrib_data[gh_name][akey] = gh_data[gh_name][gh_name][akey]
         return contrib_data
 
     def format_url(self, url: str) -> str:

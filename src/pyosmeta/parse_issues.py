@@ -7,16 +7,22 @@ import ruamel.yaml
 
 @dataclass
 class ProcessIssues:
-    # When initializing how do you decide what should be an input
-    # attribute vs just something a method accepted when called?
     """
+    A class that processes GitHub issues in our peer review process and returns
+    metadata about each package.
+
     Parameters
     ----------
     org : str
+        Organization name where the issues exist
     repo_name : str
+        Repo name where the software review issues live
     tag_name : str
+        Tag of issues to grab - e.g. pyos approved
     API_TOKEN : str
+        API token needed to authenticate with GitHub
     username : str
+        Username needed to authenticate with GitHub
     """
 
     API_TOKEN: str = ""
@@ -54,33 +60,40 @@ class ProcessIssues:
         """
         return string.startswith(("Submitting", "Editor", "Reviewer"))
 
-    def get_issue_meta(self, issue_header: list):
+    def get_issue_meta(self, line_item: list) -> dict:
         """
         Parameters
         ----------
         issue_header : list
-            A list of items that represent lines in the first comment of an issue
+            A single list item representing a single line in the issue
+            containing metadata for the review.
             This comment is the metadata for the review that the author fills out.
+
+        Returns
+        -------
+            Dict containing the metadata for a submitting author or reviewer
         """
 
+        meta = {}
         if self._contains_keyword(item[0]):
-            names = item[1].split("(", 1)
+            names = line_item[1].split("(", 1)
             if len(names) > 1:
-                review_meta[item[0]] = {
+                meta[line_item[0]] = {
                     "name": names[0].strip(),
                     "github_username": names[1].strip().lstrip("@").rstrip(")"),
                 }
             else:
-                review_meta[item[0]] = {
+                meta[line_item[0]] = {
                     "name": "",
                     "github_username": names[0].strip().lstrip("@"),
                 }
         else:
             if len(item) > 1:
-                review_meta[item[0]] = item[1]
+                meta[line_item[0]] = item[1]
 
-        return review_meta
+        return meta
 
+    # review_issues = review
     def get_repo_endpoints(self, review_issues: dict):
         """
         Returns a list of repository endpoints
@@ -100,6 +113,7 @@ class ProcessIssues:
         for aPackage in review_issues.keys():
             print(aPackage)
             repo = review[aPackage]["Repository Link"]
+            print(repo)
             owner, repo = repo.split("/")[-2:]
             all_repos[aPackage] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
@@ -135,6 +149,14 @@ class ProcessIssues:
 
         return package_name, body_data
 
+    def _clean_date(self, date: str) -> str:
+        """Cleans up a datetime  from github and returns a date string"""
+
+        date_clean = (
+            datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").date().strftime("%m/%d/%Y")
+        )
+        return date_clean
+
     def get_repo_meta(self, url: str, stats_list: list) -> dict:
         """
         Returns a set of GH stats from each repo of our reviewed packages.
@@ -152,6 +174,8 @@ class ProcessIssues:
             for astat in stats_list:
                 print(astat)
                 stats_dict[astat] = data[astat]
+            stats_dict["documentation"] = stats_dict.pop("homepage")
+            stats_dict["created_at"] = self._clean_date(stats_dict["created_at"])
 
         return stats_dict
 
@@ -175,10 +199,42 @@ class ProcessIssues:
         url = repo + "/commits"
         response = requests.get(url).json()
         date = response[0]["commit"]["author"]["date"]
-        last_commit = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").date()
 
-        return last_commit.strftime("%m/%d/%Y")
+        return self._clean_date(date)
 
+    def get_categories(self, issue_body_list: list) -> list:
+        """Parse through a pyos issue and grab the categories associated
+        with a package
+
+        Parameters
+        ----------
+        issue_body_list : list
+            List containing each line in the first comment of the issue
+        """
+        # Find the starting index of the section we're interested in
+        start_index = None
+        for i in range(len(issue_body_list)):
+            if issue_body_list[i][0].startswith("- Please indicate which"):
+                start_index = i
+                break
+
+        if start_index is None:
+            # If we couldn't find the starting index, return an empty list
+            return []
+
+        # Iterate through the lines starting at the starting index and grab the relevant text
+        categories = []
+        for i in range(start_index + 1, len(issue_body_list)):
+            line = issue_body_list[i][0]
+            if line.startswith("\t-") and "[x]" in line:
+                category = line[line.index("]") + 2 :]
+                categories.append(category)
+
+        return categories
+
+
+# TODO: Several packages are returning empty categories after parsing the issue- pyrolite,MovingPandas, pandera:
+# TODO: add date issue closed as well - can get that from API maybe?
 
 issueProcess = ProcessIssues(
     org="pyopensci",
@@ -187,27 +243,25 @@ issueProcess = ProcessIssues(
     API_TOKEN=API_TOKEN,
 )
 
-# Get API response
-response = issueProcess.return_response("lwasser")
+# Get all issues for approved packages
+issues = issueProcess.return_response("lwasser")
 
-# TODO: could make this a method too?
 # Loop through each issue and print the text in the first comment
 review = {}
 for issue in issues:
     package_name, body_data = issueProcess.parse_comment(issue)
-    review_meta = {}
-    for item in body_data[0:11]:
-        review[package_name] = issueProcess.get_issue_meta(item)
+    # review_meta = {}
+    # index of 12 should include date accepted
+    issue_meta = {}
+    for item in body_data[0:12]:
+        # TODO - add date accepted if it exists
+        issue_meta.update(issueProcess.get_issue_meta(item))
 
-# Get a list of github repos for reviews
-# This now returns a dict...
+    review[package_name] = issue_meta
+    review[package_name]["categories"] = issueProcess.get_categories(body_data)
+
+# Get list of github API endpoint for each accepted package
 all_repo_endpoints = issueProcess.get_repo_endpoints(review)
-# above used to be all_repos
-
-# TODO:
-# Add date accepted to the issue
-# add date issue closed as well - can get that from API maybe?
-
 
 # Send a GET request to the API endpoint and include a user agent header
 gh_stats = [
@@ -223,19 +277,21 @@ gh_stats = [
     "forks_count",
 ]
 
-stats_list = gh_stats
-url = "https://api.github.com/repos/earthlab/earthpy"
-
-# meta = issueProcess.get_repo_meta(url, stats_list)
 
 # Get gh metadata for each package submission
 all_repo_meta = {}
-for package_name in all_repos.keys():
+for package_name in all_repo_endpoints.keys():
     print(package_name)
-    all_repo_meta[package_name] = issueProcess.get_repo_meta(repo, gh_stats)
+    package_api = all_repo_endpoints[package_name]
+    print(package_api)
+    all_repo_meta[package_name] = issueProcess.get_repo_meta(package_api, gh_stats)
 
-    all_repo_meta[package_name]["contrib_count"] = issueProcess.get_repo_contribs(repo)
-    all_repo_meta[package_name]["last_commit"] = issueProcess.get_last_commit(repo)
+    all_repo_meta[package_name]["contrib_count"] = issueProcess.get_repo_contribs(
+        package_api
+    )
+    all_repo_meta[package_name]["last_commit"] = issueProcess.get_last_commit(
+        package_api
+    )
     # Add github meta to review metadata
     review[package_name]["gh_meta"] = all_repo_meta[package_name]
 
@@ -249,32 +305,3 @@ with open(filename, "w") as file:
     yaml.dump(review, file)
 
 # https://api.github.com/repos/pyopensci/python-package-guide/commits
-
-
-"""
-Add: to data
-  date-accepted: 2021-12-29
-  highlight:
-  docs-url: "https://jointly.readthedocs.io"
-  citation-link:
-
-
-# Create dict with info
-# Using create contrib file method from other script
-
-  - package-name: jointly
-  description: "Jointly: A Python package for synchronizing multiple sensors with accelerometer data"
-  maintainer:
-    [
-      "Arne Herdick",
-      "Felix Musmann",
-      "Ariane Sasso",
-      "Justin Albert",
-      "Bert Arnrich",
-    ]
-  link: "https://github.com/hpi-dhc/jointly"
-  date-accepted: 2021-12-29
-  highlight:
-  docs-url: "https://jointly.readthedocs.io"
-  citation-link: "https://doi.org/10.5281/zenodo.5833858"
-"""
