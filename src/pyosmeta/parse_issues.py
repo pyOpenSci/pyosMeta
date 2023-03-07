@@ -60,7 +60,7 @@ class ProcessIssues:
         """
         return string.startswith(("Submitting", "Editor", "Reviewer"))
 
-    def get_issue_meta(self, line_item: list) -> dict:
+    def _get_line_meta(self, line_item: list) -> dict:
         """
         Parameters
         ----------
@@ -75,7 +75,7 @@ class ProcessIssues:
         """
 
         meta = {}
-        if self._contains_keyword(item[0]):
+        if self._contains_keyword(line_item[0]):
             names = line_item[1].split("(", 1)
             if len(names) > 1:
                 meta[line_item[0]] = {
@@ -88,12 +88,36 @@ class ProcessIssues:
                     "github_username": names[0].strip().lstrip("@"),
                 }
         else:
-            if len(item) > 1:
-                meta[line_item[0]] = item[1]
+            if len(line_item) > 1:
+                meta[line_item[0]] = line_item[1].strip()
 
         return meta
 
-    # review_issues = review
+    def get_issue_meta(
+        self,
+        body_data: list,
+        end_range: int,
+    ) -> dict:
+        """
+        Parse through the top of an issue and grab the metadata for the review.
+
+        Parameters
+        ----------
+        body_data : list
+            A list containing all of the body data for the top comment in an issue.
+        end_range : int
+            The number of lines to parse at the top of the issue (this may change
+            over time so this variable allows us to have different processing
+            based upon the date of the issue being opened)
+
+        """
+        issue_meta = {}
+        for item in body_data[0:end_range]:
+            print(item)
+            # TODO - add date accepted if it exists
+            issue_meta.update(issueProcess._get_line_meta(item))
+        return issue_meta
+
     def get_repo_endpoints(self, review_issues: dict):
         """
         Returns a list of repository endpoints
@@ -106,14 +130,11 @@ class ProcessIssues:
         -------
             List of repository endpoints
 
-
         """
 
         all_repos = {}
         for aPackage in review_issues.keys():
-            print(aPackage)
             repo = review[aPackage]["Repository Link"]
-            print(repo)
             owner, repo = repo.split("/")[-2:]
             all_repos[aPackage] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
@@ -172,7 +193,6 @@ class ProcessIssues:
         else:
             data = response.json()
             for astat in stats_list:
-                print(astat)
                 stats_dict[astat] = data[astat]
             stats_dict["documentation"] = stats_dict.pop("homepage")
             stats_dict["created_at"] = self._clean_date(stats_dict["created_at"])
@@ -202,6 +222,8 @@ class ProcessIssues:
 
         return self._clean_date(date)
 
+    # issue_body_list = body_data
+
     def get_categories(self, issue_body_list: list) -> list:
         """Parse through a pyos issue and grab the categories associated
         with a package
@@ -214,6 +236,7 @@ class ProcessIssues:
         # Find the starting index of the section we're interested in
         start_index = None
         for i in range(len(issue_body_list)):
+            # print(issue_body_list[i][0], i)
             if issue_body_list[i][0].startswith("- Please indicate which"):
                 start_index = i
                 break
@@ -223,18 +246,25 @@ class ProcessIssues:
             return []
 
         # Iterate through the lines starting at the starting index and grab the relevant text
+        cat_matches = ["[x]", "[X]"]
         categories = []
-        for i in range(start_index + 1, len(issue_body_list)):
-            line = issue_body_list[i][0]
-            if line.startswith("\t-") and "[x]" in line:
+        for i in range(start_index + 1, len(issue_body_list)):  # 30):
+            line = issue_body_list[i][0].strip()
+            checked = any([x in line for x in cat_matches])
+            # TODO could i change the if to a while loop?
+            if line.startswith("- [") and checked:
                 category = line[line.index("]") + 2 :]
                 categories.append(category)
+            elif not line.startswith("- ["):
+                break
+            # elif line.strip().startswith("* Please fill out a pre-submission"):
+            #     break
 
         return categories
 
 
-# TODO: Several packages are returning empty categories after parsing the issue- pyrolite,MovingPandas, pandera:
 # TODO: add date issue closed as well - can get that from API maybe?
+# TODO: Category parsing - is NOT stopping at the last check
 
 issueProcess = ProcessIssues(
     org="pyopensci",
@@ -246,17 +276,13 @@ issueProcess = ProcessIssues(
 # Get all issues for approved packages
 issues = issueProcess.return_response("lwasser")
 
+
 # Loop through each issue and print the text in the first comment
 review = {}
 for issue in issues:
     package_name, body_data = issueProcess.parse_comment(issue)
-    # review_meta = {}
     # index of 12 should include date accepted
-    issue_meta = {}
-    for item in body_data[0:12]:
-        # TODO - add date accepted if it exists
-        issue_meta.update(issueProcess.get_issue_meta(item))
-
+    issue_meta = issueProcess.get_issue_meta(body_data, 12)
     review[package_name] = issue_meta
     review[package_name]["categories"] = issueProcess.get_categories(body_data)
 
@@ -277,13 +303,12 @@ gh_stats = [
     "forks_count",
 ]
 
-
+# TODO: make this a method too??
 # Get gh metadata for each package submission
 all_repo_meta = {}
 for package_name in all_repo_endpoints.keys():
     print(package_name)
     package_api = all_repo_endpoints[package_name]
-    print(package_api)
     all_repo_meta[package_name] = issueProcess.get_repo_meta(package_api, gh_stats)
 
     all_repo_meta[package_name]["contrib_count"] = issueProcess.get_repo_contribs(
@@ -296,6 +321,8 @@ for package_name in all_repo_endpoints.keys():
     review[package_name]["gh_meta"] = all_repo_meta[package_name]
 
 
+# TODO: this could be a base class that just exports to yaml - both
+# classes can inherit and use this as well as the API token i think?
 filename = "packages.yml"
 with open(filename, "w") as file:
     # Create YAML object with RoundTripDumper to keep key order intact
@@ -305,3 +332,21 @@ with open(filename, "w") as file:
     yaml.dump(review, file)
 
 # https://api.github.com/repos/pyopensci/python-package-guide/commits
+
+
+# for i in range(start_index + 1, len(issue_body_list)):  # 30):
+#     line = issue_body_list[i][0].strip()
+#     while line.startswith("- ["):
+
+# for i in range(start_index + 1, len(issue_body_list)):  # 30):
+#     line = issue_body_list[i][0].strip()
+#     checked = any([x in line for x in cat_matches])
+#     # TODO could i change the if to a while loop?
+#     if line.startswith("- [") and checked:
+#         category = line[line.index("]") + 2 :]
+#         categories.append(category)
+#         print(categories)
+#     elif not line.startswith("- ["):
+#         break
+# elif line.strip().startswith("* Please fill out a pre-submission"):
+#     break
