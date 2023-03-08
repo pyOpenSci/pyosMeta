@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime
 
 import requests
-import ruamel.yaml
 
 
 @dataclass
@@ -113,9 +112,7 @@ class ProcessIssues:
         """
         issue_meta = {}
         for item in body_data[0:end_range]:
-            print(item)
-            # TODO - add date accepted if it exists
-            issue_meta.update(issueProcess._get_line_meta(item))
+            issue_meta.update(self._get_line_meta(item))
         return issue_meta
 
     def get_repo_endpoints(self, review_issues: dict):
@@ -134,7 +131,7 @@ class ProcessIssues:
 
         all_repos = {}
         for aPackage in review_issues.keys():
-            repo = review[aPackage]["Repository Link"]
+            repo = review_issues[aPackage]["Repository Link"]
             owner, repo = repo.split("/")[-2:]
             all_repos[aPackage] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
@@ -187,8 +184,13 @@ class ProcessIssues:
         # Small script to get the url (normally the docs) and description of a repo!
         response = requests.get(url)
 
+        # TODO: should this be some sort of try/except how do i catch these
+        # Response errors in the best way possible?
         if response.status_code == 404:
             print("Can't find: ", url, ". Did the repo url change?")
+        elif response.status_code == 403:
+            print("Oops you may have hit an API limit. Exiting")
+
         # Extract the description and homepage URL from the response JSON
         else:
             data = response.json()
@@ -236,7 +238,6 @@ class ProcessIssues:
         # Find the starting index of the section we're interested in
         start_index = None
         for i in range(len(issue_body_list)):
-            # print(issue_body_list[i][0], i)
             if issue_body_list[i][0].startswith("- Please indicate which"):
                 start_index = i
                 break
@@ -263,90 +264,4 @@ class ProcessIssues:
         return categories
 
 
-# TODO: add date issue closed as well - can get that from API maybe?
-# TODO: Category parsing - is NOT stopping at the last check
-
-issueProcess = ProcessIssues(
-    org="pyopensci",
-    repo_name="software-submission",
-    label_name="6/pyOS-approved 🚀🚀🚀",
-    API_TOKEN=API_TOKEN,
-)
-
-# Get all issues for approved packages
-issues = issueProcess.return_response("lwasser")
-
-
-# Loop through each issue and print the text in the first comment
-review = {}
-for issue in issues:
-    package_name, body_data = issueProcess.parse_comment(issue)
-    # index of 12 should include date accepted
-    issue_meta = issueProcess.get_issue_meta(body_data, 12)
-    review[package_name] = issue_meta
-    review[package_name]["categories"] = issueProcess.get_categories(body_data)
-
-# Get list of github API endpoint for each accepted package
-all_repo_endpoints = issueProcess.get_repo_endpoints(review)
-
-# Send a GET request to the API endpoint and include a user agent header
-gh_stats = [
-    "name",
-    "description",
-    "homepage",
-    "created_at",
-    "stargazers_count",
-    "watchers_count",
-    "stargazers_count",
-    "forks",
-    "open_issues_count",
-    "forks_count",
-]
-
-# TODO: make this a method too??
-# Get gh metadata for each package submission
-all_repo_meta = {}
-for package_name in all_repo_endpoints.keys():
-    print(package_name)
-    package_api = all_repo_endpoints[package_name]
-    all_repo_meta[package_name] = issueProcess.get_repo_meta(package_api, gh_stats)
-
-    all_repo_meta[package_name]["contrib_count"] = issueProcess.get_repo_contribs(
-        package_api
-    )
-    all_repo_meta[package_name]["last_commit"] = issueProcess.get_last_commit(
-        package_api
-    )
-    # Add github meta to review metadata
-    review[package_name]["gh_meta"] = all_repo_meta[package_name]
-
-
-# TODO: this could be a base class that just exports to yaml - both
-# classes can inherit and use this as well as the API token i think?
-filename = "packages.yml"
-with open(filename, "w") as file:
-    # Create YAML object with RoundTripDumper to keep key order intact
-    yaml = ruamel.yaml.YAML(typ="rt")
-    # Set the indent parameter to 2 for the yaml output
-    yaml.indent(mapping=4, sequence=4, offset=2)
-    yaml.dump(review, file)
-
 # https://api.github.com/repos/pyopensci/python-package-guide/commits
-
-
-# for i in range(start_index + 1, len(issue_body_list)):  # 30):
-#     line = issue_body_list[i][0].strip()
-#     while line.startswith("- ["):
-
-# for i in range(start_index + 1, len(issue_body_list)):  # 30):
-#     line = issue_body_list[i][0].strip()
-#     checked = any([x in line for x in cat_matches])
-#     # TODO could i change the if to a while loop?
-#     if line.startswith("- [") and checked:
-#         category = line[line.index("]") + 2 :]
-#         categories.append(category)
-#         print(categories)
-#     elif not line.startswith("- ["):
-#         break
-# elif line.strip().startswith("* Please fill out a pre-submission"):
-#     break

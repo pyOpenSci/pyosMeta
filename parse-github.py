@@ -1,5 +1,13 @@
+import pickle
+
 from pyosmeta.contributors import ProcessContributors
 
+with open("../token.pickle", "rb") as f:
+    API_TOKEN = pickle.load(f)
+
+"""
+Begin parsing contributor data
+"""
 json_files = [
     "https://raw.githubusercontent.com/pyOpenSci/python-package-guide/main/.all-contributorsrc",
     "https://raw.githubusercontent.com/pyOpenSci/software-peer-review/main/.all-contributorsrc",
@@ -41,8 +49,9 @@ final_filename = "contributors.yml"
 # here the name doesn't have a - next to it - rather it is the first item
 # all meta associated with the name is then indented.
 # This might be ok i may just have to revisit the website loops
-# Also - this contains email information. might want to remove that from the
-# website repo.
+# TODO: this contains email information. remove that from the
+# website repo as most won't want that info to be public.
+# Maybe for now just create a text file with name, gh username, email?
 process_contribs.create_new_contrib_file(
     filename=final_filename, contrib_data=all_contribs_dict_updated
 )
