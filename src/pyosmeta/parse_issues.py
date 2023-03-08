@@ -3,9 +3,13 @@ from datetime import datetime
 
 import requests
 
+from .write_files import WriteYaml
 
+
+# main reason to use this is attributes .. avoiding them being changed
+# in other instances...
 @dataclass
-class ProcessIssues:
+class ProcessIssues(WriteYaml):
     """
     A class that processes GitHub issues in our peer review process and returns
     metadata about each package.
@@ -91,6 +95,27 @@ class ProcessIssues:
                 meta[line_item[0]] = line_item[1].strip()
 
         return meta
+
+    def parse_issue_header(self, issues: list, total_lines: int = 12) -> dict:
+        """
+        Parameters
+        ----------
+        issues : list
+            List returned from the return_response method that contains the
+            metadata at the top of each issue
+        total_lines : int
+            an integer representing the total number of lines to parse in the issue
+            header. Default = 12
+        """
+
+        review = {}
+        for issue in issues:
+            package_name, body_data = self.parse_comment(issue)
+            # index of 12 should include date accepted
+            issue_meta = self.get_issue_meta(body_data, total_lines)
+            review[package_name] = issue_meta
+            review[package_name]["categories"] = self.get_categories(body_data)
+        return review
 
     def get_issue_meta(
         self,

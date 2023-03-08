@@ -1,19 +1,15 @@
 import pickle
 
-import ruamel.yaml
-
-from pyosmeta.parse_issues import ProcessIssues
+from pyosmeta import ProcessIssues
 
 with open("../token.pickle", "rb") as f:
     API_TOKEN = pickle.load(f)
 
-
-""" Begin processing issues """
-
-# TODO - NameError: name 'ruamel' is not defined - it's part of the package tho?
+# result.status_code in [200, 302]:
+# TODO:  I get key errors and name errors when i hit api limits
+# Would be good to track API return responses / figure out how long I need to wait
+# so it doesn't just fail. how does that get setup?
 # TODO: add date issue closed as well - can get that from API maybe?
-
-
 issueProcess = ProcessIssues(
     org="pyopensci",
     repo_name="software-submission",
@@ -23,16 +19,7 @@ issueProcess = ProcessIssues(
 
 # Get all issues for approved packages
 issues = issueProcess.return_response("lwasser")
-
-# TODO: running into an error
-# Loop through each issue and print the text in the first comment
-review = {}
-for issue in issues:
-    package_name, body_data = issueProcess.parse_comment(issue)
-    # index of 12 should include date accepted
-    issue_meta = issueProcess.get_issue_meta(body_data, 12)
-    review[package_name] = issue_meta
-    review[package_name]["categories"] = issueProcess.get_categories(body_data)
+review = issueProcess.parse_issue_header(issues, 12)
 
 # Get list of github API endpoint for each accepted package
 all_repo_endpoints = issueProcess.get_repo_endpoints(review)
@@ -51,7 +38,6 @@ gh_stats = [
     "forks_count",
 ]
 
-# TODO: make this a method too??
 # Get gh metadata for each package submission
 all_repo_meta = {}
 for package_name in all_repo_endpoints.keys():
@@ -68,13 +54,10 @@ for package_name in all_repo_endpoints.keys():
     # Add github meta to review metadata
     review[package_name]["gh_meta"] = all_repo_meta[package_name]
 
+# Export to yaml!
+issueProcess.export_yaml("packages.yml", review)
 
-# TODO: this could be a base class that just exports to yaml - both
-# classes can inherit and use this as well as the API token i think?
-filename = "packages.yml"
-with open(filename, "w") as file:
-    # Create YAML object with RoundTripDumper to keep key order intact
-    yaml = ruamel.yaml.YAML(typ="rt")
-    # Set the indent parameter to 2 for the yaml output
-    yaml.indent(mapping=4, sequence=4, offset=2)
-    yaml.dump(review, file)
+
+# Breakpoints n next , s go inside function, C continue , L R run
+# p variable name --> prints the value of the current variable
+# Can also create conditional breakpoints...

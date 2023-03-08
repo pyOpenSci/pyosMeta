@@ -4,12 +4,12 @@ import urllib.request
 import requests
 import ruamel.yaml
 
+from .write_files import WriteYaml
+
 # SOLID guidelines to improve code
 
 
-# TODO: a class should do one thing
-# i could potentially create a data opening / parser class and inherit here
-class ProcessContributors:
+class ProcessContributors(WriteYaml):
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
     def __init__(self, json_files: list, web_yml: str, API_TOKEN: str):
@@ -35,11 +35,14 @@ class ProcessContributors:
     # This returns a list of dict objects - whereas combine json returns a dict
     # w gh users name as the key - it might be cleaner if both returned objects were
     # similarly formatted
+
+    # TODO - move to yaml file class?
     def _open_yml_file(self) -> dict:
         """Description here"""
         with urllib.request.urlopen(self.web_yml) as f:
             return ruamel.yaml.safe_load(f)
 
+    # TODO - move to yaml file class?
     def _list_to_dict(self, aList: list) -> dict:
         """Takes a yaml file opened and turns into a dictionary
         The dict structure is key (gh_username) and then a dictionary
@@ -54,6 +57,7 @@ class ProcessContributors:
             final_dict[dict["github_username"]] = dict
         return final_dict
 
+    # TODO - move to yaml file class?
     def load_website_yml(self):
         """
         This opens a website contrib yaml file and turns it in a
@@ -190,6 +194,7 @@ class ProcessContributors:
 
         user_data = {}
         # TODO this could be created via a loop with a key:value pair to iterate over
+        # I wonder if i can do this with a single .get()
         user_data[username] = {
             "location": response_json.get("location", None),
             "email": response_json.get("email", None),
@@ -321,44 +326,45 @@ class ProcessContributors:
             print("fixing", url)
             return "https://" + url
 
-    def create_new_contrib_file(self, filename: str, contrib_data: dict):
-        """Update website contrib file with the information grabbed from GitHub
-        API
+    # Now inherited from write data class
+    # def create_new_contrib_file(self, filename: str, contrib_data: dict):
+    #     """Update website contrib file with the information grabbed from GitHub
+    #     API
 
-        Serialize contrib data from dictionary to YAML file.
+    #     Serialize contrib data from dictionary to YAML file.
 
-        Parameters
-        ----------
+    #     Parameters
+    #     ----------
 
-        filename : str
-            Name of the output contributor filename ().yml format)
-        contrib_data :  dict
-            A dict containing contributor data for the website.
+    #     filename : str
+    #         Name of the output contributor filename ().yml format)
+    #     contrib_data :  dict
+    #         A dict containing contributor data for the website.
 
-        Returns
-        -------
-        """
+    #     Returns
+    #     -------
+    #     """
 
-        with open(filename, "w") as file:
-            # Create YAML object with RoundTripDumper to keep key order intact
-            yaml = ruamel.yaml.YAML(typ="rt")
-            # Set the indent parameter to 2 for the yaml output
-            yaml.indent(mapping=4, sequence=4, offset=2)
-            yaml.dump(contrib_data, file)
+    #     with open(filename, "w") as file:
+    #         # Create YAML object with RoundTripDumper to keep key order intact
+    #         yaml = ruamel.yaml.YAML(typ="rt")
+    #         # Set the indent parameter to 2 for the yaml output
+    #         yaml.indent(mapping=4, sequence=4, offset=2)
+    #         yaml.dump(contrib_data, file)
 
-    def clean_yaml_file(self, filename):
-        """Open a yaml file and remove extra indent and spacing"""
-        with open(filename, "r") as f:
-            lines = f.readlines()
+    # def clean_yaml_file(self, filename):
+    #     """Open a yaml file and remove extra indent and spacing"""
+    #     with open(filename, "r") as f:
+    #         lines = f.readlines()
 
-        cleaned_lines = []
-        for line in lines:
-            if line.startswith("  "):
-                cleaned_lines.append(line[2:])
-            else:
-                cleaned_lines.append(line)
+    #     cleaned_lines = []
+    #     for line in lines:
+    #         if line.startswith("  "):
+    #             cleaned_lines.append(line[2:])
+    #         else:
+    #             cleaned_lines.append(line)
 
-        cleaned_text = "".join(cleaned_lines).replace("''", "")
+    #     cleaned_text = "".join(cleaned_lines).replace("''", "")
 
-        with open(filename, "w") as f:
-            f.write(cleaned_text)
+    #     with open(filename, "w") as f:
+    #         f.write(cleaned_text)
