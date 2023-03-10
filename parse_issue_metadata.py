@@ -65,5 +65,7 @@ final_data = []
 for key in review:
     final_data.append(review[key])
 
+final_yaml = "packages.yml"
 # Export to yaml!
-issueProcess.export_yaml("packages.yml", review)
+issueProcess.export_yaml(final_yaml, final_data)
+issueProcess.clean_yaml_file(final_yaml)
