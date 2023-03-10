@@ -5,6 +5,12 @@ from pyosmeta import ProcessIssues
 with open("../token.pickle", "rb") as f:
     API_TOKEN = pickle.load(f)
 
+# This works when it's in a dictionary but there are a few todos
+# TODO: make sure every key is lower case and no spaces!
+# package-name is first and remove the spaces from the key
+# description should be second, then submitting author third
+# rename: one-line_description_of_package -> package_description
+
 # result.status_code in [200, 302]:
 # TODO:  I get key errors and name errors when i hit api limits
 # Would be good to track API return responses / figure out how long I need to wait
@@ -54,10 +60,10 @@ for package_name in all_repo_endpoints.keys():
     # Add github meta to review metadata
     review[package_name]["gh_meta"] = all_repo_meta[package_name]
 
+# Turn the data into a list to support jekyll friendly yaml
+final_data = []
+for key in review:
+    final_data.append(review[key])
+
 # Export to yaml!
 issueProcess.export_yaml("packages.yml", review)
-
-
-# Breakpoints n next , s go inside function, C continue , L R run
-# p variable name --> prints the value of the current variable
-# Can also create conditional breakpoints...

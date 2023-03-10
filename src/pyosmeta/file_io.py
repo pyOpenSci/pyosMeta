@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-# Do i want to use pyyaml instead?
 import ruamel.yaml
 
 # file io
@@ -15,7 +14,7 @@ class WriteYaml:
     ----------
     """
 
-    def export_yaml(self, filename: str, data_dict: dict):
+    def export_yaml(self, filename: str, data_list: list):
         """Update website contrib file with the information grabbed from GitHub
         API
 
@@ -26,8 +25,8 @@ class WriteYaml:
 
         filename : str
             Name of the output contributor filename ().yml format)
-        data_dict :  dict
-            A dict containing contributor data for the website.
+        data_list :  list
+            A list containing contributor data for the website.
 
         Returns
         -------
@@ -36,9 +35,10 @@ class WriteYaml:
         with open(filename, "w") as file:
             # Create YAML object with RoundTripDumper to keep key order intact
             yaml = ruamel.yaml.YAML(typ="rt")
+            yaml.default_flow_style = False
             # Set the indent parameter to 2 for the yaml output
             yaml.indent(mapping=4, sequence=4, offset=2)
-            yaml.dump(data_dict, file)
+            yaml.dump(data_list, file)
 
     def clean_yaml_file(self, filename):
         """Open a yaml file and remove extra indents and spacing"""

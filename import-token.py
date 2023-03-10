@@ -6,3 +6,10 @@ with open("../token.pickle", "rb") as f:
 
 with open("../token.pickle", "wb") as f:
     pickle.dump(API_TOKEN, f)
+
+
+with open("../issues.pickle", "rb") as f:
+    API_TOKEN = pickle.load(f)
+
+with open("../issues.pickle", "wb") as f:
+    pickle.dump(issues, f)

@@ -3,7 +3,7 @@ from datetime import datetime
 
 import requests
 
-from .write_files import WriteYaml
+from .file_io import WriteYaml
 
 
 # main reason to use this is attributes .. avoiding them being changed
@@ -78,21 +78,22 @@ class ProcessIssues(WriteYaml):
         """
 
         meta = {}
+        theKey = line_item[0].lower().replace(" ", "_")
         if self._contains_keyword(line_item[0]):
             names = line_item[1].split("(", 1)
             if len(names) > 1:
-                meta[line_item[0]] = {
+                meta[theKey] = {
                     "name": names[0].strip(),
                     "github_username": names[1].strip().lstrip("@").rstrip(")"),
                 }
             else:
-                meta[line_item[0]] = {
+                meta[theKey] = {
                     "name": "",
                     "github_username": names[0].strip().lstrip("@"),
                 }
         else:
             if len(line_item) > 1:
-                meta[line_item[0]] = line_item[1].strip()
+                meta[theKey] = line_item[1].strip()
 
         return meta
 
@@ -107,7 +108,20 @@ class ProcessIssues(WriteYaml):
             an integer representing the total number of lines to parse in the issue
             header. Default = 12
         """
-
+        # Reorder data
+        key_order = [
+            "package_name",
+            "package_description",
+            "submitting_author",
+            "repository_link",
+            "version_submitted",
+            "categories",
+            "editor",
+            "reviewer_1",
+            "reviewer_2",
+            "archive",
+            "version_accepted",
+        ]
         review = {}
         for issue in issues:
             package_name, body_data = self.parse_comment(issue)
@@ -115,6 +129,13 @@ class ProcessIssues(WriteYaml):
             issue_meta = self.get_issue_meta(body_data, total_lines)
             review[package_name] = issue_meta
             review[package_name]["categories"] = self.get_categories(body_data)
+            # Rename package description & reorder keys
+            print(review[package_name].keys())
+            review[package_name]["package_description"] = review[package_name].pop(
+                "one-line_description_of_package"
+            )
+            review[package_name] = {key: review[package_name][key] for key in key_order}
+
         return review
 
     def get_issue_meta(
@@ -138,6 +159,7 @@ class ProcessIssues(WriteYaml):
         issue_meta = {}
         for item in body_data[0:end_range]:
             issue_meta.update(self._get_line_meta(item))
+        # TODO Reorder keys so package_name is first, description then submitting
         return issue_meta
 
     def get_repo_endpoints(self, review_issues: dict):
@@ -156,7 +178,7 @@ class ProcessIssues(WriteYaml):
 
         all_repos = {}
         for aPackage in review_issues.keys():
-            repo = review_issues[aPackage]["Repository Link"]
+            repo = review_issues[aPackage]["repository_link"]
             owner, repo = repo.split("/")[-2:]
             all_repos[aPackage] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
