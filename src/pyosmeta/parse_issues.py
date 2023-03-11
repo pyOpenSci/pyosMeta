@@ -3,13 +3,13 @@ from datetime import datetime
 
 import requests
 
-from .file_io import WriteYaml
+from .file_io import YamlIO
 
 
 # main reason to use this is attributes .. avoiding them being changed
 # in other instances...
 @dataclass
-class ProcessIssues(WriteYaml):
+class ProcessIssues(YamlIO):
     """
     A class that processes GitHub issues in our peer review process and returns
     metadata about each package.

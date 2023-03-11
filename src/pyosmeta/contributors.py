@@ -1,15 +1,13 @@
 import json
-import urllib.request
 
 import requests
-import ruamel.yaml
 
-from .file_io import WriteYaml
+from .file_io import YamlIO
 
 # SOLID guidelines to improve code
 
 
-class ProcessContributors(WriteYaml):
+class ProcessContributors(YamlIO):
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
     def __init__(self, json_files: list, web_yml: str, API_TOKEN: str):
@@ -31,18 +29,6 @@ class ProcessContributors(WriteYaml):
         self.API_TOKEN = API_TOKEN
         self.web_yml = web_yml
 
-    # Open the web contrib file (could also be a method)
-    # This returns a list of dict objects - whereas combine json returns a dict
-    # w gh users name as the key - it might be cleaner if both returned objects were
-    # similarly formatted
-
-    # TODO - move to yaml file class?
-    def _open_yml_file(self) -> dict:
-        """Description here"""
-        with urllib.request.urlopen(self.web_yml) as f:
-            return ruamel.yaml.safe_load(f)
-
-    # TODO - move to yaml file class?
     def _list_to_dict(self, aList: list) -> dict:
         """Takes a yaml file opened and turns into a dictionary
         The dict structure is key (gh_username) and then a dictionary
@@ -57,13 +43,12 @@ class ProcessContributors(WriteYaml):
             final_dict[dict["github_username"]] = dict
         return final_dict
 
-    # TODO - move to yaml file class?
     def load_website_yml(self):
         """
         This opens a website contrib yaml file and turns it in a
         dictionary
         """
-        yml_list = self._open_yml_file()
+        yml_list = self.open_yml_file(self.web_yml)
         return self._list_to_dict(yml_list)
 
     def process_json_file(self, json_file: str) -> dict:
@@ -73,7 +58,6 @@ class ProcessContributors(WriteYaml):
         json file. Rename fields to match fields used in the website. Then
         add keys needed for the website.
 
-        # TODO: if you use types do you need a docstring still with params?
         Parameters
         ----------
         json_file : string
@@ -87,9 +71,6 @@ class ProcessContributors(WriteYaml):
         processed_data = {}
         # Loop through each entry in the JSON file
         # TODO: SOLID - avoid massive structures with conditional statements
-        # TODO: if entry["login"] not in processed_data: change to
-        # if entry[] in processed data:
-        #     continue
         for entry in data["contributors"]:
             # Check if the login value is already in the dictionary
             if entry["login"] in processed_data:
@@ -108,12 +89,6 @@ class ProcessContributors(WriteYaml):
             entry["github_image_id"] = entry.pop("avatar_url")
             # Add empty values for the new keys
             # TODO: Tuple - consumes less memory -- ("mastodon",
-            # "twitter",
-            # "bio",
-            # "orcidid",
-            # "contributor_type",
-            # "packages-submitted",
-            # "packages-reviewed",)
             for key in [
                 "mastodon",
                 "twitter",
@@ -196,6 +171,7 @@ class ProcessContributors(WriteYaml):
         # TODO this could be created via a loop with a key:value pair to iterate over
         # I wonder if i can do this with a single .get()
         user_data[username] = {
+            "name": response_json.get("name", None),
             "location": response_json.get("location", None),
             "email": response_json.get("email", None),
             "twitter": response_json.get("twitter_username", None),

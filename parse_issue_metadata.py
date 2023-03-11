@@ -5,12 +5,8 @@ from pyosmeta import ProcessIssues
 with open("../token.pickle", "rb") as f:
     API_TOKEN = pickle.load(f)
 
-# This works when it's in a dictionary but there are a few todos
-# TODO: make sure every key is lower case and no spaces!
-# package-name is first and remove the spaces from the key
-# description should be second, then submitting author third
-# rename: one-line_description_of_package -> package_description
-
+# TODO: looks like sometimes the gh username is the name then @. so i need to create
+# code that looks for the @ and adds the username to ghusernam and the rest to the name
 # result.status_code in [200, 302]:
 # TODO:  I get key errors and name errors when i hit api limits
 # Would be good to track API return responses / figure out how long I need to wait
