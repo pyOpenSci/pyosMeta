@@ -1,7 +1,8 @@
 import json
-import ruamel.yaml
 import urllib.request
+
 import requests
+import ruamel.yaml
 
 # SOLID guidelines to improve code
 
