@@ -23,7 +23,7 @@ issueProcess = ProcessIssues(
 issues = issueProcess.return_response("lwasser")
 review = issueProcess.parse_issue_header(issues, 12)
 
-# Get list of github API endpoint for each accepted package
+# Get list of GitHub API endpoint for each accepted package
 all_repo_endpoints = issueProcess.get_repo_endpoints(review)
 
 # Send a GET request to the API endpoint and include a user agent header

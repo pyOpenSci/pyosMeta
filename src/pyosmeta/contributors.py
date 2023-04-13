@@ -52,13 +52,13 @@ class ProcessContributors(YamlIO):
             "twitter": "",
             "mastodon": "",
             "orcidid": "",
-            "website": [],
-            "contributor_type": [],
-            "packages-editor": [],
-            "packages-submitted": [],
-            "packages-reviewed": [],
-            "location": [],
-            "email": [],
+            "website": "",
+            "contributor_type": "",
+            "packages-editor": "",
+            "packages-submitted": "",
+            "packages-reviewed": "",
+            "location": "",
+            "email": "",
         }
 
     def _list_to_dict(self, aList: list) -> dict:
@@ -253,15 +253,12 @@ class ProcessContributors(YamlIO):
         """Add a new user to the contrib file using gh username
 
         This method does a few things.
-        1. it adds a new template entry for the user w no values populated
-        2. It them goes to github and grabs metadata from their user profile
-        3. Finally it updates their contrib entry with the gh data
+        1. Adds a new template entry for the user w no values populated
+        2. Gets user metadata from the user's github profile
+        3. Updates their contrib entry with the gh data
 
         """
-        # TODO here new somehow has corinnas data -
         new = {}
-        # TODO: Somehow this attribute is being populated with data from
-        # corinna but only in the loop
         new[gh_user] = self.contrib_template.copy()
         gh_data = self.get_gh_data([gh_user])
         # Update their metadata in the dict and return

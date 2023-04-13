@@ -1,3 +1,11 @@
+"""
+Parse the updated review and contributor data.
+Make sure each contributor has the packages they've served
+as reviewer or editor for.
+Add a new person if they don't exist in the contributor
+file.
+"""
+
 import pickle
 
 import ruamel.yaml as yaml
@@ -21,21 +29,33 @@ review_path = "packages.yml"
 # process_contribs = ProcessContributors([], [], API_TOKEN)
 process_contribs = ProcessContributors([], [], API_TOKEN)
 
+# Open packages.yml
 with open(review_path, "r") as file:
-    review_list = yaml.safe_load(file)
+    all_reviews = yaml.safe_load(file)
 
-# Get list of package name, reviewer and editor GH handle for each review
-# Go through each review item and get the gh username of the submitting author
-review_meta = {}
-for areview in review_list:
-    review_meta[areview["package_name"]] = {
+
+def create_review_meta(areview):
+    """
+    Generate a dictionary entry for a single review with
+    the submitting author, editor and both reviewers.
+
+    """
+
+    return {
         "submitting_author": areview["submitting_author"],
         "editor": areview["editor"],
         "reviewer_1": areview["reviewer_1"],
         "reviewer_2": areview["reviewer_2"],
     }
 
-# Load contribs dict  (just for now)
+
+# Get list of package name, reviewer and editor GH handle for each review
+# Go through each review item and get the gh username of the submitting author
+review_meta = {}
+for areview in all_reviews:
+    review_meta[areview["package_name"]] = create_review_meta(areview)
+
+# Load contributors dict  (just for now)
 with open("all_contribs.pickle", "rb") as f:
     contribs = pickle.load(f)
 
@@ -43,7 +63,6 @@ with open("all_contribs.pickle", "rb") as f:
 # TODO: if these are new contributors then i need a check to look for that too
 # Running into issues not with gh usernames having caps
 # people don't use those consistently so make all usernames lower
-
 
 # Make sure all gh username keys are lowercase
 contribs = {k.lower(): v for k, v in contribs.items()}
@@ -67,8 +86,9 @@ def check_add_package(user_packages, pkgname) -> list:
     print(gh_user, "is already in our contrib database!")
     # user_packages = contribs[gh_user][role]
     # If there is no data, then just add the package
+
+    # TODO: there is probably a cleaner way to implement this
     if user_packages is None or len(user_packages) == 0 or user_packages[0] == None:
-        user_packages = [pkgname]
         print(
             "No packages for",
             role,
@@ -77,13 +97,15 @@ def check_add_package(user_packages, pkgname) -> list:
             "- adding:",
             pkgname,
         )
-    # If there is data there, check for the package name
+        return [pkgname]
+    # If use has an entry, check to see if the package name is there
+    # If there is only a single package, then do nothing
+    elif user_packages == pkgname:
+        return print("All good - the package is already there")
     elif pkgname.lower() in [p.lower() for p in user_packages]:
-        print("All good - the package is already there")
+        return print("All good - the package is already there")
     else:
-        user_packages.append(pkgname)
-
-    return user_packages
+        return user_packages.append(pkgname)
 
 
 # TODO: how to handle two reviewers but the key is the same?
@@ -106,9 +128,10 @@ for pkgname in review_meta:
         user_packages = []
         # Now for each package review, get the editor
         role = contrib_types[issue_role]
-        # Get the gh username for the editor
-        gh_user = review_meta[pkgname][issue_role]["github_username"].lower()
+        # Get the gh username
+        gh_user = review_meta[pkgname][issue_role]["github_username"].lower().strip()
         # Add the package name to the editors list in contrib entry
+        print(gh_user)
         if gh_user in contribs.keys():
             user_packages = contribs[gh_user][role]
             # TODO : do a case sensitive check for the package here
@@ -117,7 +140,10 @@ for pkgname in review_meta:
         else:
             # User doesn't exist in contrib data yet add them
             # TODO: create method for this
-            print(gh_user, "doesn't exist in our db. Adding them now.")
+            print(
+                gh_user,
+                "doesn't exist in our contributors yaml. Adding them now.",
+            )
             new_user_dict = {}
             # TODO: For some reason this method
             # is updating the c-thoben key with robaina's information?
