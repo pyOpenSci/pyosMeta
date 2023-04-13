@@ -15,6 +15,15 @@ class YamlIO:
     ----------
     """
 
+    def dict_to_list(self, pyosDict: dict) -> list:
+        """Turn dict into list for parsing to jekyll friendly yaml"""
+
+        # Turn dict into list for parsing
+        final_contribs = []
+        for key in pyosDict:
+            final_contribs.append(pyosDict[key])
+        return final_contribs
+
     def open_yml_file(self, filename: str) -> dict:
         """Open & deserialize YAML file to dictionary.
 

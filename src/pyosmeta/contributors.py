@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 
 import requests
 
@@ -7,6 +8,7 @@ from .file_io import YamlIO
 # SOLID guidelines to improve code
 
 
+@dataclass
 class ProcessContributors(YamlIO):
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
@@ -28,6 +30,36 @@ class ProcessContributors(YamlIO):
         self.json_files = json_files
         self.API_TOKEN = API_TOKEN
         self.web_yml = web_yml
+        self.update_keys = [
+            "twitter",
+            "website",
+            "location",
+            "bio",
+            "organization",
+            "email",
+            "name",
+            "github_image_id",
+            "github_username",
+        ]
+        self.contrib_template = {
+            "name": "",
+            "bio": "",
+            "organization": "",
+            "title": "",
+            "github_username": "",
+            "github_image_id": "",
+            "editorial-board": "",
+            "twitter": "",
+            "mastodon": "",
+            "orcidid": "",
+            "website": [],
+            "contributor_type": [],
+            "packages-editor": [],
+            "packages-submitted": [],
+            "packages-reviewed": [],
+            "location": [],
+            "email": [],
+        }
 
     def _list_to_dict(self, aList: list) -> dict:
         """Takes a yaml file opened and turns into a dictionary
@@ -43,6 +75,7 @@ class ProcessContributors(YamlIO):
             final_dict[dict["github_username"]] = dict
         return final_dict
 
+    # TODO: this is io stuff...
     def load_website_yml(self):
         """
         This opens a website contrib yaml file and turns it in a
@@ -144,7 +177,7 @@ class ProcessContributors(YamlIO):
         return all_usernames
 
     # TODO how do i know when i need to add self to an object?
-    def get_user_info(self, username: str, API_TOKEN: str) -> dict:
+    def get_user_info(self, username: str) -> dict:
         """
         Get a single user's information from their GitHub username
         # https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
@@ -154,16 +187,13 @@ class ProcessContributors(YamlIO):
         username : string
             Github username to retrieve data for
 
-        API_TOKEN : string
-            API token needed for auth to GitHub API
-
         Returns
         -------
             Dict with updated user data grabbed from the GH API
         """
 
         url = f"https://api.github.com/users/{username}"
-        headers = {"Authorization": f"Bearer {API_TOKEN}"}
+        headers = {"Authorization": f"Bearer {self.API_TOKEN}"}
         response = requests.get(url, headers=headers)
         response_json = response.json()
 
@@ -179,6 +209,8 @@ class ProcessContributors(YamlIO):
             "organization": response_json.get("company", None),
             "website": response_json.get("blog", None),
             "bio": response_json.get("bio", None),
+            "github_image_id": response_json.get("id", None),
+            "github_username": response_json.get("login", None),
         }
 
         return user_data
@@ -187,6 +219,23 @@ class ProcessContributors(YamlIO):
         """
         Method that combines website yaml users with contribs across
         other repos into a single dictionary
+
+        Parameters
+        ----------
+
+        repoDict: dict
+            Dictionary representing the deserialized json data contained
+            in the all-contributors .json file located in each of our
+            repositories.
+
+        webDict: dict
+            Dictionary representing the deserialized YAML data parsed from
+            the website YAML contributors file.
+
+        Returns
+        -------
+
+
 
         """
 
@@ -197,10 +246,30 @@ class ProcessContributors(YamlIO):
             if aitem.lower() not in web_usernames:
                 # Add index to dict
                 print("adding: ", aitem)
-                web_contribs[aitem] = repo_contribs_dict[aitem]
+                webDict[aitem] = repoDict[aitem]
         return webDict
 
-    def get_gh_data(self, gh_usernames: list, API_TOKEN: str) -> list:
+    def add_new_user(self, gh_user: str) -> dict:
+        """Add a new user to the contrib file using gh username
+
+        This method does a few things.
+        1. it adds a new template entry for the user w no values populated
+        2. It them goes to github and grabs metadata from their user profile
+        3. Finally it updates their contrib entry with the gh data
+
+        """
+        # TODO here new somehow has corinnas data -
+        new = {}
+        # TODO: Somehow this attribute is being populated with data from
+        # corinna but only in the loop
+        new[gh_user] = self.contrib_template.copy()
+        gh_data = self.get_gh_data([gh_user])
+        # Update their metadata in the dict and return
+        # It's updating the contrib dict object in this method why?
+        updated_data = self.update_contrib_data(new, gh_data)
+        return updated_data
+
+    def get_gh_data(self, gh_usernames: list) -> list:
         """Parses through each github username and hits the GitHub
         API to grab user information.
         # This takes a minute as it's hitting the GitHub API
@@ -218,8 +287,8 @@ class ProcessContributors(YamlIO):
         """
         all_user_info = {}
         for gh_user in gh_usernames:
-            print("Getting data for: ", gh_user)
-            all_user_info[gh_user] = self.get_user_info(gh_user, API_TOKEN)
+            print("Getting github data for: ", gh_user)
+            all_user_info[gh_user] = self.get_user_info(gh_user)
         return all_user_info
 
     def _check_url(self, url: str) -> bool:
@@ -239,29 +308,30 @@ class ProcessContributors(YamlIO):
             print("Oops, url", url, "is not valid, removing it")
             return False
 
-    def update_contrib_data(self, contrib_data: dict, gh_data: dict, update_keys: list):
+    def update_contrib_data(self, contrib_data: dict, gh_data: dict):
         """Update contributor data from the GH API return.
 
-        GitHub will be the truth source for our contrib metadata here
+        Use the GitHub API to grab user profile data such as twitter handle,
+        mastodon, website, email and location and update contributor
+        information. GitHub profile data is the source of truth source for
+        contributor metadata.
 
         Parameters
         ----------
         contrib_data : dict
-            All contributor data from the website
+            A dict containing contributor data to be updated
         gh_data : dict
             Updated contributor data pulled from github API
-        update_keys : list
-            List of strings representing the key  items to
-            update from github data in each dictionary entry
         """
 
         for i, gh_name in enumerate(contrib_data.keys()):
             print(i, gh_name)
+            # Assign gh username
             # Update the key:value pairs for data pulled from GitHub
             # Note that some data needs to be manual updated such as which
             # packages someone has reviewed.
-            for akey in update_keys:
-                # Test if url works
+            for akey in self.update_keys:
+                print(akey)
                 if akey == "website":
                     url = gh_data[gh_name][gh_name][akey]
                     # Fix the url format and check to see if it works online
@@ -273,8 +343,8 @@ class ProcessContributors(YamlIO):
                     else:
                         contrib_data[gh_name][akey] = ""
                 else:
-                    # Stupid that the gh name is there twice
                     contrib_data[gh_name][akey] = gh_data[gh_name][gh_name][akey]
+
         return contrib_data
 
     def format_url(self, url: str) -> str:

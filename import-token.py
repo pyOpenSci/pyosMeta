@@ -13,3 +13,7 @@ with open("../issues.pickle", "rb") as f:
 
 with open("../issues.pickle", "wb") as f:
     pickle.dump(issues, f)
+
+final_contribs = all_contribs_dict_up
+with open("all_contribs.pickle", "wb") as f:
+    pickle.dump(all_contribs_dict_up, f)

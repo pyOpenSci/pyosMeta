@@ -1,6 +1,8 @@
 .DS_Store
 contributors.yml
 packages.yml
+all_contribs.pickle
+all_contribs_dict.pickle
 
 __pycache__
 # C extensions

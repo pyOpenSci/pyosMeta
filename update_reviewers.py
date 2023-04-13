@@ -18,7 +18,8 @@ review_path = "packages.yml"
 # # but in the end it will be a website path
 # review_dict = file_obj.open_yml_file(review_path)
 # contrib_dict = file_obj.open_yml_file(contrib_path)
-
+# process_contribs = ProcessContributors([], [], API_TOKEN)
+process_contribs = ProcessContributors([], [], API_TOKEN)
 
 with open(review_path, "r") as file:
     review_list = yaml.safe_load(file)
@@ -39,47 +40,34 @@ with open("all_contribs.pickle", "rb") as f:
     contribs = pickle.load(f)
 
 # TODO: make loop below function
-
-# def check_review_meta(review_meta, pkgname, contrib_type, contrib_dict):
-#     gh_user = review_meta[pkgname]["submitting_author"]["github_username"]
-
-#     # To do this can be a list or dict?
-#     contrib_type = "packages-submitted"
-#     if pkgname in contrib_dict[gh_user][contrib_type]:
-#         print("It's already there! No need to update")
-#     else:
-#         contrib_dict[gh_user][contrib_type].append(pkgname)
-#         print("Adding", pkgname, "to " gh_user, "for ", contrib_type)
-
-# Loop through each issue and get editors, reviewers and authors
-# then add them to the contrib data as needed
 # TODO: if these are new contributors then i need a check to look for that too
 # Running into issues not with gh usernames having caps
 # people don't use those consistently so make all usernames lower
 
 
-# Make sure all gh usernames are lower
+# Make sure all gh username keys are lowercase
 contribs = {k.lower(): v for k, v in contribs.items()}
 
-# TODO: how to handle two reviewers but the key is the same?
-contrib_types = {
-    "reviewer_1": "packages-reviewed",
-    "reviewer_2": "packages-reviewed",
-    "editor": "packages-editor",
-    "submitting_author": "packages-submitted",
-}
 # contrib_type = contrib_types[2]
 # TODO: this isn't working as expected. if the package name has caps it won't find it
 # So i need to do a case insensitive check for it being in the list
-user_packages = []
 
 
-# TODO: should i use returns for each if clause?
+# TODO: should i use returns for each conditional section?
+# TODO: move to contribs class as method?
 def check_add_package(user_packages, pkgname) -> list:
-    print("Yay", gh_user, "is already there")
+    """Grabs the users list of packages and adds a new one
+    (pkgname) if it already isn't in their list.
+
+    Each user has a list of packages that they submitted,
+    reviewer or served as editor for in the review. This
+    takes a package and a list for a particular role and
+    checks to see if the package needs to be added.
+    """
+    print(gh_user, "is already in our contrib database!")
     # user_packages = contribs[gh_user][role]
     # If there is no data, then just add the package
-    if len(user_packages) == 0 or user_packages[0] == None:
+    if user_packages is None or len(user_packages) == 0 or user_packages[0] == None:
         user_packages = [pkgname]
         print(
             "No packages for",
@@ -98,77 +86,61 @@ def check_add_package(user_packages, pkgname) -> list:
     return user_packages
 
 
-template_user = {
-    "name": "",
-    "bio": "",
-    "organization": "",
-    "title": "",
-    "github_username": "",
-    "github_image_id": "",
-    "editorial-board": "",
-    "twitter": "",
-    "mastodon": "",
-    "orcidid": "",
-    "website": [],
-    "contributor_type": [],
-    "packages-editor": [],
-    "packages-submitted": [],
-    "packages-reviewed": [],
-    "location": [],
-    "email": [],
+# TODO: how to handle two reviewers but the key is the same?
+contrib_types = {
+    "reviewer_1": "packages-reviewed",
+    "reviewer_2": "packages-reviewed",
+    "editor": "packages-editor",
+    "submitting_author": "packages-submitted",
 }
 
-update_keys = [
-    "twitter",
-    "website",
-    "location",
-    "bio",
-    "organization",
-    "email",
-    "name",
-]
-
 missing = []
-# Loop through the review metadata - (key), editor, reviewers, author
+# Loop through the review metadata item - (key)
+# TODO: when the user has no packages it returns contributor_type: []
+# we don't want the [] in the yaml file it also adds *id001 to the entry...
 for pkgname in review_meta:
     print("processing", pkgname)
-    # Now for each package review, get the editor
-    role = "packages-editor"
-    # TODO - now replace this with a loop that goes through each contrib type
-    issue_role = "editor"
-    # Get the gh username for the editor
-    gh_user = review_meta[pkgname][issue_role]["github_username"].lower()
-    # If the user already exists in contrib data, then add the package name
-    # to the editors list in their contrib entry
-    if gh_user in contribs.keys():
-        user_packages = contribs[gh_user][role]
-        contribs[gh_user][role] = check_add_package(user_packages, pkgname)
-    else:
-        # User doesn't exist in contrib data yet add them
-        # TODO: create method for this
-        new = {}
-        new[gh_user] = template_user
-        # Get updated info from gh
-        # TODO: because i'm using this object for other things, consider just
-        # populating attributes rather than instantiating them ?
-        gh_obj = ProcessContributors([], [], API_TOKEN)
-        gh_data = gh_obj.get_gh_data([gh_user], API_TOKEN)
-        update = gh_obj.update_contrib_data(new, gh_data, update_keys)
-        # Finally add them to the contrib data
-        contribs.update(update)
-        # Then update their role
-        contribs[gh_user][role] = check_add_package([], pkgname)
 
-        missing.append(gh_user)
-        print(
-            "Oops - the user",
-            gh_user,
-            "doesn't exist in the data yet - need to add",
-        )
+    # Loop through each review role: editor, reviewers, author
+    for issue_role in contrib_types:
+        user_packages = []
+        # Now for each package review, get the editor
+        role = contrib_types[issue_role]
+        # Get the gh username for the editor
+        gh_user = review_meta[pkgname][issue_role]["github_username"].lower()
+        # Add the package name to the editors list in contrib entry
+        if gh_user in contribs.keys():
+            user_packages = contribs[gh_user][role]
+            # TODO : do a case sensitive check for the package here
+            # And update it to have case if it does...
+            contribs[gh_user][role] = check_add_package(user_packages, pkgname)
+        else:
+            # User doesn't exist in contrib data yet add them
+            # TODO: create method for this
+            print(gh_user, "doesn't exist in our db. Adding them now.")
+            new_user_dict = {}
+            # TODO: For some reason this method
+            # is updating the c-thoben key with robaina's information?
+            # in the contribs dictionary which is never passed to it - why?
+            new_user_dict = process_contribs.add_new_user(gh_user)
+            contribs[gh_user] = new_user_dict[gh_user]
+            # Then update their review process role w package name
+            contribs[gh_user][role] = check_add_package([], pkgname)
+            missing.append(gh_user)
 
-user = "arianesasso"
-user = "jbencook"
-contribs[user][role]
+
+# with open("all_contribs.pickle", "rb") as f:
+#     contribs = pickle.load(f)
+# Turn contribs into list
+contribs_list = process_contribs.dict_to_list(contribs)
+
+final_yaml = "contributors.yml"
+# Export to yaml
+process_contribs.export_yaml(final_yaml, contribs_list)
+process_contribs.clean_yaml_file(final_yaml)
+
 
 # This is the workflow to add a new person getting their data from
 # Gh
+# with open("all_contribs.pickle", "rb") as f:
+#     contribs = pickle.load(f)
