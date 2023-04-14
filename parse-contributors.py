@@ -10,14 +10,14 @@ json_files = [
     "https://raw.githubusercontent.com/pyOpenSci/software-peer-review/main/.all-contributorsrc",
     "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/.all-contributorsrc",
     "https://raw.githubusercontent.com/pyOpenSci/software-review/main/.all-contributorsrc",
-    "https://raw.githubusercontent.com/pyOpenSci/examplepy/main/.all-contributorsrc",
+    # "https://raw.githubusercontent.com/pyOpenSci/examplepy/main/.all-contributorsrc",
 ]
 
 # Get contribs from website
 web_yaml_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
 
 process_contribs = ProcessContributors(json_files, web_yaml_path, API_TOKEN)
-# Combine the cross-repo contribut data
+# Combine the cross-repo contributor data
 bot_all_contribs_dict = process_contribs.combine_json_data()
 # Returns a list of dict objects with gh username as a key
 web_yml_dict = process_contribs.load_website_yml()
@@ -46,6 +46,8 @@ update_keys = [
 # Append github data to existing dictionary
 all_contribs_dict_up = process_contribs.update_contrib_data(all_contribs_dict, gh_data)
 
+# Save a pickle locally to support updates after parsing
+# reviews
 with open("all_contribs.pickle", "wb") as f:
     pickle.dump(all_contribs_dict_up, f)
 

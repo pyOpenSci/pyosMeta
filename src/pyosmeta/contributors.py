@@ -153,8 +153,11 @@ class ProcessContributors(YamlIO):
         for json_file in self.json_files:
             # Is this correct? do i call the method using self?
             # Process the JSON file and add the data to the combined dictionary
-            data = self.process_json_file(json_file)
-            combined_data.update(data)
+            try:
+                data = self.process_json_file(json_file)
+                combined_data.update(data)
+            except:
+                print("Oops - can't process", json_file)
 
         return combined_data
 

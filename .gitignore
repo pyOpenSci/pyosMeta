@@ -3,6 +3,7 @@ contributors.yml
 packages.yml
 all_contribs.pickle
 all_contribs_dict.pickle
+.vscode/
 
 __pycache__
 # C extensions

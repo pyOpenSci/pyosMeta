@@ -2,6 +2,24 @@
 
 This repo contains a small module and some scripts that parse through GitHub repos in the pyOpenSci organization.
 
+To begin create a local environment nad install this package in editable mode.
+
+`pip install -e .`
+
+## How to run
+
+`python3 parse-contributors.py`
+
+This file parses through all pyos issues for accepted reviews
+and grabs reviewers, submittors, authors, etc.
+
+TODO: it might not grab maintainers - YET. That is a new element in our
+templates that would be worth adding.
+`python3 parse_issue_metadata.py`
+
+To run the update reviewers script use:
+`python3 update_reviewers.py`
+
 ## Rate limiting
 
 Rate limiting - how to handle this...
@@ -16,7 +34,6 @@ TODO: check which repos we actually are parsing...
 - python-package-guide repo
 - peer-review-guide repo
 - software-review repo
-- examplepy repo
 
 The first script updates contributor data by:
 

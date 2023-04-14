@@ -1,3 +1,16 @@
+"""
+Script that parses metadata from na issue and adds it to a yml file for the
+website. It also grabs some of the package metadata such as stars,
+last commit, etc.
+
+Output: packages.yml
+
+To run: python3 parse_issue_metadata.py
+
+# TODO: add maintainer list to the metadata!
+"""
+
+
 import pickle
 
 from pyosmeta import ProcessIssues
