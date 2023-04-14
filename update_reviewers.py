@@ -35,7 +35,7 @@ review_path = "packages.yml"
 # contrib_dict = file_obj.open_yml_file(contrib_path)
 process_contribs = ProcessContributors([], [], API_TOKEN)
 
-# Open packages.yml
+# Open packages.yml file - this contains review metadata
 with open(review_path, "r") as file:
     all_reviews = yaml.safe_load(file)
 
@@ -83,11 +83,7 @@ with open("all_contribs.pickle", "rb") as f:
 contribs = {k.lower(): v for k, v in contribs.items()}
 
 
-# LEFT OFF HERE - on agustina - agustina i think reviewed xclim?
-
-
-# TODO: possibly use typing to allow for list, str or None ?
-def check_add_package(user_packages: list | str, pkgname: str) -> list:
+def check_add_package(user_packages: list, pkgname: str) -> list:
     """Grabs the users list of packages and adds a new one
     (pkgname) if it already isn't in their list.
 
@@ -101,30 +97,15 @@ def check_add_package(user_packages: list | str, pkgname: str) -> list:
         "is already in our contrib database. Checking to see if the "
         "package is in their review contribution list.",
     )
-    # TODO: not sure if this is the best way to do this
-    try:
-        if user_packages.lower() == pkgname.lower():
-            print("All good - The package is already in the", gh_user, "'s list")
-            user_packages = [pkgname]
-        else:
-            pass
-            # Otherwise add the new package to the users list of packages
-            user_packages = [user_packages].append(pkgname)
-            print(pkgname, "is missing from ", gh_user, "'s list. Adding it now.")
-    except AttributeError as ae:
-        print("The input is NOT a string - processing as a list")
-        # If user packages is none, then add package name to a list
-        if user_packages is None:
-            user_packages = [pkgname]
-            print(pkgname, "is missing from ", gh_user, "'s list. Adding it now.")
-        # If user packages is in the existing list of packages, return the list
-        elif pkgname.lower() in [x.lower() for x in user_packages]:
-            print("All good -", pkgname, " is already there.")
-            return user_packages
-        # If the package is not in the list, then add it
-        else:
-            user_packages.append(pkgname)
-            print(pkgname, "is missing from ", gh_user, "'s list. Adding it now.")
+    # TODO: Make sure package name is always lower case (Xclim for alex editor)
+    # For this to work we will need to add a package-name and package-id to the
+    # packages.yml file
+    if pkgname.lower() in [x.lower() for x in user_packages]:
+        print("All good -", pkgname, " is already there.")
+    else:
+        # If the package is not in the list, add it
+        user_packages.append(pkgname)
+        print(pkgname, "is missing from ", gh_user, "'s list. Adding it now.")
     return user_packages
 
 
@@ -135,44 +116,35 @@ contrib_types = {
     "submitting_author": "packages-submitted",
 }
 
+
+def clean_pkg_list(user_packages: str | list | None):
+    """Helper method that cleans a list of user packages derived from a
+    YAML file
+    """
+    if isinstance(user_packages, str):
+        user_packages = [user_packages]
+    if user_packages is None:
+        user_packages = []
+    # Remove any none's etc from the data
+    user_packages = list(filter(lambda x: x, user_packages))
+    return user_packages
+
+
 missing = []
 # Loop through the review metadata item - (key)
-# TODO: when the user has no packages it returns contributor_type: []
-# we don't want the [] in the yaml file it also adds *id001 to the entry...
 for pkgname in review_meta:
-    # breakpoint()
-    # pkgname = "xclim"
     print("processing", pkgname)
     # Loop through each review role: editor, reviewers, author
     for issue_role in contrib_types:
-        # issue_role = "editor"
-        print(issue_role)
-
         user_packages = []
-        # Now for each package review, get the editor
+
         role = contrib_types[issue_role]
-        # Get the gh username
         gh_user = review_meta[pkgname][issue_role]["github_username"].lower().strip()
         # Add the package name to the editors list in contrib entry
         print(gh_user, user_packages)
         if gh_user in contribs.keys():
             user_packages = contribs[gh_user][role]
-
-            # This is in a try/except because if the returned value is a single
-            # value it will be a string. or it could be empty.
-            try:
-                # In the yaml sometimes there is a - with no data.
-                # this returns a list with a value of None in it.
-                # clean that list to be empty
-                if user_packages[0] is None:
-                    user_packages = []
-            except:
-                pass
-            # 3 scenarios
-            # 1. list of packages, check if package is there, append
-            # 2. no packages - None create and return a list of 1 package name
-            # 3. single package - this will return as a string.
-            # TODO: this is weirdly
+            user_packages = clean_pkg_list(user_packages)
             contribs[gh_user][role] = check_add_package(user_packages, pkgname)
         else:
             # User doesn't exist in contrib data yet add them
@@ -195,14 +167,12 @@ for pkgname in review_meta:
             )
             missing.append(gh_user)
 
-
-# with open("all_contribs.pickle", "rb") as f:
-#     contribs = pickle.load(f)
 # Turn contribs into list
 contribs_list = process_contribs.dict_to_list(contribs)
 
 final_yaml = "contributors.yml"
 # Export to yaml
+print("Saving updated contributors.yml file")
 process_contribs.export_yaml(final_yaml, contribs_list)
 process_contribs.clean_yaml_file(final_yaml)
 
