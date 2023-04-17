@@ -4,7 +4,7 @@ packages.yml
 all_contribs.pickle
 all_contribs_dict.pickle
 .vscode/
-
+.token
 __pycache__
 # C extensions
 *.so

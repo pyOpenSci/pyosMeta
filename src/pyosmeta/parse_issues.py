@@ -50,9 +50,19 @@ class ProcessIssues(YamlIO):
         except:
             print(f"Error: API request failed with status code {response.status_code}")
 
-    def return_response(self, username):
+    def return_response(self, username: str) -> list:
         """
-        returns the response in a deserialize json to dict
+        Deserialize json response to dict and return.
+
+        Parameters
+        ----------
+        username : str
+            GitHub username of person authenticating to hit the GitHub API
+
+        Returns
+        -------
+        list
+            List of dict items each containing a review issue
         """
         response = self._get_response(username)
         return response.json()
@@ -105,8 +115,8 @@ class ProcessIssues(YamlIO):
             List returned from the return_response method that contains the
             metadata at the top of each issue
         total_lines : int
-            an integer representing the total number of lines to parse in the issue
-            header. Default = 12
+            an integer representing the total number of lines to parse in the
+            issue header. Default = 12
         """
         # Reorder data
         key_order = [
@@ -121,12 +131,20 @@ class ProcessIssues(YamlIO):
             "reviewer_2",
             "archive",
             "version_accepted",
+            "created_at",
+            "updated_at",
+            "closed_at",
         ]
+        meta_dates = ["created_at", "updated_at", "closed_at"]
+
         review = {}
         for issue in issues:
             package_name, body_data = self.parse_comment(issue)
             # index of 12 should include date accepted
             issue_meta = self.get_issue_meta(body_data, total_lines)
+            # Add issue open and close date to package meta
+            for adate in meta_dates:
+                issue_meta[adate] = issue[adate]
             review[package_name] = issue_meta
             review[package_name]["categories"] = self.get_categories(body_data)
             # Rename package description & reorder keys
@@ -209,7 +227,12 @@ class ProcessIssues(YamlIO):
         body_data = [line.split(": ") for line in lines if line.strip() != ""]
 
         # Loop through issue header and grab relevant review metadata
-        package_name = body_data[1][1]
+        name_index = next(
+            (i for i, sublist in enumerate(body_data) if sublist[0] == "Package Name"),
+            None,
+        )
+
+        package_name = body_data[name_index][1]
         print(package_name)
 
         return package_name, body_data
@@ -270,8 +293,6 @@ class ProcessIssues(YamlIO):
         date = response[0]["commit"]["author"]["date"]
 
         return self._clean_date(date)
-
-    # issue_body_list = body_data
 
     def get_categories(self, issue_body_list: list) -> list:
         """Parse through a pyos issue and grab the categories associated

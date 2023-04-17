@@ -19,12 +19,11 @@ with open("../token.pickle", "rb") as f:
     API_TOKEN = pickle.load(f)
 
 # TODO: looks like sometimes the gh username is the name then @. so i need to create
-# code that looks for the @ and adds the username to ghusernam and the rest to the name
+# code that looks for the @ and adds the username to ghusername and the rest to the name
 # result.status_code in [200, 302]:
-# TODO:  I get key errors and name errors when i hit api limits
+# TODO: I get key errors and name errors when i hit api limits
 # Would be good to track API return responses / figure out how long I need to wait
 # so it doesn't just fail. how does that get setup?
-# TODO: add date issue closed as well - can get that from API maybe?
 issueProcess = ProcessIssues(
     org="pyopensci",
     repo_name="software-submission",
@@ -33,7 +32,10 @@ issueProcess = ProcessIssues(
 )
 
 # Get all issues for approved packages
+# TODO: why is this method using my username??
 issues = issueProcess.return_response("lwasser")
+# breakpoint()
+# Fixed:
 review = issueProcess.parse_issue_header(issues, 12)
 
 # Get list of GitHub API endpoint for each accepted package
