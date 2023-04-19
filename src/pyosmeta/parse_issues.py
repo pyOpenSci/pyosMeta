@@ -2,21 +2,30 @@ from dataclasses import dataclass
 from datetime import datetime
 
 import requests
-import ruamel.yaml
+
+from .file_io import YamlIO
 
 
+# main reason to use this is attributes .. avoiding them being changed
+# in other instances...
 @dataclass
-class ProcessIssues:
-    # When initializing how do you decide what should be an input
-    # attribute vs just something a method accepted when called?
+class ProcessIssues(YamlIO):
     """
+    A class that processes GitHub issues in our peer review process and returns
+    metadata about each package.
+
     Parameters
     ----------
     org : str
+        Organization name where the issues exist
     repo_name : str
+        Repo name where the software review issues live
     tag_name : str
+        Tag of issues to grab - e.g. pyos approved
     API_TOKEN : str
+        API token needed to authenticate with GitHub
     username : str
+        Username needed to authenticate with GitHub
     """
 
     API_TOKEN: str = ""
@@ -41,9 +50,19 @@ class ProcessIssues:
         except:
             print(f"Error: API request failed with status code {response.status_code}")
 
-    def return_response(self, username):
+    def return_response(self, username: str) -> list:
         """
-        returns the response in a deserialize json to dict
+        Deserialize json response to dict and return.
+
+        Parameters
+        ----------
+        username : str
+            GitHub username of person authenticating to hit the GitHub API
+
+        Returns
+        -------
+        list
+            List of dict items each containing a review issue
         """
         response = self._get_response(username)
         return response.json()
@@ -54,32 +73,112 @@ class ProcessIssues:
         """
         return string.startswith(("Submitting", "Editor", "Reviewer"))
 
-    def get_issue_meta(self, issue_header: list):
+    def _get_line_meta(self, line_item: list) -> dict:
         """
         Parameters
         ----------
         issue_header : list
-            A list of items that represent lines in the first comment of an issue
+            A single list item representing a single line in the issue
+            containing metadata for the review.
             This comment is the metadata for the review that the author fills out.
+
+        Returns
+        -------
+            Dict containing the metadata for a submitting author or reviewer
         """
 
-        if self._contains_keyword(item[0]):
-            names = item[1].split("(", 1)
+        meta = {}
+        theKey = line_item[0].lower().replace(" ", "_")
+        if self._contains_keyword(line_item[0]):
+            names = line_item[1].split("(", 1)
             if len(names) > 1:
-                review_meta[item[0]] = {
+                meta[theKey] = {
                     "name": names[0].strip(),
                     "github_username": names[1].strip().lstrip("@").rstrip(")"),
                 }
             else:
-                review_meta[item[0]] = {
+                meta[theKey] = {
                     "name": "",
                     "github_username": names[0].strip().lstrip("@"),
                 }
         else:
-            if len(item) > 1:
-                review_meta[item[0]] = item[1]
+            if len(line_item) > 1:
+                meta[theKey] = line_item[1].strip()
 
-        return review_meta
+        return meta
+
+    def parse_issue_header(self, issues: list, total_lines: int = 12) -> dict:
+        """
+        Parameters
+        ----------
+        issues : list
+            List returned from the return_response method that contains the
+            metadata at the top of each issue
+        total_lines : int
+            an integer representing the total number of lines to parse in the
+            issue header. Default = 12
+        """
+        # Reorder data
+        key_order = [
+            "package_name",
+            "package_description",
+            "submitting_author",
+            "repository_link",
+            "version_submitted",
+            "categories",
+            "editor",
+            "reviewer_1",
+            "reviewer_2",
+            "archive",
+            "version_accepted",
+            "created_at",
+            "updated_at",
+            "closed_at",
+        ]
+        meta_dates = ["created_at", "updated_at", "closed_at"]
+
+        review = {}
+        for issue in issues:
+            package_name, body_data = self.parse_comment(issue)
+            # index of 12 should include date accepted
+            issue_meta = self.get_issue_meta(body_data, total_lines)
+            # Add issue open and close date to package meta
+            for adate in meta_dates:
+                issue_meta[adate] = issue[adate]
+            review[package_name] = issue_meta
+            review[package_name]["categories"] = self.get_categories(body_data)
+            # Rename package description & reorder keys
+            print(review[package_name].keys())
+            review[package_name]["package_description"] = review[package_name].pop(
+                "one-line_description_of_package"
+            )
+            review[package_name] = {key: review[package_name][key] for key in key_order}
+
+        return review
+
+    def get_issue_meta(
+        self,
+        body_data: list,
+        end_range: int,
+    ) -> dict:
+        """
+        Parse through the top of an issue and grab the metadata for the review.
+
+        Parameters
+        ----------
+        body_data : list
+            A list containing all of the body data for the top comment in an issue.
+        end_range : int
+            The number of lines to parse at the top of the issue (this may change
+            over time so this variable allows us to have different processing
+            based upon the date of the issue being opened)
+
+        """
+        issue_meta = {}
+        for item in body_data[0:end_range]:
+            issue_meta.update(self._get_line_meta(item))
+        # TODO Reorder keys so package_name is first, description then submitting
+        return issue_meta
 
     def get_repo_endpoints(self, review_issues: dict):
         """
@@ -93,13 +192,11 @@ class ProcessIssues:
         -------
             List of repository endpoints
 
-
         """
 
         all_repos = {}
         for aPackage in review_issues.keys():
-            print(aPackage)
-            repo = review[aPackage]["Repository Link"]
+            repo = review_issues[aPackage]["repository_link"]
             owner, repo = repo.split("/")[-2:]
             all_repos[aPackage] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
@@ -130,10 +227,23 @@ class ProcessIssues:
         body_data = [line.split(": ") for line in lines if line.strip() != ""]
 
         # Loop through issue header and grab relevant review metadata
-        package_name = body_data[1][1]
+        name_index = next(
+            (i for i, sublist in enumerate(body_data) if sublist[0] == "Package Name"),
+            None,
+        )
+
+        package_name = body_data[name_index][1]
         print(package_name)
 
         return package_name, body_data
+
+    def _clean_date(self, date: str) -> str:
+        """Cleans up a datetime  from github and returns a date string"""
+
+        date_clean = (
+            datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").date().strftime("%m/%d/%Y")
+        )
+        return date_clean
 
     def get_repo_meta(self, url: str, stats_list: list) -> dict:
         """
@@ -144,14 +254,20 @@ class ProcessIssues:
         # Small script to get the url (normally the docs) and description of a repo!
         response = requests.get(url)
 
+        # TODO: should this be some sort of try/except how do i catch these
+        # Response errors in the best way possible?
         if response.status_code == 404:
             print("Can't find: ", url, ". Did the repo url change?")
+        elif response.status_code == 403:
+            print("Oops you may have hit an API limit. Exiting")
+
         # Extract the description and homepage URL from the response JSON
         else:
             data = response.json()
             for astat in stats_list:
-                print(astat)
                 stats_dict[astat] = data[astat]
+            stats_dict["documentation"] = stats_dict.pop("homepage")
+            stats_dict["created_at"] = self._clean_date(stats_dict["created_at"])
 
         return stats_dict
 
@@ -175,106 +291,45 @@ class ProcessIssues:
         url = repo + "/commits"
         response = requests.get(url).json()
         date = response[0]["commit"]["author"]["date"]
-        last_commit = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").date()
 
-        return last_commit.strftime("%m/%d/%Y")
+        return self._clean_date(date)
 
+    def get_categories(self, issue_body_list: list) -> list:
+        """Parse through a pyos issue and grab the categories associated
+        with a package
 
-issueProcess = ProcessIssues(
-    org="pyopensci",
-    repo_name="software-submission",
-    label_name="6/pyOS-approved 🚀🚀🚀",
-    API_TOKEN=API_TOKEN,
-)
+        Parameters
+        ----------
+        issue_body_list : list
+            List containing each line in the first comment of the issue
+        """
+        # Find the starting index of the section we're interested in
+        start_index = None
+        for i in range(len(issue_body_list)):
+            if issue_body_list[i][0].startswith("- Please indicate which"):
+                start_index = i
+                break
 
-# Get API response
-response = issueProcess.return_response("lwasser")
+        if start_index is None:
+            # If we couldn't find the starting index, return an empty list
+            return []
 
-# TODO: could make this a method too?
-# Loop through each issue and print the text in the first comment
-review = {}
-for issue in issues:
-    package_name, body_data = issueProcess.parse_comment(issue)
-    review_meta = {}
-    for item in body_data[0:11]:
-        review[package_name] = issueProcess.get_issue_meta(item)
+        # Iterate through the lines starting at the starting index and grab the relevant text
+        cat_matches = ["[x]", "[X]"]
+        categories = []
+        for i in range(start_index + 1, len(issue_body_list)):  # 30):
+            line = issue_body_list[i][0].strip()
+            checked = any([x in line for x in cat_matches])
+            # TODO could i change the if to a while loop?
+            if line.startswith("- [") and checked:
+                category = line[line.index("]") + 2 :]
+                categories.append(category)
+            elif not line.startswith("- ["):
+                break
+            # elif line.strip().startswith("* Please fill out a pre-submission"):
+            #     break
 
-# Get a list of github repos for reviews
-# This now returns a dict...
-all_repo_endpoints = issueProcess.get_repo_endpoints(review)
-# above used to be all_repos
+        return categories
 
-# TODO:
-# Add date accepted to the issue
-# add date issue closed as well - can get that from API maybe?
-
-
-# Send a GET request to the API endpoint and include a user agent header
-gh_stats = [
-    "name",
-    "description",
-    "homepage",
-    "created_at",
-    "stargazers_count",
-    "watchers_count",
-    "stargazers_count",
-    "forks",
-    "open_issues_count",
-    "forks_count",
-]
-
-stats_list = gh_stats
-url = "https://api.github.com/repos/earthlab/earthpy"
-
-# meta = issueProcess.get_repo_meta(url, stats_list)
-
-# Get gh metadata for each package submission
-all_repo_meta = {}
-for package_name in all_repos.keys():
-    print(package_name)
-    all_repo_meta[package_name] = issueProcess.get_repo_meta(repo, gh_stats)
-
-    all_repo_meta[package_name]["contrib_count"] = issueProcess.get_repo_contribs(repo)
-    all_repo_meta[package_name]["last_commit"] = issueProcess.get_last_commit(repo)
-    # Add github meta to review metadata
-    review[package_name]["gh_meta"] = all_repo_meta[package_name]
-
-
-filename = "packages.yml"
-with open(filename, "w") as file:
-    # Create YAML object with RoundTripDumper to keep key order intact
-    yaml = ruamel.yaml.YAML(typ="rt")
-    # Set the indent parameter to 2 for the yaml output
-    yaml.indent(mapping=4, sequence=4, offset=2)
-    yaml.dump(review, file)
 
 # https://api.github.com/repos/pyopensci/python-package-guide/commits
-
-
-"""
-Add: to data
-  date-accepted: 2021-12-29
-  highlight:
-  docs-url: "https://jointly.readthedocs.io"
-  citation-link:
-
-
-# Create dict with info
-# Using create contrib file method from other script
-
-  - package-name: jointly
-  description: "Jointly: A Python package for synchronizing multiple sensors with accelerometer data"
-  maintainer:
-    [
-      "Arne Herdick",
-      "Felix Musmann",
-      "Ariane Sasso",
-      "Justin Albert",
-      "Bert Arnrich",
-    ]
-  link: "https://github.com/hpi-dhc/jointly"
-  date-accepted: 2021-12-29
-  highlight:
-  docs-url: "https://jointly.readthedocs.io"
-  citation-link: "https://doi.org/10.5281/zenodo.5833858"
-"""
