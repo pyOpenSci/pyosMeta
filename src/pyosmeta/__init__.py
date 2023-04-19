@@ -3,3 +3,4 @@
 # SPDX-License-Identifier: MIT
 
 from .contributors import ProcessContributors
+from .parse_issues import ProcessIssues
