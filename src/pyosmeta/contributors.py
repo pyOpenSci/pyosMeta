@@ -1,9 +1,7 @@
 import json
-import urllib.request
 from dataclasses import dataclass
 
 import requests
-import ruamel.yaml
 
 from .file_io import YamlIO
 
@@ -74,7 +72,9 @@ class ProcessContributors(YamlIO):
         """
         final_dict = {}
         for dict in aList:
-            final_dict[dict["github_username"]] = dict
+            # All github usernames are lower to make this a key
+            final_dict[dict["github_username"].lower()] = dict
+
         return final_dict
 
     # TODO: this is io stuff...
@@ -84,44 +84,129 @@ class ProcessContributors(YamlIO):
         dictionary
         """
         yml_list = self.open_yml_file(self.web_yml)
+        # Make all keys lower case
+
         return self._list_to_dict(yml_list)
 
-    def process_json_file(self, json_file: str) -> dict:
+    # TODO - this might be better in the IO module?
+    def load_json(self, json_path: str) -> dict:
+        """
+        Helper function that deserializes a json file to a dict.
+
+        """
+
+        response = requests.get(json_path)
+        return json.loads(response.text)
+
+    def check_contrib_type(self, json_file: str):
+        """
+        Determine the type of contribution the person
+        has made based upon which repo the all contribs json
+        file lives in.
+
+        Parameters
+        ----------
+        json_file: str
+            Path to the json file on GitHub produced by the all-contribs
+            bot.
+
+        Returns
+        -------
+        str
+            Contribution type.
+        """
+        guides = ["python-package-guide", "software-peer-review"]
+
+        # Check whether the person contributed to a
+        # guidebook, website or peer review
+        if any([x in json_file for x in guides]):
+            contrib_type = "guidebook-contrib"
+        elif "pyopensci.github.io" in json_file:
+            contrib_type = "web-contrib"
+        else:
+            contrib_type = "peer-review"
+        return contrib_type
+
+    # TODO: this is the most complicated function ever
+    # SIMPLIFY
+    def process_json_file(self, json_file: str, combined_data: dict) -> dict:
         """Deserialize a JSON file from a URL and cleanup data
 
-        Open a JSON file containing contributor data created from a all-contributors
-        json file. Rename fields to match fields used in the website. Then
-        add keys needed for the website.
+        Open a JSON file containing contributor data created from a
+        all-contributors json file. Rename fields to match fields used in the
+        website. Then add keys needed for the website.
 
         Parameters
         ----------
         json_file : string
             Web url of a json formatted file
+        usernames : list of users already processed
 
         """
-        response = requests.get(json_file)
-        data = json.loads(response.text)
+        # TODO: This method assumes that each user in the json file is not in
+        # the contributors.yml file already. thus it's populating empty data.
+        # However if the user is already there, they won't get added so if I
+        # try to update their contributor "type" here it will ONLY work for
+        # people who are new. This is OK for future use of these functions
+        # but in this case (now) i need to update contrib type for users
+        # that are already in our yaml file
 
+        data = self.load_json(json_file)
+        contrib_type = self.check_contrib_type(json_file)
+
+        # TODO BEGIN: This could be a small method that determines contrib type
+        # guides = ["python-package-guide", "software-peer-review"]
+
+        # # Check whether the person contributed to a
+        # # guidebook, website or peer review
+        # if any([x in json_file for x in guides]):
+        #     contrib_type = "guidebook-contrib"
+        # elif "pyopensci.github.io" in json_file:
+        #     contrib_type = "web-contrib"
+        # else:
+        #     contrib_type = "peer-review"
+        # END NEW METHOD
         # Create a dictionary to hold the processed data
         processed_data = {}
         # Loop through each entry in the JSON file
-        # TODO: SOLID - avoid massive structures with conditional statements
         for entry in data["contributors"]:
+            # TODO create small method for this check
             # Check if the login value is already in the dictionary
-            if entry["login"] in processed_data:
+            if entry["login"] in combined_data.keys():
+                # This allows us to track how someone has contributed
+                # would it be better to do it in a separate step or here?
+                print(
+                    "Adding contrib info for",
+                    contrib_type,
+                    "for: ",
+                    entry["login"],
+                )
+                # Update contributor type only in the main dict if the user
+                # already exists & that contrib type isn't already there
+                try:
+                    if (
+                        contrib_type
+                        not in combined_data[entry["login"]]["contributor_type"]
+                    ):
+                        combined_data[entry["login"]]["contributor_type"].append(
+                            contrib_type
+                        )
+                except:
+                    combined_data[entry["login"]]["contributor_type"] = [contrib_type]
+
                 # Continue will go to the next iteration in a loop
                 continue
+            # TODO create helper method for this cleanup step
             # Rename the login key to github_username
             entry["github_username"] = entry.pop("login")
-
             # Rename the profile key to website
             entry["website"] = entry.pop("profile")
-
             # Process github image avatar id
             entry["avatar_url"] = int(
                 entry["avatar_url"].rsplit("/", 1)[-1].rsplit("?", 1)[0]
             )
             entry["github_image_id"] = entry.pop("avatar_url")
+
             # Add empty values for the new keys
             # TODO: Tuple - consumes less memory -- ("mastodon",
             for key in [
@@ -129,16 +214,18 @@ class ProcessContributors(YamlIO):
                 "twitter",
                 "bio",
                 "orcidid",
-                "contributor_type",
                 "packages-submitted",
                 "packages-reviewed",
             ]:
                 entry[key] = ""
 
+            # If the contributor worked on a guidebook,
+            entry["contributor_type"] = [contrib_type]
             # Add the entry to the processed data dictionary
             # NOTE: this adds the GH username as a key for each dict entry
-            processed_data[entry["github_username"]] = entry
-        return processed_data
+            # make sure it's lower case
+            processed_data[entry["github_username"].lower()] = entry
+        return combined_data, processed_data
 
     def combine_json_data(self) -> dict:
         """Deserialize and clean a list of json file url's.
@@ -151,21 +238,17 @@ class ProcessContributors(YamlIO):
         # Create an empty dictionary to hold the combined data
         combined_data = {}
 
-        # Loop through each JSON file
         for json_file in self.json_files:
-            # Is this correct? do i call the method using self?
             # Process the JSON file and add the data to the combined dictionary
             try:
-                data = self.process_json_file(json_file)
+                combined_data, data = self.process_json_file(json_file, combined_data)
                 combined_data.update(data)
             except:
                 print("Oops - can't process", json_file)
-
         return combined_data
 
     # TODO: note that this returns a dict and the above a list so
     # it's inconsistent
-    # All methods need self
     def get_gh_usernames(self, contrib_data: list) -> list:
         """Get a list of all gh usernames
 
@@ -181,7 +264,6 @@ class ProcessContributors(YamlIO):
 
         return all_usernames
 
-    # TODO how do i know when i need to add self to an object?
     def get_user_info(self, username: str) -> dict:
         """
         Get a single user's information from their GitHub username
@@ -203,31 +285,81 @@ class ProcessContributors(YamlIO):
         response_json = response.json()
 
         user_data = {}
-        # TODO this could be created via a loop with a key:value pair to iterate over
-        # I wonder if i can do this with a single .get()
-        user_data[username] = {
-            "name": response_json.get("name", None),
-            "location": response_json.get("location", None),
-            "email": response_json.get("email", None),
-            "twitter": response_json.get("twitter_username", None),
-            "mastodon": response_json.get("mastodon_username", None),
-            "organization": response_json.get("company", None),
-            "website": response_json.get("blog", None),
-            "bio": response_json.get("bio", None),
-            "github_image_id": response_json.get("id", None),
-            "github_username": response_json.get("login", None),
+        update_keys = {
+            "name": "name",
+            "location": "location",
+            "email": "email",
+            "twitter": "twitter_username",
+            "mastodon": "mastodon_username",
+            "organization": "company",
+            "website": "blog",
+            "github_image_id": "id",
+            "github_username": "login",
         }
 
+        # TODO this should replace the code below
+        user_data[username] = {}
+        for akey in update_keys:
+            user_data[username][akey] = response_json.get(update_keys[akey], None)
+
+        # user_data[username] = {
+        #     "name": response_json.get("name", None),
+        #     "location": response_json.get("location", None),
+        #     "email": response_json.get("email", None),
+        #     "twitter": response_json.get("twitter_username", None),
+        #     "mastodon": response_json.get("mastodon_username", None),
+        #     "organization": response_json.get("company", None),
+        #     "website": response_json.get("blog", None),
+        #     "bio": response_json.get("bio", None),
+        #     "github_image_id": response_json.get("id", None),
+        #     "github_username": response_json.get("login", None),
+        # }
+
         return user_data
+
+    def _update_contrib_type(
+        self, webContribTypes: list, repoContribTypes: list
+    ) -> list:
+        """
+        Compares contrib types for a single gh user from the website to
+        what's in the all-contributor bot .json dict. Adds any new contrib
+        types to the user's list if there are any.
+
+        Parameters
+        ----------
+        webContribTypes : list
+            List of contrib types populated from
+            `webDict[gh_user]["contributor_type"]`
+
+        repoContribTypes : list
+            List populated from `repoDict[gh_user]["contributor_type"]`
+
+        Returns
+        -------
+        list:
+            List of updated contribution types for a specific user.
+
+        """
+        if webContribTypes is None:
+            return repoContribTypes
+        else:
+            existing_contribs = set(webContribTypes)
+            new_contribs = set(repoContribTypes)
+            missing = list(sorted(new_contribs - existing_contribs))
+
+            return webContribTypes + missing
 
     def combine_users(self, repoDict: dict, webDict: dict) -> dict:
         """
         Method that combines website yaml users with contribs across
-        other repos into a single dictionary
+        other repos into a single dictionary.
+
+        NOTE: this method also currently checks contrib data and updates it
+        for existing users. This is likely a method that could stand alone.
+        This method in general should be broken down into simpler parts.
 
         Parameters
         ----------
-
         repoDict: dict
             Dictionary representing the deserialized json data contained
             in the all-contributors .json file located in each of our
@@ -239,19 +371,39 @@ class ProcessContributors(YamlIO):
 
         Returns
         -------
-
-
-
+        dict :
+            Dictionary containing the users from the website combined with
+            new users pulled from the all-contribs bot .json files.
+            This dict also contains updated contribution types for each user.
         """
 
-        # Turn webDict keys
-        web_usernames = [key.lower() for key in webDict.keys()]
+        # TODO: (aitem renamed to gh_user)
+        for gh_user in repoDict.keys():
+            if gh_user in webDict.keys():
+                # Only update contrib roles
+                print(repoDict[gh_user])
+                # Return a list of updated contributor type keys and use it to
+                # update the web dict
+                webDict[gh_user]["contributor_type"] = self._update_contrib_type(
+                    webDict[gh_user]["contributor_type"],
+                    repoDict[gh_user]["contributor_type"],
+                )
+                # if webDict[gh_user]["contributor_type"] is None:
+                #     webDict[gh_user]["contributor_type"] = repoDict[gh_user][
+                #         "contributor_type"
+                #     ]
+                # else:
+                #     existing_contribs = set(webDict[gh_user]["contributor_type"])
+                #     new_contribs = set(repoDict[gh_user]["contributor_type"])
+                #     missing = list(sorted(new_contribs - existing_contribs))
 
-        for aitem in repoDict.keys():
-            if aitem.lower() not in web_usernames:
-                # Add index to dict
-                print("adding: ", aitem)
-                webDict[aitem] = repoDict[aitem]
+                #     if len(missing) > 0:
+                #         webDict[gh_user]["contributor_type"] += missing
+
+            # If the user is not in the web dict, add them
+            else:
+                print("New user found. Adding: ", gh_user)
+                webDict[gh_user] = repoDict[gh_user]
         return webDict
 
     def add_new_user(self, gh_user: str) -> dict:
