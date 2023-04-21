@@ -247,8 +247,6 @@ class ProcessContributors(YamlIO):
                 print("Oops - can't process", json_file)
         return combined_data
 
-    # TODO: note that this returns a dict and the above a list so
-    # it's inconsistent
     def get_gh_usernames(self, contrib_data: list) -> list:
         """Get a list of all gh usernames
 
@@ -266,7 +264,8 @@ class ProcessContributors(YamlIO):
 
     def get_user_info(self, username: str) -> dict:
         """
-        Get a single user's information from their GitHub username
+        Get a single user's information from their GitHub username using the
+        GitHub API
         # https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
 
         Parameters
@@ -289,6 +288,7 @@ class ProcessContributors(YamlIO):
             "name": "name",
             "location": "location",
             "email": "email",
+            "bio": "bio",
             "twitter": "twitter_username",
             "mastodon": "mastodon_username",
             "organization": "company",
@@ -297,24 +297,9 @@ class ProcessContributors(YamlIO):
             "github_username": "login",
         }
 
-        # TODO this should replace the code below
         user_data[username] = {}
         for akey in update_keys:
             user_data[username][akey] = response_json.get(update_keys[akey], None)
-
-        # user_data[username] = {
-        #     "name": response_json.get("name", None),
-        #     "location": response_json.get("location", None),
-        #     "email": response_json.get("email", None),
-        #     "twitter": response_json.get("twitter_username", None),
-        #     "mastodon": response_json.get("mastodon_username", None),
-        #     "organization": response_json.get("company", None),
-        #     "website": response_json.get("blog", None),
-        #     "bio": response_json.get("bio", None),
-        #     "github_image_id": response_json.get("id", None),
-        #     "github_username": response_json.get("login", None),
-        # }
-
         return user_data
 
     def _update_contrib_type(
