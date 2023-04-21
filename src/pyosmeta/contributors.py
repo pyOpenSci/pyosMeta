@@ -154,18 +154,6 @@ class ProcessContributors(YamlIO):
         data = self.load_json(json_file)
         contrib_type = self.check_contrib_type(json_file)
 
-        # TODO BEGIN: This could be a small method that determines contrib type
-        # guides = ["python-package-guide", "software-peer-review"]
-
-        # # Check whether the person contributed to a
-        # # guidebook, website or peer review
-        # if any([x in json_file for x in guides]):
-        #     contrib_type = "guidebook-contrib"
-        # elif "pyopensci.github.io" in json_file:
-        #     contrib_type = "web-contrib"
-        # else:
-        #     contrib_type = "peer-review"
-        # END NEW METHOD
         # Create a dictionary to hold the processed data
         processed_data = {}
         # Loop through each entry in the JSON file
