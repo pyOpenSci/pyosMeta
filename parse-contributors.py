@@ -25,10 +25,10 @@ web_yml_dict = processContribs.load_website_yml()
 bot_all_contribs_dict = processContribs.combine_json_data()
 
 
-# TODO - this is all working now BUT for some reason some users
+# TODO - some users (e.g.)
 # eg jenny, david, contrib types are not fully updating
 # Example david will get the web-contrib added but not packaging guide - but
-# he's definitely in the packaging guide json file
+# he's in the packaging guide json file
 # Create a single dict containing both website and all-contrib bot users
 all_contribs_dict = processContribs.combine_users(bot_all_contribs_dict, web_yml_dict)
 
