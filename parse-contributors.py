@@ -10,6 +10,7 @@ json_files = [
     "https://raw.githubusercontent.com/pyOpenSci/software-peer-review/main/.all-contributorsrc",
     "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/.all-contributorsrc",
     "https://raw.githubusercontent.com/pyOpenSci/software-review/main/.all-contributorsrc",
+    "https://raw.githubusercontent.com/pyOpenSci/update-web-metadata/main/.all-contributorsrc",
     # "https://raw.githubusercontent.com/pyOpenSci/examplepy/main/.all-contributorsrc",
 ]
 
