@@ -40,17 +40,16 @@ class ProcessIssues(YamlIO):
 
     # Set up the API endpoint
     # TODO: can i call the API endpoint above
-    def _get_response(self, username):
+    def _get_response(self):
         """
         # Make a GET request to the API endpoint
         """
-        try:
-            print(self.api_endpoint)
-            return requests.get(self.api_endpoint, auth=(username, self.API_TOKEN))
-        except:
-            print(f"Error: API request failed with status code {response.status_code}")
 
-    def return_response(self, username: str) -> list:
+        print(self.api_endpoint)
+        response = requests.get(self.api_endpoint, headers={'Authorization': f'token {self.API_TOKEN}'})
+        return response
+
+    def return_response(self) -> list:
         """
         Deserialize json response to dict and return.
 
@@ -64,7 +63,7 @@ class ProcessIssues(YamlIO):
         list
             List of dict items each containing a review issue
         """
-        response = self._get_response(username)
+        response = self._get_response()
         return response.json()
 
     def _contains_keyword(self, string: str) -> bool:
@@ -252,7 +251,7 @@ class ProcessIssues(YamlIO):
         """
         stats_dict = {}
         # Small script to get the url (normally the docs) and description of a repo!
-        response = requests.get(url)
+        response = requests.get(url, headers={'Authorization': f'token {self.API_TOKEN}'})
 
         # TODO: should this be some sort of try/except how do i catch these
         # Response errors in the best way possible?
@@ -260,6 +259,9 @@ class ProcessIssues(YamlIO):
             print("Can't find: ", url, ". Did the repo url change?")
         elif response.status_code == 403:
             print("Oops you may have hit an API limit. Exiting")
+            print(f"API Response Text: {response.text}")
+            print(f"API Response Headers: {response.headers}")
+            exit()
 
         # Extract the description and homepage URL from the response JSON
         else:
@@ -278,7 +280,7 @@ class ProcessIssues(YamlIO):
         """
         repo_contribs = url + "/contributors"
         # Small script to get the url (normally the docs) and description of a repo!
-        response = requests.get(repo_contribs)
+        response = requests.get(repo_contribs, headers={'Authorization': f'token {self.API_TOKEN}'})
 
         if response.status_code == 404:
             print("Can't find: ", url, ". Did the repo url change?")
@@ -289,7 +291,7 @@ class ProcessIssues(YamlIO):
     def get_last_commit(self, repo: str) -> str:
         """ """
         url = repo + "/commits"
-        response = requests.get(url).json()
+        response = requests.get(url, headers={'Authorization': f'token {self.API_TOKEN}'}).json()
         date = response[0]["commit"]["author"]["date"]
 
         return self._clean_date(date)
