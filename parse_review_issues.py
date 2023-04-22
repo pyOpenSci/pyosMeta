@@ -32,8 +32,7 @@ issueProcess = ProcessIssues(
 )
 
 # Get all issues for approved packages
-# TODO: why is this method using my username??
-issues = issueProcess.return_response("lwasser")
+issues = issueProcess.return_response()
 # breakpoint()
 # Fixed:
 review = issueProcess.parse_issue_header(issues, 12)
