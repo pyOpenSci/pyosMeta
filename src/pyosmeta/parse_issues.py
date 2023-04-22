@@ -296,7 +296,7 @@ class ProcessIssues(YamlIO):
 
         return self._clean_date(date)
 
-    def get_categories(self, issue_body_list: list, fmt: bool = True) -> list:
+    def get_categories(self, issue_body_list: list) -> list:
         """Parse through a pyos issue and grab the categories associated
         with a package
 
@@ -330,9 +330,6 @@ class ProcessIssues(YamlIO):
                 break
             # elif line.strip().startswith("* Please fill out a pre-submission"):
             #     break
-
-        if fmt:
-            categories = [c.lower().replace(" ","-") for c in categories]
 
         return categories
 
