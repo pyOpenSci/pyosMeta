@@ -46,7 +46,9 @@ class ProcessIssues(YamlIO):
         """
 
         print(self.api_endpoint)
-        response = requests.get(self.api_endpoint, headers={'Authorization': f'token {self.API_TOKEN}'})
+        response = requests.get(
+            self.api_endpoint, headers={"Authorization": f"token {self.API_TOKEN}"}
+        )
         return response
 
     def return_response(self) -> list:
@@ -251,7 +253,9 @@ class ProcessIssues(YamlIO):
         """
         stats_dict = {}
         # Small script to get the url (normally the docs) and description of a repo!
-        response = requests.get(url, headers={'Authorization': f'token {self.API_TOKEN}'})
+        response = requests.get(
+            url, headers={"Authorization": f"token {self.API_TOKEN}"}
+        )
 
         # TODO: should this be some sort of try/except how do i catch these
         # Response errors in the best way possible?
@@ -280,7 +284,9 @@ class ProcessIssues(YamlIO):
         """
         repo_contribs = url + "/contributors"
         # Small script to get the url (normally the docs) and description of a repo!
-        response = requests.get(repo_contribs, headers={'Authorization': f'token {self.API_TOKEN}'})
+        response = requests.get(
+            repo_contribs, headers={"Authorization": f"token {self.API_TOKEN}"}
+        )
 
         if response.status_code == 404:
             print("Can't find: ", url, ". Did the repo url change?")
@@ -291,7 +297,9 @@ class ProcessIssues(YamlIO):
     def get_last_commit(self, repo: str) -> str:
         """ """
         url = repo + "/commits"
-        response = requests.get(url, headers={'Authorization': f'token {self.API_TOKEN}'}).json()
+        response = requests.get(
+            url, headers={"Authorization": f"token {self.API_TOKEN}"}
+        ).json()
         date = response[0]["commit"]["author"]["date"]
 
         return self._clean_date(date)
