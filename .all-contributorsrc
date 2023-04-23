@@ -47,6 +47,15 @@
         "review",
         "design"
       ]
+    },
+    {
+      "login": "paajake",
+      "name": "JAKE",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12656820?v=4",
+      "profile": "https://github.com/paajake",
+      "contributions": [
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
