@@ -117,7 +117,7 @@ class ProcessIssues(YamlIO):
                 meta[theKey] = line_item[1].strip()
         return meta
 
-    def parse_issue_header(self, issues: list, total_lines: int = 13) -> dict:
+    def parse_issue_header(self, issues: list, total_lines: int = 15) -> dict:
         """
         Parameters
         ----------
@@ -126,7 +126,7 @@ class ProcessIssues(YamlIO):
             metadata at the top of each issue
         total_lines : int
             an integer representing the total number of lines to parse in the
-            issue header. Default = 13
+            issue header. Default = 15
         """
         # Reorder data
         key_order = [
