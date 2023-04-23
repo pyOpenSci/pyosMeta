@@ -56,6 +56,16 @@
       "contributions": [
         "review"
       ]
+    },
+    {
+      "login": "luizirber",
+      "name": "Luiz Irber",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6642?v=4",
+      "profile": "https://luizirber.org",
+      "contributions": [
+        "code",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
