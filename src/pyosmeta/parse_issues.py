@@ -316,7 +316,7 @@ class ProcessIssues(YamlIO):
             The first comment from the issue split into lines and then the lines split as by self.parse_comment()
 
         fmt : bool
-            Applies some formatting changes to the categories to match what is requried for the website.
+            Applies some formatting changes to the categories to match what is required for the website.
         """
         # Find the starting index of the section we're interested in
         start_index = None
