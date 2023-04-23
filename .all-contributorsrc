@@ -26,6 +26,27 @@
         "code",
         "review"
       ]
+    },
+    {
+      "login": "tiffanyxiao",
+      "name": "Tiffany Xiao",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13580331?v=4",
+      "profile": "https://tiffanyxiao.com/",
+      "contributions": [
+        "code",
+        "review"
+      ]
+    },
+    {
+      "login": "austinlg96",
+      "name": "austinlg96",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19922895?v=4",
+      "profile": "https://github.com/austinlg96",
+      "contributions": [
+        "code",
+        "review",
+        "design"
+      ]
     }
   ],
   "contributorsPerLine": 7,
