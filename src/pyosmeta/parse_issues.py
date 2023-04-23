@@ -304,14 +304,19 @@ class ProcessIssues(YamlIO):
 
         return self._clean_date(date)
 
-    def get_categories(self, issue_body_list: list, fmt: bool = True) -> list:
+    def get_categories(
+        self, issue_body_list: list[list[str]], fmt: bool = True
+    ) -> list[str]:
         """Parse through a pyos issue and grab the categories associated
         with a package
 
         Parameters
         ----------
-        issue_body_list : list
-            List containing each line in the first comment of the issue
+        issue_body_list : list[list[str]]
+            The first comment from the issue split into lines and then the lines split as by self.parse_comment()
+
+        fmt : bool
+            Applies some formatting changes to the categories to match what is requried for the website.
         """
         # Find the starting index of the section we're interested in
         start_index = None
@@ -326,7 +331,7 @@ class ProcessIssues(YamlIO):
 
         # Iterate through the lines starting at the starting index and grab the relevant text
         cat_matches = ["[x]", "[X]"]
-        categories = []
+        categories: list[str] = []
         for i in range(start_index + 1, len(issue_body_list)):  # 30):
             line = issue_body_list[i][0].strip()
             checked = any([x in line for x in cat_matches])
