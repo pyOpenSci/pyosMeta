@@ -36,6 +36,17 @@
         "code",
         "review"
       ]
+    },
+    {
+      "login": "austinlg96",
+      "name": "austinlg96",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19922895?v=4",
+      "profile": "https://github.com/austinlg96",
+      "contributions": [
+        "code",
+        "review",
+        "design"
+      ]
     }
   ],
   "contributorsPerLine": 7,
