@@ -151,7 +151,7 @@ class ProcessIssues(YamlIO):
         review = {}
         for issue in issues:
             package_name, body_data = self.parse_comment(issue)
-            # index of 13 should include date accepted
+            # index of 15 should include date accepted
             issue_meta = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta
             for adate in meta_dates:
