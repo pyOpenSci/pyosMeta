@@ -71,7 +71,9 @@ class ProcessIssues(YamlIO):
         """
         Returns true if starts with any of the 3 items below.
         """
-        return string.startswith(("Submitting", "Editor", "Reviewer", "All current maintainers"))
+        return string.startswith(
+            ("Submitting", "Editor", "Reviewer", "All current maintainers")
+        )
 
     def _get_line_meta(self, line_item: list) -> dict:
         """
@@ -96,7 +98,10 @@ class ProcessIssues(YamlIO):
                 for name in names:
                     meta[theKey].append(
                         {
-                            "github_username": name.strip().lstrip('(').lstrip("@").rstrip(")"),
+                            "github_username": name.strip()
+                            .lstrip("(")
+                            .lstrip("@")
+                            .rstrip(")"),
                             "name": "",
                         }
                     )
@@ -163,7 +168,11 @@ class ProcessIssues(YamlIO):
             review[package_name]["package_description"] = review[package_name].pop(
                 "one-line_description_of_package"
             )
-            review[package_name] = {key: review[package_name][key] for key in key_order if review[package_name].get(key)}
+            review[package_name] = {
+                key: review[package_name][key]
+                for key in key_order
+                if review[package_name].get(key)
+            }
         return review
 
     def get_issue_meta(
