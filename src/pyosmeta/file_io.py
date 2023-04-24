@@ -5,9 +5,10 @@ import ruamel.yaml
 
 # file io
 
+
 def read_text_file(filename: str) -> str:
     """Read a text file and return the contents as a string.
-    
+
     Parameters
     ----------
     filename : str
@@ -20,6 +21,7 @@ def read_text_file(filename: str) -> str:
     """
     with open(filename, "r") as f:
         return f.readline()
+
 
 @dataclass
 class YamlIO:
