@@ -21,10 +21,9 @@ import ruamel.yaml as yaml
 
 from pyosmeta.contrib_review_meta import UpdateReviewMeta
 from pyosmeta.contributors import ProcessContributors
-from pyosmeta.file_io import YamlIO
+from pyosmeta.file_io import YamlIO, read_text_file
 
-with open("../token.pickle", "rb") as f:
-    API_TOKEN = pickle.load(f)
+API_TOKEN = read_text_file("token.txt")
 
 # Load contributors dict from website (just for now)
 with open("all_contribs.pickle", "rb") as f:
