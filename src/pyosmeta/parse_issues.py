@@ -72,7 +72,9 @@ class ProcessIssues(YamlIO):
         """
         Returns true if starts with any of the 3 items below.
         """
-        return string.startswith(("Submitting", "Editor", "Reviewer"))
+        return string.startswith(
+            ("Submitting", "Editor", "Reviewer", "All current maintainers")
+        )
 
     def _get_line_meta(self, line_item: list) -> dict:
         """
@@ -91,24 +93,37 @@ class ProcessIssues(YamlIO):
         meta = {}
         theKey = line_item[0].lower().replace(" ", "_")
         if self._contains_keyword(line_item[0]):
-            names = line_item[1].split("(", 1)
-            if len(names) > 1:
-                meta[theKey] = {
-                    "name": names[0].strip(),
-                    "github_username": names[1].strip().lstrip("@").rstrip(")"),
-                }
+            if line_item[0].startswith("All current maintainers"):
+                names = line_item[1].split(", ")
+                meta[theKey] = []
+                for name in names:
+                    meta[theKey].append(
+                        {
+                            "github_username": name.strip()
+                            .lstrip("(")
+                            .lstrip("@")
+                            .rstrip(")"),
+                            "name": "",
+                        }
+                    )
             else:
-                meta[theKey] = {
-                    "name": "",
-                    "github_username": names[0].strip().lstrip("@"),
-                }
+                names = line_item[1].split("(", 1)
+                if len(names) > 1:
+                    meta[theKey] = {
+                        "github_username": names[1].strip().lstrip("@").rstrip(")"),
+                        "name": names[0].strip(),
+                    }
+                else:
+                    meta[theKey] = {
+                        "github_username": names[0].strip().lstrip("@"),
+                        "name": "",
+                    }
         else:
             if len(line_item) > 1:
                 meta[theKey] = line_item[1].strip()
-
         return meta
 
-    def parse_issue_header(self, issues: list, total_lines: int = 12) -> dict:
+    def parse_issue_header(self, issues: list, total_lines: int = 15) -> dict:
         """
         Parameters
         ----------
@@ -117,13 +132,14 @@ class ProcessIssues(YamlIO):
             metadata at the top of each issue
         total_lines : int
             an integer representing the total number of lines to parse in the
-            issue header. Default = 12
+            issue header. Default = 15
         """
         # Reorder data
         key_order = [
             "package_name",
             "package_description",
             "submitting_author",
+            "all_current_maintainers",
             "repository_link",
             "version_submitted",
             "categories",
@@ -141,7 +157,7 @@ class ProcessIssues(YamlIO):
         review = {}
         for issue in issues:
             package_name, body_data = self.parse_comment(issue)
-            # index of 12 should include date accepted
+            # index of 15 should include date accepted
             issue_meta = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta
             for adate in meta_dates:
@@ -153,8 +169,11 @@ class ProcessIssues(YamlIO):
             review[package_name]["package_description"] = review[package_name].pop(
                 "one-line_description_of_package"
             )
-            review[package_name] = {key: review[package_name][key] for key in key_order}
-
+            review[package_name] = {
+                key: review[package_name][key]
+                for key in key_order
+                if review[package_name].get(key)
+            }
         return review
 
     def get_issue_meta(
@@ -304,14 +323,19 @@ class ProcessIssues(YamlIO):
 
         return self._clean_date(date)
 
-    def get_categories(self, issue_body_list: list) -> list:
+    def get_categories(
+        self, issue_body_list: list[list[str]], fmt: bool = True
+    ) -> list[str]:
         """Parse through a pyos issue and grab the categories associated
         with a package
 
         Parameters
         ----------
-        issue_body_list : list
-            List containing each line in the first comment of the issue
+        issue_body_list : list[list[str]]
+            The first comment from the issue split into lines and then the lines split as by self.parse_comment()
+
+        fmt : bool
+            Applies some formatting changes to the categories to match what is required for the website.
         """
         # Find the starting index of the section we're interested in
         start_index = None
@@ -326,7 +350,7 @@ class ProcessIssues(YamlIO):
 
         # Iterate through the lines starting at the starting index and grab the relevant text
         cat_matches = ["[x]", "[X]"]
-        categories = []
+        categories: list[str] = []
         for i in range(start_index + 1, len(issue_body_list)):  # 30):
             line = issue_body_list[i][0].strip()
             checked = any([x in line for x in cat_matches])
@@ -339,6 +363,8 @@ class ProcessIssues(YamlIO):
             # elif line.strip().startswith("* Please fill out a pre-submission"):
             #     break
 
+        if fmt:
+            categories = [c.lower().replace(" ", "-") for c in categories]
         return categories
 
 
