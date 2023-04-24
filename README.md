@@ -13,11 +13,8 @@ For an action to work will need to figure out the token part: https://github.com
 
 To run this you need to [create a TOKEN that can be used to access the GitHub
 API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens).
-Store the token as a `.pickle` object containing a single string with the
-Token value within it.
-
-TODO: it might make more sense to store the token value as .token in the github
-repo and then I can add that to the gitignore?
+In the root of the project directory, store the token in a file named `token.txt`,
+containing a single string with the token value.
 
 ## How to run each script
 

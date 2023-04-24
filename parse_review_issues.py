@@ -11,12 +11,10 @@ To run: python3 parse_issue_metadata.py
 """
 
 
-import pickle
-
 from pyosmeta import ProcessIssues
+from pyosmeta.file_io import read_text_file
 
-with open("../token.pickle", "rb") as f:
-    API_TOKEN = pickle.load(f)
+API_TOKEN = read_text_file("token.txt")
 
 # TODO: looks like sometimes the gh username is the name then @. so i need to create
 # code that looks for the @ and adds the username to ghusername and the rest to the name
