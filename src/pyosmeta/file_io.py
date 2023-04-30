@@ -1,15 +1,15 @@
 import os
 import urllib.request
-from dotenv import load_dotenv
 from dataclasses import dataclass
 
 import ruamel.yaml
-
+from dotenv import load_dotenv
 
 # file io
 
+
 def get_api_token() -> str:
-    """ Fetches the GitHub API key from the .env file
+    """Fetches the GitHub API key from the .env file
 
     Returns
     -------
@@ -17,7 +17,7 @@ def get_api_token() -> str:
         The provided API key in the .env file.
     """
     load_dotenv()
-    return os.environ['API_TOKEN']
+    return os.environ["API_TOKEN"]
 
 
 @dataclass
