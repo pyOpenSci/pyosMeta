@@ -46,9 +46,16 @@ class ProcessIssues(YamlIO):
         """
 
         print(self.api_endpoint)
-        response = requests.get(
-            self.api_endpoint, headers={"Authorization": f"token {self.API_TOKEN}"}
-        )
+
+        try:
+            response = requests.get(
+                self.api_endpoint, headers={"Authorization": f"token {self.API_TOKEN}"}
+            )
+            response.raise_for_status()
+
+        except requests.HTTPError as exception:
+            raise exception
+
         return response
 
     def return_response(self) -> list:
