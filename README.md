@@ -5,7 +5,7 @@ This repo contains a small module and some scripts that parse through GitHub rep
 
 To begin;
 1. create a local environment and activate it.
-2. Install the required dependencies via the requirement.txt file by runing the following command;
+2. Install the required dependencies via the requirement.txt file by running the following command;
 `pip install -r requirements.txt`
 
 For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
