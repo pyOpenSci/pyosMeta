@@ -1,26 +1,23 @@
+import os
 import urllib.request
+from dotenv import load_dotenv
 from dataclasses import dataclass
 
 import ruamel.yaml
 
+
 # file io
 
-
-def read_text_file(filename: str) -> str:
-    """Read a text file and return the contents as a string.
-
-    Parameters
-    ----------
-    filename : str
-        Path to the text file to be read.
+def get_api_token() -> str:
+    """ Fetches the GitHub API key from the .env file
 
     Returns
     -------
     str
-        The contents of the text file.
+        The provided API key in the .env file.
     """
-    with open(filename, "r") as f:
-        return f.readline()
+    load_dotenv()
+    return os.environ['API_TOKEN']
 
 
 @dataclass

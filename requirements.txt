@@ -1,3 +1,4 @@
-ruemal.yaml
-
+ruamel.yaml
 pre-commit
+requests
+python-dotenv

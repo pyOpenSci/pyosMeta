@@ -1,9 +1,9 @@
 import pickle
 
 from pyosmeta.contributors import ProcessContributors
-from pyosmeta.file_io import read_text_file
+from pyosmeta.file_io import get_api_token
 
-API_TOKEN = read_text_file("token.txt")
+API_TOKEN = get_api_token()
 
 json_files = [
     "https://raw.githubusercontent.com/pyOpenSci/python-package-guide/main/.all-contributorsrc",
