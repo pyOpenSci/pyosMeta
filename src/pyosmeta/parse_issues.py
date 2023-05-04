@@ -47,13 +47,14 @@ class ProcessIssues(YamlIO):
 
         print(self.api_endpoint)
         response = requests.get(
-            self.api_endpoint, headers={"Authorization": f"token {self.API_TOKEN}"}
+            self.api_endpoint,
+            headers={"Authorization": f"token {self.API_TOKEN}"},
         )
         return response
 
-    def return_response(self) -> list:
+    def return_response(self) -> list[dict[str, object]]:
         """
-        Deserialize json response to dict and return.
+        Deserialize json response to list of dicts.
 
         Parameters
         ----------
@@ -76,11 +77,11 @@ class ProcessIssues(YamlIO):
             ("Submitting", "Editor", "Reviewer", "All current maintainers")
         )
 
-    def _get_line_meta(self, line_item: list) -> dict:
+    def _get_line_meta(self, line_item: list[str]) -> dict[str, object]:
         """
         Parameters
         ----------
-        issue_header : list
+        line_item : list
             A single list item representing a single line in the issue
             containing metadata for the review.
             This comment is the metadata for the review that the author fills out.
@@ -123,7 +124,9 @@ class ProcessIssues(YamlIO):
                 meta[theKey] = line_item[1].strip()
         return meta
 
-    def parse_issue_header(self, issues: list, total_lines: int = 15) -> dict:
+    def parse_issue_header(
+        self, issues: list[str], total_lines: int = 15
+    ) -> dict[str, str]:
         """
         Parameters
         ----------
@@ -178,9 +181,9 @@ class ProcessIssues(YamlIO):
 
     def get_issue_meta(
         self,
-        body_data: list,
+        body_data: list[str],
         end_range: int,
-    ) -> dict:
+    ) -> dict[str, str]:
         """
         Parse through the top of an issue and grab the metadata for the review.
 
@@ -193,6 +196,9 @@ class ProcessIssues(YamlIO):
             over time so this variable allows us to have different processing
             based upon the date of the issue being opened)
 
+        Returns
+        -------
+            dict
         """
         issue_meta = {}
         for item in body_data[0:end_range]:
@@ -200,7 +206,7 @@ class ProcessIssues(YamlIO):
         # TODO Reorder keys so package_name is first, description then submitting
         return issue_meta
 
-    def get_repo_endpoints(self, review_issues: dict):
+    def get_repo_endpoints(self, review_issues: dict[str, str]) -> dict[str, str]:
         """
         Returns a list of repository endpoints
 
@@ -210,7 +216,8 @@ class ProcessIssues(YamlIO):
 
         Returns
         -------
-            List of repository endpoints
+            Dict
+                Containing package_name: endpoint for each review.
 
         """
 
@@ -221,7 +228,7 @@ class ProcessIssues(YamlIO):
             all_repos[aPackage] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
 
-    def parse_comment(self, issue: dict):
+    def parse_comment(self, issue: dict[str, str]) -> Tuple[str, list[str]]:
         """
         Parses an issue comment for pyos review and returns the package name and
         the body of the comment parsed into a list of elements.

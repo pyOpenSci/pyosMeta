@@ -1,4 +1,3 @@
-
 # PyOS Consolidate Contributor Data & Update Review Metadata
 
 This repo contains a small module and some scripts that parse through GitHub repos in the pyOpenSci organization.
@@ -46,7 +45,7 @@ Returns
 ### `python3 parse_review_issues.py.py`
 
 To run:
-`python3 parse_review_issues.py.py`
+`python3 parse_review_issues.py`
 
 This script parses through all pyOpenSci software review issues where the package was accepted. It then collects the
 GitHub id and user information for
