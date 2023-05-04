@@ -12,7 +12,7 @@ To begin;
 
 `pip install -e . `
 
-### TODO: 
+### TODO:
 For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
 
 ## Setup token to authenticate with the GitHub API
