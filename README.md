@@ -4,10 +4,15 @@
 This repo contains a small module and some scripts that parse through GitHub repos in the pyOpenSci organization.
 
 To begin;
-1. create a local environment and activate it.
+1. Create a local environment and activate it.
 2. Install the required dependencies via the requirement.txt file by running the following command;
 `pip install -r requirements.txt`
 
+3. Install the pyos meta package in development/editable mode:
+
+`pip install -e . `
+
+### TODO: 
 For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
 
 ## Setup token to authenticate with the GitHub API
