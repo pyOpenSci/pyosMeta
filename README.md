@@ -13,9 +13,12 @@ This repo contains a small module and some scripts that
 
 ## Local setup
 
-To begin, create a local environment and install this package in editable mode.
-
-`pip install -e .`
+To begin:
+1. Create a local environment and activate it.
+2. Install the required dependencies via the requirement.txt file by running the following command;
+`pip install -r requirements.txt`
+3. Install the pyos meta package in development/editable mode:
+`pip install -e . `
 
 TODO: For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
 
@@ -23,8 +26,18 @@ TODO: For an action to work will need to figure out the token part: https://gith
 
 To run this code, you need to [create a TOKEN that can be used to access the GitHub
 API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens).
-In the root of the project directory, store the token in a file named `.token`,
-containing a single string with the token value.
+
+### TODO:
+For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
+
+## Setup token to authenticate with the GitHub API
+
+To run this you need to [create a TOKEN that can be used to access the GitHub
+API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens)
+
+After obtaining a token;
+1. Duplicate the `.env-default` file and rename the copy to `.env`
+2. Assign your token to the `API_TOKEN` variable in the `.env` file.
 
 ## How to run each script
 
