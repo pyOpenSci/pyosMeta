@@ -1,19 +1,29 @@
-
 # PyOS Consolidate Contributor Data & Update Review Metadata
 
-This repo contains a small module and some scripts that parse through GitHub repos in the pyOpenSci organization.
+This repo contains a small module and some scripts that
 
-To begin create a local environment and install this package in editable mode.
+1. Parse through all of the all-contributors bot `.json` files across our pyOpenSci repos to gather contributors to our organization. This allows us to [acknowledge contributors on our website](https://www.pyopensci.org/our-community/#pyopensci-community-contributors) who are not always making explicit code contributions (thus might not have commits) but are reviewing guidebooks, participating in peer reivew, and performing other important tasks that are critical to our pyOpenSci mission.
+2. Updates the existing [contributors.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml) file found in our website repo with new contributors and the contributor role (package guides, code workflows, peer review, etc).
+   a. This update includes hitting the GitHub api to pull down public information about the contributors including website social links and location.
+3. Parse through our review issues to find packages that have been accepted. It then grabs each review's editor, reviewers and package authors. This information allows us to
+   a. Update a contributors contribution type to include reviewing software
+   b. Update the website's package listing with the package's DOI, documentation URL.
+   c. Update the package's stats including stars, contributors, etc. using the GitHub API
+4. TODO: finally we plan to create a small function that allows us to update package maintainer names in the package listing using the contributors.yml file.
+
+## Local setup
+
+To begin, create a local environment and install this package in editable mode.
 
 `pip install -e .`
 
-For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
+TODO: For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
 
 ## Setup token to authenticate with the GitHub API
 
-To run this you need to [create a TOKEN that can be used to access the GitHub
+To run this code, you need to [create a TOKEN that can be used to access the GitHub
 API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens).
-In the root of the project directory, store the token in a file named `token.txt`,
+In the root of the project directory, store the token in a file named `.token`,
 containing a single string with the token value.
 
 ## How to run each script
@@ -22,11 +32,12 @@ containing a single string with the token value.
 
 The parse-contributors.py script does the following:
 
-1. It grabs the all-contribs.json files from each repository and turns that json data into a dictionary of all unique contributors across repos. Repos include:
+1. It grabs the `all-contribs.json` files from each repository and turns that json data into a dictionary of all unique contributors across repos. Repos include:
    - peer review guide
    - packaging guide
    - website
    - software-review
+   - update-package-meta (this repo)
 2. It then:
 
 - Updates their profile information including name (TODO: only update name if
@@ -36,12 +47,12 @@ The parse-contributors.py script does the following:
 
 Returns
 
-- `contributors.yml` file to be added to the \_data directory of our website. This format can be easily parsed by jekyll.
+- [`contributors.yml` file to be added to the \_data directory of our website](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml). This format can be easily parsed by jekyll.
 
 ### TODO's - parse-contributors.py
 
-- In some cases users haven't updated their names on github and as such, if a
-  name exists, we should leave it as is in the contributors.yml file.
+- In some cases users haven't updated their name on GitHub. Their profile may either contain a first name or no name. In those instances we may update a name manually. If a
+  name exists in the contributors.yml file and it has at least two words (first and last), we should leave it as is in the `contributors.yml` file.
 
 ### `python3 parse_review_issues.py.py`
 
@@ -54,7 +65,7 @@ GitHub id and user information for
 - reviewers,
 - submitting authors,
 - editors and
-- TODO: _SOON TO BE ADDED_ maintainers.
+- maintainers.
 
 It also goes to the repo for each package and updates stats
 such as stars, last commit date and more repo metadata.
@@ -62,11 +73,11 @@ such as stars, last commit date and more repo metadata.
 ### Returns
 
 This returns a `packages.yml` file that can be used to update
-the website
+the website [packages.yml file located in the \_data/ directory](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/packages.yml).
 
 TODOs:
 
-- now it doesn't grab all maintainers. That was a recent addition to our template.
+- In some cases we only have maintainer's github usernames in that file - update to add their names [for nicer listing on the website](https://www.pyopensci.org/python-packages.html).
 
 ### `python3 update_reviewers.py`
 
@@ -75,8 +86,7 @@ To run:
 
 This script uses the updated contributor and review information
 created from the scripts above. It then adds / updates the packages that
-each contributor has reviewed, served as editor or submitted. In some cases if the person has not been added to our contributors.yml file it will first add then and grab their
-github metadata. Then update their roles in the review process.
+each contributor has reviewed, served as editor or submitted. If the contributor has not been added to our contributors.yml file it will first add them and update their information from their GitHub profile page. It will then update their roles in the review process.
 
 ## Rate limiting
 
@@ -86,12 +96,11 @@ Rate limiting - how to handle this...
 
 The contributors script parses data from:
 
-TODO: check which repos we actually are parsing...
-
-- software-review repo
+- software-review repo where peer review happens
 - python-package-guide repo
 - peer-review-guide repo
-- software-review repo
+- pyopensci.github.io (website) repo
+- update-package-meta repo (this repo)
 
 The first script updates contributor data by:
 
@@ -121,25 +130,6 @@ python3 parse_review_issues.py
 Create environment:
 
 `mamba env create -f environment.yml`
-
-```
-❯ hatch new pyosMeta2
-pyosmeta2
-├── pyosmeta2
-│   ├── __about__.py
-│   └── __init__.py
-├── tests
-│   └── __init__.py
-├── LICENSE.txt
-├── README.md
-└── pyproject.toml
-```
-
-Hatch also seems to create an init and a about that has a standard version.
-
-# How do i use Hatch with a conda environment?
-
-looks like i have to install a plugin for this... wondering if i want to go with PDM for now? Or Poetry?
 
 ## Contributors ✨
 
