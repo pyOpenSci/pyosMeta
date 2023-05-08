@@ -2,7 +2,7 @@
 
 This repo contains a small module and some scripts that
 
-1. Parse through all of the all-contributors bot `.json` files across our pyOpenSci repos to gather contributors to our organization. This allows us to [acknowledge contributors on our website](https://www.pyopensci.org/our-community/#pyopensci-community-contributors) who are not always making explicit code contributions (thus might not have commits) but are reviewing guidebooks, participating in peer reivew, and performing other important tasks that are critical to our pyOpenSci mission.
+1. Parse through all of the all-contributors bot `.json` files across our pyOpenSci repos to gather contributors to our organization. This allows us to [acknowledge contributors on our website](https://www.pyopensci.org/our-community/#pyopensci-community-contributors) who are not always making explicit code contributions (thus might not have commits) but are reviewing guidebooks, participating in peer review, and performing other important tasks that are critical to our pyOpenSci mission.
 2. Updates the existing [contributors.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml) file found in our website repo with new contributors and the contributor role (package guides, code workflows, peer review, etc).
    a. This update includes hitting the GitHub api to pull down public information about the contributors including website social links and location.
 3. Parse through our review issues to find packages that have been accepted. It then grabs each review's editor, reviewers and package authors. This information allows us to
@@ -14,11 +14,12 @@ This repo contains a small module and some scripts that
 ## Local setup
 
 To begin:
+
 1. Create a local environment and activate it.
 2. Install the required dependencies via the requirement.txt file by running the following command;
-`pip install -r requirements.txt`
+   `pip install -r requirements.txt`
 3. Install the pyos meta package in development/editable mode:
-`pip install -e . `
+   `pip install -e . `
 
 TODO: For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
 
@@ -28,6 +29,7 @@ To run this code, you need to [create a TOKEN that can be used to access the Git
 API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens).
 
 ### TODO:
+
 For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
 
 ## Setup token to authenticate with the GitHub API
@@ -36,6 +38,7 @@ To run this you need to [create a TOKEN that can be used to access the GitHub
 API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens)
 
 After obtaining a token;
+
 1. Duplicate the `.env-default` file and rename the copy to `.env`
 2. Assign your token to the `API_TOKEN` variable in the `.env` file.
 
