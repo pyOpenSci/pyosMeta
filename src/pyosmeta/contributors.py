@@ -250,7 +250,7 @@ class ProcessContributors(YamlIO):
 
         return all_usernames
 
-    def get_user_info(self, username: str) -> dict:
+    def get_user_info(self, username: str, aname: str) -> dict:
         """
         Get a single user's information from their GitHub username using the
         GitHub API
@@ -260,6 +260,8 @@ class ProcessContributors(YamlIO):
         ----------
         username : string
             Github username to retrieve data for
+        aname : str
+            A user's name from the contributors.yml file.
 
         Returns
         -------
@@ -287,7 +289,19 @@ class ProcessContributors(YamlIO):
 
         user_data[username] = {}
         for akey in update_keys:
-            user_data[username][akey] = response_json.get(update_keys[akey], None)
+            # If the key is name, check to see if there is name data
+            # already there. don't force update if there's a name!
+            if akey == "name":
+                if aname is None:
+                    user_data[username][akey] = response_json.get(
+                        update_keys[akey], None
+                    )
+                else:
+                    # Else just keep the original name
+                    user_data[username][akey] = aname
+            else:
+                user_data[username][akey] = response_json.get(update_keys[akey], None)
+
         return user_data
 
     def _update_contrib_type(
@@ -387,6 +401,17 @@ class ProcessContributors(YamlIO):
         2. Gets user metadata from the user's github profile
         3. Updates their contrib entry with the gh data
 
+        Parameters
+        ----------
+        gh_user : str
+            String representing the GitHub username
+
+        Returns
+        -------
+        Dict
+            Username is the key and the updated github profile info is contained
+            in the dict.
+
         """
         new = {}
         new[gh_user] = self.contrib_template.copy()
@@ -396,26 +421,28 @@ class ProcessContributors(YamlIO):
         updated_data = self.update_contrib_data(new, gh_data)
         return updated_data
 
-    def get_gh_data(self, gh_usernames: list) -> list:
-        """Parses through each github username and hits the GitHub
+    def get_gh_data(self, contribs: dict[str, str]) -> dict[str, str]:
+        """Parses through each GitHub username and hits the GitHub
         API to grab user information.
-        # This takes a minute as it's hitting the GitHub API
 
         Parameters
         ----------
-        gh_usernames : list
-            List of github usernames
-
-        API_TOKEN : list
+        gh_usernames : dict
+            Dict containing all current contrib info
 
         Returns
         -------
-            A list of updated user data via a list of github usernames
+            Dict
+            A dict of updated user data via a list of github usernames
         """
         all_user_info = {}
-        for gh_user in gh_usernames:
+        for gh_user in contribs:
             print("Getting github data for: ", gh_user)
-            all_user_info[gh_user] = self.get_user_info(gh_user)
+            # Feat: If the user already has a name in the dict, don't update
+            # Important to allow us to update names to ensure correct spelling,
+            # etc on website
+            aname = contribs[gh_user]["name"]
+            all_user_info[gh_user] = self.get_user_info(gh_user, aname)
         return all_user_info
 
     def _check_url(self, url: str) -> bool:
@@ -449,6 +476,11 @@ class ProcessContributors(YamlIO):
             A dict containing contributor data to be updated
         gh_data : dict
             Updated contributor data pulled from github API
+
+        Returns
+        -------
+        dict
+            Dictionary containing updated contributor data.
         """
 
         for i, gh_name in enumerate(contrib_data.keys()):
@@ -470,6 +502,7 @@ class ProcessContributors(YamlIO):
                     else:
                         contrib_data[gh_name][akey] = ""
                 else:
+                    # TODO: name is throwing a key error i think because it's skipped above
                     contrib_data[gh_name][akey] = gh_data[gh_name][gh_name][akey]
 
         return contrib_data
