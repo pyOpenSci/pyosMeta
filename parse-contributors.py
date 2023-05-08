@@ -25,21 +25,20 @@ web_yml_dict = processContribs.load_website_yml()
 
 bot_all_contribs_dict = processContribs.combine_json_data()
 
-
-# TODO - some users (e.g.)
-# eg jenny, david, contrib types are not fully updating
-# Example david will get the web-contrib added but not packaging guide - but
-# he's in the packaging guide json file
 # Create a single dict containing both website and all-contrib bot users
+
 all_contribs_dict = processContribs.combine_users(bot_all_contribs_dict, web_yml_dict)
 
+# Force gh username keys to be lowercase
 for key in all_contribs_dict:
     all_contribs_dict[key]["github_username"] = all_contribs_dict[key][
         "github_username"
     ].lower()
     print(all_contribs_dict[key]["github_username"])
 
-gh_data = processContribs.get_gh_data(all_contribs_dict.keys())
+
+breakpoint()
+gh_data = processContribs.get_gh_data(all_contribs_dict)
 
 # Update user yaml file data from GitHub API
 update_keys = [
