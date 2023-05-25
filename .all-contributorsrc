@@ -88,6 +88,16 @@
         "code",
         "review"
       ]
+    },
+    {
+      "login": "crazy4pi314",
+      "name": "Sarah Kaiser",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6486256?v=4",
+      "profile": "https://www.sckaiser.com",
+      "contributions": [
+        "code",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -95,5 +105,6 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "projectName": "update-web-metadata",
-  "projectOwner": "pyOpenSci"
+  "projectOwner": "pyOpenSci",
+  "commitType": "docs"
 }
