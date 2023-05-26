@@ -123,8 +123,12 @@ class ProcessContributors(YamlIO):
             contrib_type = "guidebook-contrib"
         elif "pyopensci.github.io" in json_file:
             contrib_type = "web-contrib"
-        else:
+        elif "update-web-metadata" in json_file:
+            contrib_type = "metrics-contrib"
+        elif "software-submission" in json_file:
             contrib_type = "peer-review"
+        else:
+            contrib_type = "community"
         return contrib_type
 
     # TODO: this is the most complicated function ever
@@ -271,6 +275,8 @@ class ProcessContributors(YamlIO):
         url = f"https://api.github.com/users/{username}"
         headers = {"Authorization": f"Bearer {self.API_TOKEN}"}
         response = requests.get(url, headers=headers)
+        # TODO: add check here for if credentials are bad
+        # if message = Bad credentials
         response_json = response.json()
 
         user_data = {}
