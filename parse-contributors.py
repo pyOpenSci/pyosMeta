@@ -22,7 +22,6 @@ processContribs = ProcessContributors(json_files, web_yaml_path, API_TOKEN)
 
 # Returns a list of dict objects with gh usernames (lowercase) as keys
 web_yml_dict = processContribs.load_website_yml()
-
 bot_all_contribs_dict = processContribs.combine_json_data()
 
 # Create a single dict containing both website and all-contrib bot users
@@ -36,8 +35,6 @@ for key in all_contribs_dict:
     ].lower()
     print(all_contribs_dict[key]["github_username"])
 
-
-breakpoint()
 gh_data = processContribs.get_gh_data(all_contribs_dict)
 
 # Update user yaml file data from GitHub API
