@@ -1,9 +1,13 @@
-import pickle
+from os.path import exists
 
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import get_api_token
 
+# TODO: Turn this into a conditional that checks for a .env file and
+# if that doesn't exist then assume it's being run in actions.
+
 API_TOKEN = get_api_token()
+
 
 json_files = [
     "https://raw.githubusercontent.com/pyOpenSci/python-package-guide/main/.all-contributorsrc",
