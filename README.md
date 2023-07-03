@@ -21,17 +21,6 @@ To begin:
 3. Install the pyos meta package in development/editable mode:
    `pip install -e . `
 
-TODO: For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
-
-## Setup token to authenticate with the GitHub API
-
-To run this code, you need to [create a TOKEN that can be used to access the GitHub
-API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens).
-
-### TODO:
-
-For an action to work will need to figure out the token part: https://github.com/orgs/community/discussions/46376
-
 ## Setup token to authenticate with the GitHub API
 
 To run this you need to [create a TOKEN that can be used to access the GitHub
