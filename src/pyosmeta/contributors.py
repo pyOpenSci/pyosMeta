@@ -496,7 +496,6 @@ class ProcessContributors(YamlIO):
             # Note that some data needs to be manual updated such as which
             # packages someone has reviewed.
             for akey in self.update_keys:
-                print(akey)
                 if akey == "website":
                     url = gh_data[gh_name][gh_name][akey]
                     # Fix the url format and check to see if it works online
@@ -525,7 +524,6 @@ class ProcessContributors(YamlIO):
             String representing the url grabbed from the GH api
 
         """
-        print("fixing", url)
         if not url:
             return url  # returns empty string if url is empty
         elif url.startswith("https://"):
@@ -535,5 +533,5 @@ class ProcessContributors(YamlIO):
             print("fixing", url, "https://" + url[7:])
             return "https://" + url[7:]
         else:
-            print("fixing", url)
+            print("Missing https::, adding to ", url)
             return "https://" + url

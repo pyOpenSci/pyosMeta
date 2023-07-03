@@ -1,3 +1,4 @@
+import pickle
 from os.path import exists
 
 from pyosmeta.contributors import ProcessContributors
