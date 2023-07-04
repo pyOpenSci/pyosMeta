@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from typing import Dict, List, Optional, Union
 
 import requests
 
@@ -41,7 +42,10 @@ class ProcessContributors(YamlIO):
             "github_image_id",
             "github_username",
         ]
-        self.contrib_template = {
+
+    # TODO - create a function that returns this structure
+    def create_contrib_template(self):
+        return {
             "name": "",
             "bio": "",
             "organization": "",
@@ -53,10 +57,10 @@ class ProcessContributors(YamlIO):
             "mastodon": "",
             "orcidid": "",
             "website": "",
-            "contributor_type": "",
-            "packages-editor": "",
-            "packages-submitted": "",
-            "packages-reviewed": "",
+            "contributor_type": [],
+            "packages-editor": [],
+            "packages-submitted": [],
+            "packages-reviewed": [],
             "location": "",
             "email": "",
         }
@@ -124,9 +128,7 @@ class ProcessContributors(YamlIO):
         elif "pyopensci.github.io" in json_file:
             contrib_type = "web-contrib"
         elif "update-web-metadata" in json_file:
-            contrib_type = "metrics-contrib"
-        elif "software-submission" in json_file:
-            contrib_type = "peer-review"
+            contrib_type = "code-contrib"
         else:
             contrib_type = "community"
         return contrib_type
@@ -254,7 +256,7 @@ class ProcessContributors(YamlIO):
 
         return all_usernames
 
-    def get_user_info(self, username: str, aname: str) -> dict:
+    def get_user_info(self, username: str, aname: Optional[str] = None) -> dict:
         """
         Get a single user's information from their GitHub username using the
         GitHub API
@@ -264,7 +266,7 @@ class ProcessContributors(YamlIO):
         ----------
         username : string
             Github username to retrieve data for
-        aname : str
+        aname : str default=None
             A user's name from the contributors.yml file.
 
         Returns
@@ -373,8 +375,6 @@ class ProcessContributors(YamlIO):
         # TODO: (aitem renamed to gh_user)
         for gh_user in repoDict.keys():
             if gh_user in webDict.keys():
-                # Only update contrib roles
-                print(repoDict[gh_user])
                 # Return a list of updated contributor type keys and use it to
                 # update the web dict
                 webDict[gh_user]["contributor_type"] = self._update_contrib_type(
@@ -419,15 +419,16 @@ class ProcessContributors(YamlIO):
             in the dict.
 
         """
+
         new = {}
-        new[gh_user] = self.contrib_template.copy()
+        new[gh_user] = self.create_contrib_template()
         gh_data = self.get_gh_data([gh_user])
         # Update their metadata in the dict and return
         # It's updating the contrib dict object in this method why?
         updated_data = self.update_contrib_data(new, gh_data)
         return updated_data
 
-    def get_gh_data(self, contribs: dict[str, str]) -> dict[str, str]:
+    def get_gh_data(self, contribs: Union[Dict[str, str], List]) -> dict[str, str]:
         """Parses through each GitHub username and hits the GitHub
         API to grab user information.
 
@@ -447,7 +448,11 @@ class ProcessContributors(YamlIO):
             # Feat: If the user already has a name in the dict, don't update
             # Important to allow us to update names to ensure correct spelling,
             # etc on website
-            aname = contribs[gh_user]["name"]
+            if isinstance(contribs, list):
+                aname = None
+            else:
+                aname = contribs[gh_user]["name"]
+
             all_user_info[gh_user] = self.get_user_info(gh_user, aname)
         return all_user_info
 
@@ -501,13 +506,11 @@ class ProcessContributors(YamlIO):
                     # Fix the url format and check to see if it works online
                     url = self.format_url(url)
                     # It url is valid, add to dict
-                    print("Checking: ", url)
                     if self._check_url(url):
                         contrib_data[gh_name][akey] = url
                     else:
                         contrib_data[gh_name][akey] = ""
                 else:
-                    # TODO: name is throwing a key error i think because it's skipped above
                     contrib_data[gh_name][akey] = gh_data[gh_name][gh_name][akey]
 
         return contrib_data
@@ -527,11 +530,10 @@ class ProcessContributors(YamlIO):
         if not url:
             return url  # returns empty string if url is empty
         elif url.startswith("https://"):
-            print("https already, no fix needed", url)
             return url
         elif url.startswith("http://"):
-            print("fixing", url, "https://" + url[7:])
+            print("Fixing", url, "https://" + url[7:])
             return "https://" + url[7:]
         else:
-            print("Missing https::, adding to ", url)
+            print("Missing https://, adding to ", url)
             return "https://" + url

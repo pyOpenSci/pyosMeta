@@ -95,25 +95,31 @@ class ProcessIssues(YamlIO):
 
         Returns
         -------
-            Dict containing the metadata for a submitting author or reviewer
+            Dict containing the metadata for a submitting author, reviewer or
+            maintainer(s)
         """
 
         meta = {}
         theKey = line_item[0].lower().replace(" ", "_")
         if self._contains_keyword(line_item[0]):
             if line_item[0].startswith("All current maintainers"):
-                names = line_item[1].split(", ")
-                meta[theKey] = []
-                for name in names:
-                    meta[theKey].append(
-                        {
-                            "github_username": name.strip()
-                            .lstrip("(")
-                            .lstrip("@")
-                            .rstrip(")"),
-                            "name": "",
+                names = line_item[1].split(",")
+                # There are at least 2 maintainers if there is a comma
+                if len(names) > 1:
+                    meta[theKey] = []
+                    for aname in names:
+                        # Add each maintainer to the dict
+                        user = aname.split("@")
+                        a_maint = {
+                            "name": user[0].replace("(", "").replace(")", "").strip(),
+                            "github_username": user[1]
+                            .replace("(", "")
+                            .replace(")", "")
+                            .strip(),
                         }
-                    )
+
+                        # filtered_list = list(filter(None, my_list))
+                        meta[theKey].append(a_maint)
             else:
                 names = line_item[1].split("(", 1)
                 if len(names) > 1:
@@ -170,14 +176,26 @@ class ProcessIssues(YamlIO):
             if not package_name:
                 continue
             # index of 15 should include date accepted
+
             issue_meta = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta
             for adate in meta_dates:
                 issue_meta[adate] = issue[adate]
+
+            # Clean markdown url's from editor, and reviewer lines
+            types = ["editor", "reviewer_1", "reviewer_2"]
+            user_values = ["github_username", "name"]
+            for aType in types:
+                for user_value in user_values:
+                    issue_meta[aType][user_value] = (
+                        issue_meta[aType][user_value]
+                        .replace("https://github.com/", "")
+                        .replace("[", "")
+                        .replace("]", "")
+                    )
             review[package_name] = issue_meta
             review[package_name]["categories"] = self.get_categories(body_data)
             # Rename package description & reorder keys
-            print(review[package_name].keys())
             review[package_name]["package_description"] = review[package_name].pop(
                 "one-line_description_of_package", ""
             )
@@ -212,7 +230,6 @@ class ProcessIssues(YamlIO):
         issue_meta = {}
         for item in body_data[0:end_range]:
             issue_meta.update(self._get_line_meta(item))
-        # TODO Reorder keys so package_name is first, description then submitting
         return issue_meta
 
     def get_repo_endpoints(self, review_issues: dict[str, str]) -> dict[str, str]:
@@ -231,16 +248,16 @@ class ProcessIssues(YamlIO):
         """
 
         all_repos = {}
-        for aPackage in review_issues.keys():
-            repo = review_issues[aPackage]["repository_link"]
+        for a_package in review_issues.keys():
+            repo = review_issues[a_package]["repository_link"].strip("/")
             owner, repo = repo.split("/")[-2:]
-            all_repos[aPackage] = f"https://api.github.com/repos/{owner}/{repo}"
+            all_repos[a_package] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
 
     def parse_comment(self, issue: dict[str, str]) -> tuple[str, list[str]]:
         """
-        Parses an issue comment for pyos review and returns the package name and
-        the body of the comment parsed into a list of elements.
+        Parses an issue comment for pyOpenSci review. Returns the package name
+        and the body of the comment parsed into a list of elements.
 
         Parameters
         ----------
@@ -256,10 +273,15 @@ class ProcessIssues(YamlIO):
                 A list containing the comment elements in order
         """
 
+        # TODO: this var isn't used
         comments_url = issue["comments_url"]
         body = issue["body"]
 
         lines = body.split("\r\n")
+        # Some users decide to hold the issue titles.
+        # For those, clean the markdown bold ** element
+        lines = [line.replace("**", "").strip() for line in lines if line.strip() != ""]
+        # You need a space after : or else it will break https:// in two
         body_data = [line.split(": ") for line in lines if line.strip() != ""]
 
         # Loop through issue header and grab relevant review metadata
@@ -269,7 +291,6 @@ class ProcessIssues(YamlIO):
         )
 
         package_name = body_data[name_index][1] if name_index else None
-        print(package_name)
 
         return package_name, body_data
 
@@ -288,6 +309,7 @@ class ProcessIssues(YamlIO):
         """
         stats_dict = {}
         # Small script to get the url (normally the docs) and description of a repo!
+        print(url)
         response = requests.get(
             url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
         )
@@ -314,23 +336,31 @@ class ProcessIssues(YamlIO):
 
     def get_repo_contribs(self, url: str) -> dict:
         """
-        Returns a set of GH stats from each repo of our reviewed packages.
+        Returns a list of contributors to a specific repo.
 
         """
         repo_contribs = url + "/contributors"
-        # Small script to get the url (normally the docs) and description of a repo!
+        # Small script to get the url (normally the docs) and repo description
         response = requests.get(
-            repo_contribs, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
+            repo_contribs,
+            headers={"Authorization": f"token {self.GITHUB_TOKEN}"},
         )
 
         if response.status_code == 404:
             print("Can't find: ", url, ". Did the repo url change?")
-        # Extract the description and homepage URL from the response JSON
+        # Extract the description and homepage URL from the JSON response
         else:
             return len(response.json())
 
     def get_last_commit(self, repo: str) -> str:
-        """ """
+        """Returns the last commit to the repository.
+
+        Parameters
+        ----------
+        str : string
+            A string containing a datetime object representing the datetime of
+            the last commit to the repo
+        """
         url = repo + "/commits"
         response = requests.get(
             url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
@@ -346,7 +376,7 @@ class ProcessIssues(YamlIO):
     def get_categories(
         self, issue_body_list: list[list[str]], fmt: bool = True
     ) -> list[str]:
-        """Parse through a pyos issue and grab the categories associated
+        """Parse through a pyOS review issue and grab categories associated
         with a package
 
         Parameters
@@ -374,14 +404,12 @@ class ProcessIssues(YamlIO):
         for i in range(start_index + 1, len(issue_body_list)):  # 30):
             line = issue_body_list[i][0].strip()
             checked = any([x in line for x in cat_matches])
-            # TODO could i change the if to a while loop?
+
             if line.startswith("- [") and checked:
                 category = line[line.index("]") + 2 :]
                 categories.append(category)
             elif not line.startswith("- ["):
                 break
-            # elif line.strip().startswith("* Please fill out a pre-submission"):
-            #     break
 
         if fmt:
             categories = [c.lower().replace(" ", "-") for c in categories]

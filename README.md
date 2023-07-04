@@ -59,7 +59,7 @@ Returns
 - In some cases users haven't updated their name on GitHub. Their profile may either contain a first name or no name. In those instances we may update a name manually. If a
   name exists in the contributors.yml file and it has at least two words (first and last), we should leave it as is in the `contributors.yml` file.
 
-### `python3 parse_review_issues.py.py`
+### `python3 parse_review_issues.py`
 
 To run:
 `python3 parse_review_issues.py`
@@ -135,6 +135,13 @@ python3 parse_review_issues.py
 Create environment:
 
 `mamba env create -f environment.yml`
+
+## Notes
+
+First run parse-contributors.py - this will parse through and create a current up-to-date contributors.yml file.
+
+- Next run `parse_review_issues.py` - this will parse through all of our open issues and will create a new packages.yml file
+- Once you have that you can run update-reviewers: This not yet created script will take the output of parse-contributors (which can be ingested as a dict from the output pickle file) with a key being the gh username.
 
 ## Contributors ✨
 

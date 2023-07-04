@@ -6,6 +6,8 @@ from pyosmeta.file_io import get_api_token
 
 # TODO: Turn this into a conditional that checks for a .env file and
 # if that doesn't exist then assume it's being run in actions.
+# TODO: remove the categorize as peer review from this workflow. this is because
+# in the update reviewers we do it in a way that is more accurate.
 
 
 def main():
@@ -17,13 +19,11 @@ def main():
         "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/.all-contributorsrc",
         "https://raw.githubusercontent.com/pyOpenSci/software-review/main/.all-contributorsrc",
         "https://raw.githubusercontent.com/pyOpenSci/update-web-metadata/main/.all-contributorsrc",
-        # "https://raw.githubusercontent.com/pyOpenSci/examplepy/main/.all-contributorsrc",
     ]
 
     # Get contribs from pyopensci.github.io repo (this is what is published online)
     web_yaml_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
 
-    # Instantiate contrib object
     processContribs = ProcessContributors(json_files, web_yaml_path, GITHUB_TOKEN)
 
     # Returns a list of dict objects with gh usernames (lowercase) as keys
@@ -41,7 +41,6 @@ def main():
         all_contribs_dict[key]["github_username"] = all_contribs_dict[key][
             "github_username"
         ].lower()
-        print(all_contribs_dict[key]["github_username"])
 
     gh_data = processContribs.get_gh_data(all_contribs_dict)
 
@@ -60,8 +59,7 @@ def main():
         all_contribs_dict, gh_data
     )
 
-    # Save a pickle locally to support updates after parsing
-    # reviews
+    # Save a pickle locally to support updates after parsing reviews
     with open("all_contribs.pickle", "wb") as f:
         pickle.dump(all_contribs_dict_up, f)
 

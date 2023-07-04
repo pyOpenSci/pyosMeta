@@ -1,6 +1,7 @@
 .DS_Store
-contributors.yml
-packages.yml
+contrib*.yml
+pack*.yml
+*.pickle
 all_contribs.pickle
 all_contribs_dict.pickle
 .env
