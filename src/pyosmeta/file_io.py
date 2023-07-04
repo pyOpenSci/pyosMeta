@@ -1,4 +1,5 @@
 import os
+import re
 import urllib.request
 from dataclasses import dataclass
 
@@ -82,19 +83,62 @@ class YamlIO:
             yaml.indent(mapping=4, sequence=4, offset=2)
             yaml.dump(data_list, file)
 
+    def clean_string(self, astr: str) -> str:
+        """
+        Clean a string by removing occurrences of strings starting with "*id0" and "[]".
+
+        Parameters
+        ----------
+        astr : str
+            The string to be cleaned.
+
+        Returns
+        -------
+        str
+            The cleaned string.
+
+        Examples
+        --------
+        >>> input_string = "packages-submitted: &id003 []"
+        >>> clean_string(input_string)
+        "packages-submitted: []"
+        """
+        patterns = ["*id001", "*id002", "*id003", "*id004"]
+        # pattern = r"&id0\w{0,4}"
+        for pattern in patterns:
+            astr = astr.replace(pattern, "")
+        return astr.replace("[]", "")
+
     def clean_yaml_file(self, filename):
         """Open a yaml file and remove extra indents and spacing"""
         with open(filename, "r") as f:
             lines = f.readlines()
 
+        # TODO: regex would be cleaner here - https://stackoverflow.com/questions/27064964/python-replace-all-words-start-with
         cleaned_lines = []
-        for line in lines:
-            if line.startswith("  "):
-                cleaned_lines.append(line[2:])
-            else:
-                cleaned_lines.append(line)
+        for i, line in enumerate(lines):
+            if i == 0 and line.startswith("  "):
+                # check for 2 spaces in the first line
+                fix_indent = True
+            if fix_indent:
+                line = line.replace("  ", "", 1)
+            line = self.clean_string(line)
+            cleaned_lines.append(line)
 
         cleaned_text = "".join(cleaned_lines).replace("''", "")
 
         with open(filename, "w") as f:
             f.write(cleaned_text)
+
+    def clean_export_yml(self, a_dict: dict, filename: str) -> None:
+        """Inputs a dictionary with keys - contribs or packages.
+        It then converse to a list for export, and creates a cleaned
+        YAML file that is jekyll friendly
+        """
+        final_data = []
+        for key in a_dict:
+            final_data.append(a_dict[key])
+
+        # Export to yaml
+        self.export_yaml(filename, final_data)
+        self.clean_yaml_file(filename)

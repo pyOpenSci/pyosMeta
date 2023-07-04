@@ -3,13 +3,28 @@ Script that parses metadata from na issue and adds it to a yml file for the
 website. It also grabs some of the package metadata such as stars,
 last commit, etc.
 
-Output: packages.yml
+Output: packages.yml file containing a list of
+ 1. all packages with accepted reviews
+ 2. information related to the review including reviewers, editors
+ 3. basic package stats including stars, etc.
 
-To run: python3 parse_issue_metadata.py
-
-# TODO: add maintainer list to the metadata!
+To run at the CLI: parse_issue_metadata
 """
 
+# TODO: PRIORITIZE currently this recreates the review from scratch. but sometimes we might
+# update content manually.
+# TODO: add the link to the review issue to each package listing so we can link
+# to the review from the website.
+# TODO: if we export files we might want packages.yml and then under_review.yml
+# thus we'd want to add a second input parameters which was file_name
+# TODO: This returns key errors and name errors when hitting api limits
+# Would be good to track API return responses / figure out wait time so it
+# continues to run
+# TODO: Would be cool to create an "under review now" list as well -
+# ideally this could be passed as a CLI argument with the label we want to
+# search for
+
+import pickle
 
 from pyosmeta import ProcessIssues
 from pyosmeta.file_io import get_api_token
@@ -18,12 +33,6 @@ from pyosmeta.file_io import get_api_token
 def main():
     GITHUB_TOKEN = get_api_token()
 
-    # TODO: looks like sometimes the gh username is the name then @. so i need to create
-    # code that looks for the @ and adds the username to ghusername and the rest to the name
-    # result.status_code in [200, 302]:
-    # TODO: I get key errors and name errors when i hit api limits
-    # Would be good to track API return responses / figure out how long I need to wait
-    # so it doesn't just fail. how does that get setup?
     issueProcess = ProcessIssues(
         org="pyopensci",
         repo_name="software-submission",
@@ -33,14 +42,11 @@ def main():
 
     # Get all issues for approved packages
     issues = issueProcess.return_response()
-    # breakpoint()
-    # Fixed:
     review = issueProcess.parse_issue_header(issues, 12)
 
-    # Get list of GitHub API endpoint for each accepted package
-    all_repo_endpoints = issueProcess.get_repo_endpoints(review)
+    repo_endpoints = issueProcess.get_repo_endpoints(review)
 
-    # Send a GET request to the API endpoint and include a user agent header
+    # Send a GET request to the API endpoint and include user agent header
     gh_stats = [
         "name",
         "description",
@@ -48,7 +54,6 @@ def main():
         "created_at",
         "stargazers_count",
         "watchers_count",
-        "stargazers_count",
         "forks",
         "open_issues_count",
         "forks_count",
@@ -56,9 +61,9 @@ def main():
 
     # Get gh metadata for each package submission
     all_repo_meta = {}
-    for package_name in all_repo_endpoints.keys():
-        print(package_name)
-        package_api = all_repo_endpoints[package_name]
+    for package_name in repo_endpoints.keys():
+        print("Getting GitHub stats for", package_name)
+        package_api = repo_endpoints[package_name]
         all_repo_meta[package_name] = issueProcess.get_repo_meta(package_api, gh_stats)
 
         all_repo_meta[package_name]["contrib_count"] = issueProcess.get_repo_contribs(
@@ -70,15 +75,11 @@ def main():
         # Add github meta to review metadata
         review[package_name]["gh_meta"] = all_repo_meta[package_name]
 
-    # Turn the data into a list to support jekyll friendly yaml
-    final_data = []
-    for key in review:
-        final_data.append(review[key])
+    with open("all_reviews.pickle", "wb") as f:
+        pickle.dump(review, f)
 
-    final_yaml = "packages.yml"
-    # Export to yaml!
-    issueProcess.export_yaml(final_yaml, final_data)
-    issueProcess.clean_yaml_file(final_yaml)
+    # Export and clean final yaml file
+    issueProcess.clean_export_yml(review, "packages.yml")
 
 
 if __name__ == "__main__":
