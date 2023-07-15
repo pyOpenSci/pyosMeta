@@ -7,7 +7,7 @@ from pyosmeta.file_io import get_api_token
 # TODO: Turn this into a conditional that checks for a .env file and
 # if that doesn't exist then assume it's being run in actions.
 
-API_TOKEN = get_api_token()
+GITHUB_TOKEN = get_api_token()
 
 
 json_files = [
@@ -23,7 +23,7 @@ json_files = [
 web_yaml_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
 
 # Instantiate contrib object
-processContribs = ProcessContributors(json_files, web_yaml_path, API_TOKEN)
+processContribs = ProcessContributors(json_files, web_yaml_path, GITHUB_TOKEN)
 
 # Returns a list of dict objects with gh usernames (lowercase) as keys
 web_yml_dict = processContribs.load_website_yml()

@@ -22,13 +22,13 @@ class ProcessIssues(YamlIO):
         Repo name where the software review issues live
     tag_name : str
         Tag of issues to grab - e.g. pyos approved
-    API_TOKEN : str
+    GITHUB_TOKEN : str
         API token needed to authenticate with GitHub
     username : str
         Username needed to authenticate with GitHub
     """
 
-    API_TOKEN: str = ""
+    GITHUB_TOKEN: str = ""
     org: str = ""
     repo_name: str = ""
     label_name: str = ""
@@ -49,7 +49,8 @@ class ProcessIssues(YamlIO):
 
         try:
             response = requests.get(
-                self.api_endpoint, headers={"Authorization": f"token {self.API_TOKEN}"}
+                self.api_endpoint,
+                headers={"Authorization": f"token {self.GITHUB_TOKEN}"},
             )
             response.raise_for_status()
 
@@ -166,6 +167,8 @@ class ProcessIssues(YamlIO):
         review = {}
         for issue in issues:
             package_name, body_data = self.parse_comment(issue)
+            if not package_name:
+                continue
             # index of 15 should include date accepted
             issue_meta = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta
@@ -176,7 +179,7 @@ class ProcessIssues(YamlIO):
             # Rename package description & reorder keys
             print(review[package_name].keys())
             review[package_name]["package_description"] = review[package_name].pop(
-                "one-line_description_of_package"
+                "one-line_description_of_package", ""
             )
             review[package_name] = {
                 key: review[package_name][key]
@@ -265,7 +268,7 @@ class ProcessIssues(YamlIO):
             None,
         )
 
-        package_name = body_data[name_index][1]
+        package_name = body_data[name_index][1] if name_index else None
         print(package_name)
 
         return package_name, body_data
@@ -286,7 +289,7 @@ class ProcessIssues(YamlIO):
         stats_dict = {}
         # Small script to get the url (normally the docs) and description of a repo!
         response = requests.get(
-            url, headers={"Authorization": f"token {self.API_TOKEN}"}
+            url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
         )
 
         # TODO: should this be some sort of try/except how do i catch these
@@ -317,7 +320,7 @@ class ProcessIssues(YamlIO):
         repo_contribs = url + "/contributors"
         # Small script to get the url (normally the docs) and description of a repo!
         response = requests.get(
-            repo_contribs, headers={"Authorization": f"token {self.API_TOKEN}"}
+            repo_contribs, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
         )
 
         if response.status_code == 404:
@@ -330,9 +333,13 @@ class ProcessIssues(YamlIO):
         """ """
         url = repo + "/commits"
         response = requests.get(
-            url, headers={"Authorization": f"token {self.API_TOKEN}"}
+            url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
         ).json()
-        date = response[0]["commit"]["author"]["date"]
+        date = (
+            response[0]["commit"]["author"]["date"]
+            if 0 in response
+            else "1970-01-01T00:00:00Z"
+        )
 
         return self._clean_date(date)
 
