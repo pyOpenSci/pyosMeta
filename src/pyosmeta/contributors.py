@@ -12,7 +12,7 @@ from .file_io import YamlIO
 class ProcessContributors(YamlIO):
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
-    def __init__(self, json_files: list, web_yml: str, API_TOKEN: str):
+    def __init__(self, json_files: list, web_yml: str, GITHUB_TOKEN: str):
         """
         Parameters
         ----------
@@ -23,12 +23,12 @@ class ProcessContributors(YamlIO):
         web_yml : str
             A string containing a path to a online website yml file
             This file contains contributor data used to build the website contribs list
-        API_TOKEN : str
+        GITHUB_TOKEN : str
             A string containing your API token needed to access the github API
         """
 
         self.json_files = json_files
-        self.API_TOKEN = API_TOKEN
+        self.GITHUB_TOKEN = GITHUB_TOKEN
         self.web_yml = web_yml
         self.update_keys = [
             "twitter",
@@ -273,7 +273,7 @@ class ProcessContributors(YamlIO):
         """
 
         url = f"https://api.github.com/users/{username}"
-        headers = {"Authorization": f"Bearer {self.API_TOKEN}"}
+        headers = {"Authorization": f"Bearer {self.GITHUB_TOKEN}"}
         response = requests.get(url, headers=headers)
         # TODO: add check here for if credentials are bad
         # if message = Bad credentials

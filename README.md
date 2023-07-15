@@ -29,7 +29,7 @@ API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?a
 After obtaining a token;
 
 1. Duplicate the `.env-default` file and rename the copy to `.env`
-2. Assign your token to the `API_TOKEN` variable in the `.env` file.
+2. Assign your token to the `GITHUB_TOKEN` variable in the `.env` file.
 
 ## How to run each script
 

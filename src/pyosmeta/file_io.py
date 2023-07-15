@@ -17,7 +17,7 @@ def get_api_token() -> str:
         The provided API key in the .env file.
     """
     load_dotenv()
-    return os.environ["API_TOKEN"]
+    return os.environ["GITHUB_TOKEN"]
 
 
 @dataclass
