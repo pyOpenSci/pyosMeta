@@ -24,5 +24,4 @@ jobs:
       - name: Run script from update-web-metadata repo
         env:
          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: |
-          python ${{ inputs.script_name_with_args }}
+        run: ${{ inputs.script_name_with_args }}
