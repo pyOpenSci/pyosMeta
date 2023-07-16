@@ -9,7 +9,7 @@ from pyosmeta.file_io import get_api_token
 
 
 def main():
-    API_TOKEN = get_api_token()
+    GITHUB_TOKEN = get_api_token()
 
     json_files = [
         "https://raw.githubusercontent.com/pyOpenSci/python-package-guide/main/.all-contributorsrc",
@@ -24,7 +24,7 @@ def main():
     web_yaml_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
 
     # Instantiate contrib object
-    processContribs = ProcessContributors(json_files, web_yaml_path, API_TOKEN)
+    processContribs = ProcessContributors(json_files, web_yaml_path, GITHUB_TOKEN)
 
     # Returns a list of dict objects with gh usernames (lowercase) as keys
     web_yml_dict = processContribs.load_website_yml()

@@ -16,7 +16,7 @@ from pyosmeta.file_io import get_api_token
 
 
 def main():
-    API_TOKEN = get_api_token()
+    GITHUB_TOKEN = get_api_token()
 
     # TODO: looks like sometimes the gh username is the name then @. so i need to create
     # code that looks for the @ and adds the username to ghusername and the rest to the name
@@ -28,7 +28,7 @@ def main():
         org="pyopensci",
         repo_name="software-submission",
         label_name="6/pyOS-approved 🚀🚀🚀",
-        API_TOKEN=API_TOKEN,
+        GITHUB_TOKEN=GITHUB_TOKEN,
     )
 
     # Get all issues for approved packages

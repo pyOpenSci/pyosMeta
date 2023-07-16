@@ -25,7 +25,7 @@ from pyosmeta.file_io import get_api_token
 
 
 def main():
-    API_TOKEN = get_api_token()
+    GITHUB_TOKEN = get_api_token()
 
     # Load contributors dict from website (just for now)
     with open("all_contribs.pickle", "rb") as f:
@@ -41,7 +41,7 @@ def main():
     # file_obj = YamlIO()
     # review_dict = file_obj.open_yml_file(review_path)
     # contribs = file_obj.open_yml_file(contrib_path)
-    process_contribs = ProcessContributors([], [], API_TOKEN)
+    process_contribs = ProcessContributors([], [], GITHUB_TOKEN)
 
     # Will see how this works if you can't pass the token...
     updateMeta = UpdateReviewMeta()
