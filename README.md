@@ -59,7 +59,7 @@ Returns
 - In some cases users haven't updated their name on GitHub. Their profile may either contain a first name or no name. In those instances we may update a name manually. If a
   name exists in the contributors.yml file and it has at least two words (first and last), we should leave it as is in the `contributors.yml` file.
 
-### `python3 parse_review_issues.py`
+### parse_review_issues script
 
 To run:
 `python3 parse_review_issues.py`
