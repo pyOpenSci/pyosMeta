@@ -84,6 +84,15 @@ class ProcessIssues(YamlIO):
             ("Submitting", "Editor", "Reviewer", "All current maintainers")
         )
 
+    def _clean_name(self, a_str: str) -> str:
+        """Helper to strip unwanted chars from text"""
+
+        unwanted = ["(", ")", "@"]
+        for char in unwanted:
+            a_str = a_str.replace(char, "")
+
+        return a_str.strip()
+
     def _get_line_meta(self, line_item: list[str]) -> dict[str, object]:
         """
         Parameters
@@ -100,41 +109,40 @@ class ProcessIssues(YamlIO):
         """
 
         meta = {}
-        theKey = line_item[0].lower().replace(" ", "_")
+        a_key = line_item[0].lower().replace(" ", "_")
         if self._contains_keyword(line_item[0]):
             if line_item[0].startswith("All current maintainers"):
                 names = line_item[1].split(",")
                 # There are at least 2 maintainers if there is a comma
-                if len(names) > 1:
-                    meta[theKey] = []
-                    for aname in names:
-                        # Add each maintainer to the dict
-                        user = aname.split("@")
-                        a_maint = {
-                            "name": user[0].replace("(", "").replace(")", "").strip(),
-                            "github_username": user[1]
-                            .replace("(", "")
-                            .replace(")", "")
-                            .strip(),
-                        }
-
-                        # filtered_list = list(filter(None, my_list))
-                        meta[theKey].append(a_maint)
+                # if len(names) > 1:
+                meta[a_key] = []
+                for aname in names:
+                    # Add each maintainer to the dict
+                    user = aname.split("@")
+                    # Clean
+                    user = [self._clean_name(l) for l in user]
+                    a_maint = {
+                        "name": self._clean_name(user[0]),
+                        "github_username": self._clean_name(user[1]),
+                    }
+                    # filtered_list = list(filter(None, my_list))
+                    meta[a_key].append(a_maint)
             else:
                 names = line_item[1].split("(", 1)
                 if len(names) > 1:
-                    meta[theKey] = {
-                        "github_username": names[1].strip().lstrip("@").rstrip(")"),
-                        "name": names[0].strip(),
+                    meta[a_key] = {
+                        "github_username": self._clean_name(names[1]),
+                        "name": self._clean_name(names[0]),
                     }
                 else:
-                    meta[theKey] = {
-                        "github_username": names[0].strip().lstrip("@"),
+                    meta[a_key] = {
+                        "github_username": self._clean_name(names[0]),
                         "name": "",
                     }
+        elif len(line_item) > 1:
+            meta[a_key] = line_item[1].strip()
         else:
-            if len(line_item) > 1:
-                meta[theKey] = line_item[1].strip()
+            meta[a_key] = self._clean_name(line_item[0])
         return meta
 
     def parse_issue_header(
@@ -167,16 +175,17 @@ class ProcessIssues(YamlIO):
             "created_at",
             "updated_at",
             "closed_at",
+            "issue_link",
         ]
         meta_dates = ["created_at", "updated_at", "closed_at"]
 
         review = {}
         for issue in issues:
             package_name, body_data = self.parse_comment(issue)
+            print(package_name)
             if not package_name:
                 continue
             # index of 15 should include date accepted
-
             issue_meta = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta
             for adate in meta_dates:
@@ -185,16 +194,21 @@ class ProcessIssues(YamlIO):
             # Clean markdown url's from editor, and reviewer lines
             types = ["editor", "reviewer_1", "reviewer_2"]
             user_values = ["github_username", "name"]
-            for aType in types:
+            for a_type in types:
                 for user_value in user_values:
-                    issue_meta[aType][user_value] = (
-                        issue_meta[aType][user_value]
+                    issue_meta[a_type][user_value] = (
+                        issue_meta[a_type][user_value]
                         .replace("https://github.com/", "")
                         .replace("[", "")
                         .replace("]", "")
                     )
+
             review[package_name] = issue_meta
+            # TODO: returning empty cat list - fix next
             review[package_name]["categories"] = self.get_categories(body_data)
+            review[package_name]["issue_link"] = issue["url"].replace(
+                "https://api.github.com/repos/", "https://github.com/"
+            )
             # Rename package description & reorder keys
             review[package_name]["package_description"] = review[package_name].pop(
                 "one-line_description_of_package", ""
@@ -204,6 +218,7 @@ class ProcessIssues(YamlIO):
                 for key in key_order
                 if review[package_name].get(key)
             }
+
         return review
 
     def get_issue_meta(
@@ -276,8 +291,10 @@ class ProcessIssues(YamlIO):
         # TODO: this var isn't used
         comments_url = issue["comments_url"]
         body = issue["body"]
-
-        lines = body.split("\r\n")
+        # Here sometimes the lines are split with \n, others \r\n
+        # To clean split on \n but may have to remove the \r
+        lines = body.split("\n")
+        lines = [a_line.strip("\r").strip() for a_line in lines]
         # Some users decide to hold the issue titles.
         # For those, clean the markdown bold ** element
         lines = [line.replace("**", "").strip() for line in lines if line.strip() != ""]
@@ -387,12 +404,16 @@ class ProcessIssues(YamlIO):
         fmt : bool
             Applies some formatting changes to the categories to match what is required for the website.
         """
-        # Find the starting index of the section we're interested in
+        # Find the starting index of the category section
         start_index = None
         for i in range(len(issue_body_list)):
             if issue_body_list[i][0].startswith("- Please indicate which"):
-                start_index = i
+                start_index = i + 1
                 break
+        # NOTE - some issues have line after that startswith "Check out our"
+        # For those issues advance i += 1
+        if issue_body_list[start_index][0].startswith("Check out our"):
+            start_index += 1
 
         if start_index is None:
             # If we couldn't find the starting index, return an empty list
@@ -401,7 +422,7 @@ class ProcessIssues(YamlIO):
         # Iterate through the lines starting at the starting index and grab the relevant text
         cat_matches = ["[x]", "[X]"]
         categories: list[str] = []
-        for i in range(start_index + 1, len(issue_body_list)):  # 30):
+        for i in range(start_index, len(issue_body_list)):  # 30):
             line = issue_body_list[i][0].strip()
             checked = any([x in line for x in cat_matches])
 

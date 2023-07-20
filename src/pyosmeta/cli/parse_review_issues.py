@@ -17,12 +17,12 @@ To run at the CLI: parse_issue_metadata
 # to the review from the website.
 # TODO: if we export files we might want packages.yml and then under_review.yml
 # thus we'd want to add a second input parameters which was file_name
-# TODO: This returns key errors and name errors when hitting api limits
-# Would be good to track API return responses / figure out wait time so it
-# continues to run
 # TODO: Would be cool to create an "under review now" list as well -
 # ideally this could be passed as a CLI argument with the label we want to
 # search for
+# TODO: ASFSGAP has this  Data visualization - see presubmission so that becomes the category.
+# a fix for this would be to check / validate  each category maybe at the end
+# ?
 
 import pickle
 

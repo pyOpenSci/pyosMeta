@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import requests
 
@@ -65,6 +65,67 @@ class ProcessContributors(YamlIO):
             "email": "",
         }
 
+    # TODO - these might be better in a utility type class?
+    def clean_list(self, a_list: Union[str, List[str]]) -> List[str]:
+        """Helper function that takes an input object as a list or string.
+        If it is a list containing none, it returns an empty list
+        if it is a string is returns the string as a list
+        removes 'None' if that is in the list. and returns
+            either an empty clean list of the list as is."""
+
+        if isinstance(a_list, str):
+            a_list = [a_list]
+        elif not a_list:
+            a_list = []
+        elif None in a_list:
+            a_list = []
+        return a_list
+
+    # TODO - these can then be helpers!
+    def unique_new_vals(
+        self, a_list: List[str], a_item: List[str]
+    ) -> Tuple[bool, Optional[List[str]]]:
+        """Checks two objects either a list and string or two lists
+        and evaluates whether there are differences between them."""
+
+        default = (False, None)
+        list_lower = [al.lower() for al in a_list]
+        item_lower = [ai.lower() for ai in a_item]
+        diff = list(set(item_lower) - set(list_lower))
+        if len(diff) > 0:
+            default = (True, diff)
+        return default
+
+    def update_contrib_list(
+        self,
+        existing_contribs: Union[List, str],
+        new_contrib: Union[List, str],
+    ) -> List:
+        """Method that gets an existing list of contribs.
+        cleans the list and then checks the list against a
+        new contribution to see if it should be added.
+
+        This should work for both packages and contribs.
+
+        Parameters
+        ----------
+        existing_contribs: list or str
+            A users existing contributions
+        new_contrib: list or str
+            a list or a single new contribution to be added
+
+        """
+
+        # Cleanup first
+        cleaned_list = self.clean_list(existing_contribs)
+        new_contrib = self.clean_list(new_contrib)
+
+        unique_vals, new_vals = self.unique_new_vals(cleaned_list, new_contrib)
+        if unique_vals:
+            cleaned_list += new_vals
+
+        return cleaned_list
+
     def _list_to_dict(self, aList: list) -> dict:
         """Takes a yaml file opened and turns into a dictionary
         The dict structure is key (gh_username) and then a dictionary
@@ -119,12 +180,16 @@ class ProcessContributors(YamlIO):
         str
             Contribution type.
         """
-        guides = ["python-package-guide", "software-peer-review"]
+        # guides = ["python-package-guide", "software-peer-review"]
 
         # Check whether the person contributed to a
         # guidebook, website or peer review
-        if any([x in json_file for x in guides]):
-            contrib_type = "guidebook-contrib"
+        # if any([x in json_file for x in guides]):
+        #     contrib_type = "guidebook-contrib"
+        if "software-peer-review" in json_file:
+            contrib_type = "peer-review-guide"
+        elif "python-package-guide" in json_file:
+            contrib_type = "package-guide"
         elif "pyopensci.github.io" in json_file:
             contrib_type = "web-contrib"
         elif "update-web-metadata" in json_file:
@@ -133,96 +198,59 @@ class ProcessContributors(YamlIO):
             contrib_type = "community"
         return contrib_type
 
+    def check_add_user(self, gh_user: str, contribs: Dict[str, str]) -> None:
+        """Check to make sure user exists and if not, add them
+
+        Parameters
+        ----------
+        gh_user : str
+            github username
+        contribs: dict
+            A dictionary containing contributors with gh user being the key
+
+        This returns the updated dictionary with a new user at the end.
+
+        """
+        if gh_user not in contribs.keys():
+            print("Missing user", gh_user, "adding them now.")
+            return self.add_new_user(gh_user)
+
     # TODO: this is the most complicated function ever
     # SIMPLIFY
-    def process_json_file(self, json_file: str, combined_data: dict) -> dict:
+    # RENAME - get_json_contribs and remove second input (combined data)
+    def process_json_file(self, json_file: str) -> Tuple[str, List]:
         """Deserialize a JSON file from a URL and cleanup data
 
         Open a JSON file containing contributor data created from a
-        all-contributors json file. Rename fields to match fields used in the
-        website. Then add keys needed for the website.
+        all-contributors json file.
+        Collect the contribution type and all users associated with that
+        contribution
+        Return a contrib type and list of users
 
         Parameters
         ----------
         json_file : string
             Web url of a json formatted file
-        usernames : list of users already processed
 
         """
-        # TODO: This method assumes that each user in the json file is not in
-        # the contributors.yml file already. thus it's populating empty data.
-        # However if the user is already there, they won't get added so if I
-        # try to update their contributor "type" here it will ONLY work for
-        # people who are new. This is OK for future use of these functions
-        # but in this case (now) i need to update contrib type for users
-        # that are already in our yaml file
 
         data = self.load_json(json_file)
         contrib_type = self.check_contrib_type(json_file)
-
-        # Create a dictionary to hold the processed data
-        processed_data = {}
-        # Loop through each entry in the JSON file
+        # What if this just returns a contrib type and associated
+        # list of users?
+        # TODO: return all users in file and skip everything below
+        user_dict = {}
+        all_users = []
         for entry in data["contributors"]:
-            # TODO create small method for this check
-            # Check if the login value is already in the dictionary
-            if entry["login"] in combined_data.keys():
-                # This allows us to track how someone has contributed
-                # would it be better to do it in a separate step or here?
-                print(
-                    "Adding contrib info for",
-                    contrib_type,
-                    "for: ",
-                    entry["login"],
-                )
-                # Update contributor type only in the main dict if the user
-                # already exists & that contrib type isn't already there
-                try:
-                    if (
-                        contrib_type
-                        not in combined_data[entry["login"]]["contributor_type"]
-                    ):
-                        combined_data[entry["login"]]["contributor_type"].append(
-                            contrib_type
-                        )
-                except:
-                    combined_data[entry["login"]]["contributor_type"] = [contrib_type]
+            all_users.append(entry["login"].lower())
 
-                # Continue will go to the next iteration in a loop
-                continue
-            # TODO create helper method for this cleanup step
-            # Rename the login key to github_username
-            entry["github_username"] = entry.pop("login")
-            # Rename the profile key to website
-            entry["website"] = entry.pop("profile")
-            # Process github image avatar id
-            entry["avatar_url"] = int(
-                entry["avatar_url"].rsplit("/", 1)[-1].rsplit("?", 1)[0]
-            )
-            entry["github_image_id"] = entry.pop("avatar_url")
-
-            # Add empty values for the new keys
-            # TODO: Tuple - consumes less memory -- ("mastodon",
-            for key in [
-                "mastodon",
-                "twitter",
-                "bio",
-                "orcidid",
-                "packages-submitted",
-                "packages-reviewed",
-            ]:
-                entry[key] = ""
-
-            # If the contributor worked on a guidebook,
-            entry["contributor_type"] = [contrib_type]
-            # Add the entry to the processed data dictionary
-            # NOTE: this adds the GH username as a key for each dict entry
-            # make sure it's lower case
-            processed_data[entry["github_username"].lower()] = entry
-        return combined_data, processed_data
+        return contrib_type, all_users
 
     def combine_json_data(self) -> dict:
         """Deserialize and clean a list of json file url's.
+
+        Parses a list of json file  urls representing all-contributor bot
+        json files.
 
         Returns
         -------
@@ -235,8 +263,11 @@ class ProcessContributors(YamlIO):
         for json_file in self.json_files:
             # Process the JSON file and add the data to the combined dictionary
             try:
-                combined_data, data = self.process_json_file(json_file, combined_data)
-                combined_data.update(data)
+                key, users = self.process_json_file(json_file)
+                # combined_data, data = self.process_json_file(
+                #     json_file, combined_data
+                # )
+                combined_data[key] = users
             except:
                 print("Oops - can't process", json_file)
         return combined_data

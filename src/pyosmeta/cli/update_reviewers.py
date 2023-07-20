@@ -22,59 +22,24 @@ To run: update_reviewers
 # will biocypher
 # TODO: make sure to add a current editor boolean to the current editors and
 # emeritus ones.
-# TODO: alex definitely contributed to the guides as well. I believe everyone is not being correctly assigned to guidebook contrib
-
 
 import pickle
 from typing import Dict, List, Optional, Tuple, Union
 
-# from pyosmeta.contrib_review_meta import UpdateReviewMeta
-from pyosmeta.contributors import ProcessContributors
+from pyosmeta.contrib_review_meta import UpdateReviewMeta
 from pyosmeta.file_io import get_api_token
 
-# import ruamel.yaml as yaml
 
-
-# TODO: add these to a module
-def check_add_user(gh_user: str, contribs: Dict[str, str], process_contribs) -> None:
-    """"""
-    if gh_user not in contribs.keys():
-        print("Missing user", gh_user, "adding them now.")
-        return contribs.update(process_contribs.add_new_user(gh_user))
-
-
-def clean_list(a_list: Union[str, List[str]]) -> List[str]:
-    """Helper function that takes an input object,
-    removes 'None' if that is in the list. and returns
-        either an empty clean list of the list as is."""
-
-    if a_list == None or isinstance(a_list, str) or None in a_list:
-        a_list = []
-
-    return a_list
-
-
-def unique_new_vals(
-    a_list: List[str], a_item: List[str]
-) -> Tuple[bool, Optional[List[str]]]:
-    """Checks two objects either a list and string or two lists
-    and evaluates whether there are differences between them."""
-
-    default = (False, None)
-    list_lower = [al.lower() for al in a_list]
-    item_lower = [ai.lower() for ai in a_item]
-    diff = list(set(item_lower) - set(list_lower))
-    if len(diff) > 0:
-        default = (True, diff)
-    return default
+def get_clean_user(username: str):
+    return username.lower().strip()
 
 
 def main():
     GITHUB_TOKEN = get_api_token()
+    updateContribs = UpdateReviewMeta(GITHUB_TOKEN)
 
-    process_contribs = ProcessContributors([], [], GITHUB_TOKEN)
-    # Open the contributor file created from parse_contributors.py
-    # key is gh_username (lowercase)
+    # Two pickle files are outputs of the two other scripts
+    # use that data to avoid having to hit the API again to retrieve.
     with open("all_contribs.pickle", "rb") as f:
         contribs = pickle.load(f)
 
@@ -82,66 +47,55 @@ def main():
     with open("all_reviews.pickle", "rb") as f:
         packages = pickle.load(f)
 
-    ppl_types = {
-        "reviewer_1": ["packages-reviewed", ["reviewer", "peer-review"]],
-        "reviewer_2": ["packages-reviewed", ["reviewer", "peer-review"]],
-        "editor": ["packages-editor", ["editor", "peer-review"]],
-        "submitting_author": [
-            "packages-submitted",
-            ["maintainer", "submitting-author", "peer-review"],
-        ],
-        "all_current_maintainers": [
-            "packages-submitted",
-            ["maintainer", "peer-review"],
-        ],
-    }
+    contrib_types = updateContribs.contrib_types
 
     # TODO: ivan did an if/ else to treat roles with 1 entry person vs multiple
     # if maintainers, ..
     # TODO - ?create a class for person types??
-    # Instead of using try/ except .get()
 
     for pkg_name, issue_meta in packages.items():
-        print("Processing editors, author and reviewers:", pkg_name)
-
-        for issue_review_role in ppl_types.keys():
+        print("Processing review team for:", pkg_name)
+        for issue_review_role in contrib_types.keys():
             if issue_review_role == "all_current_maintainers":
-                # Now parse all_current_maintainers
-                print("Processing maintainers")
-                # Might not use this but if so should be yml_role
-
-                # Older issues don't have all_current maintainers key key
                 if issue_review_role in issue_meta:
                     # Loop through each maintainer in the list
                     for i, a_maintainer in enumerate(issue_meta.get(issue_review_role)):
-                        gh_user = a_maintainer["github_username"].lower().strip()
-                        check_add_user(gh_user, contribs, process_contribs)
-                        contrib_key_yml = ppl_types[issue_review_role][0]
-                        contrib_pkgs = contribs[gh_user][contrib_key_yml]
+                        gh_user = get_clean_user(a_maintainer["github_username"])
 
-                        # If name is missing in issue, populate from contribs
+                        # TODO: The steps below are almost identical to the reviewers
+                        # Could these alias' be defined only once?
+                        if gh_user not in contribs.keys():
+                            contribs.update(
+                                updateContribs.check_add_user(gh_user, contribs)
+                            )
+                        # contribs_user = contribs[gh_user]
+                        existing_contribs = contribs[gh_user]["contributor_type"]
+                        # TODO: rename?? This is the review_role_yml_key
+                        contrib_key_yml = contrib_types[issue_review_role][0]
+                        contrib_key = contribs[gh_user][contrib_key_yml]
+                        # Update contrib roles
+                        review_role = contrib_types[issue_review_role][1]
+
+                        # Update contrib packages for peer review
+                        contribs[gh_user][
+                            contrib_key_yml
+                        ] = updateContribs.update_contrib_list(contrib_key, pkg_name)
+
+                        # TODO: alias' don't seem to work to update a dict
+                        # So a function could ingest the entire subdict for the
+                        # user and update the entire subdict?
+                        contribs[gh_user][
+                            "contributor_type"
+                        ] = updateContribs.update_contrib_list(
+                            existing_contribs, review_role
+                        )
+
+                        # If name is missing in issue summary, populate from contribs
                         if a_maintainer["name"] == "":
                             packages[pkg_name]["all_current_maintainers"][i][
                                 "name"
                             ] = contribs[gh_user]["name"]
-                            # Add them to the correct maintainer key packages-submitted
-                        # Update package list
-                        contrib_pkg_list = clean_list(contrib_pkgs)
-                        unique_vals, vals = unique_new_vals(
-                            contrib_pkg_list, [pkg_name]
-                        )
-                        if unique_vals:
-                            contrib_pkg_list += vals
 
-                        # Update contrib role
-                        contrib_types = contribs[gh_user]["contributor_type"]
-                        review_roles = ppl_types[issue_review_role][1]
-                        existing_contribs = clean_list(contrib_types)
-                        unique_vals, vals = unique_new_vals(
-                            existing_contribs, review_roles
-                        )
-                        if unique_vals:
-                            existing_contribs += vals
                 else:
                     print(
                         "All maintainers is missing in the review for ",
@@ -149,47 +103,40 @@ def main():
                     )
 
             else:
-                gh_user = (
+                gh_user = get_clean_user(
                     packages[pkg_name][issue_review_role]["github_username"]
-                    .lower()
-                    .strip()
                 )
 
-                # If they aren't already in contribs, add them
-                check_add_user(gh_user, contribs, process_contribs)
-                contribs_user = contribs[gh_user]
+                if gh_user not in contribs.keys():
+                    # If they aren't already in contribs, add them
+                    contribs.update(updateContribs.check_add_user(gh_user, contribs))
 
-                # Update contrib_type & packages contributed to in contribs file
-                # Get list of existing contrib types
-                existing_contribs = contribs_user["contributor_type"]
-                contrib_key_yml = ppl_types[issue_review_role][0]
-                review_role = clean_list(ppl_types[issue_review_role][1])
+                # contribs[gh_user] = contribs[gh_user]
+                existing_contribs = contribs[gh_user]["contributor_type"]
+                contrib_key_yml = contrib_types[issue_review_role][0]
+                contrib_key = contribs[gh_user][contrib_key_yml]
+                # Update contrib roles
+                review_role = contrib_types[issue_review_role][1]
 
-                # Get existing list of packages that they've worked on for role
-                all_pkgs = contribs_user[contrib_key_yml]
+                # Update contrib packages for peer review
+                contribs[gh_user][contrib_key_yml] = updateContribs.update_contrib_list(
+                    contrib_key, pkg_name
+                )
+
+                # Find new contributions (if any)
+                contribs[gh_user][
+                    "contributor_type"
+                ] = updateContribs.update_contrib_list(existing_contribs, review_role)
 
                 # If users's name is missing in issue, populate from contribs dict
                 if issue_meta[issue_review_role]["name"] == "":
-                    packages[pkg_name][issue_review_role]["name"] = contribs_user[
+                    packages[pkg_name][issue_review_role]["name"] = contribs[gh_user][
                         "name"
                     ]
 
-                # Update package list in contrib file
-                # TODO - make function
-                contrib_pkg_list = clean_list(contribs[gh_user][contrib_key_yml])
-                unique_vals, vals = unique_new_vals(contrib_pkg_list, [pkg_name])
-                if unique_vals:
-                    contrib_pkg_list += vals
-
-                # Update contribute_type type list in contrib file
-                contrib_type_key = clean_list(contribs[gh_user]["contributor_type"])
-                unique_vals, vals = unique_new_vals(contrib_type_key, review_role)
-                if unique_vals:
-                    contrib_type_key += vals
-
     # Export to yaml
-    process_contribs.clean_export_yml(contribs, "contribs.yml")
-    process_contribs.clean_export_yml(packages, "packs.yml")
+    updateContribs.clean_export_yml(contribs, "contribs.yml")
+    updateContribs.clean_export_yml(packages, "packs.yml")
 
 
 if __name__ == "__main__":

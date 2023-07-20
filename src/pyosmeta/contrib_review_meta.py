@@ -3,26 +3,40 @@ A small module that supports updating reviewer metadata for contributions
 related to peer review (Editors, Reviewers, Maintainers)
 """
 from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple, Union
 
 from .contributors import ProcessContributors
 
 
 @dataclass
 class UpdateReviewMeta(ProcessContributors):
-    def __init__(self):
+    """This is a class that is designed to add additional functionality
+    to ProcessContribs to support updating reviewer metadata associated with
+    review issues. It is a bridge between the ProcessContributors and
+    ProcessReviews objects."""
+
+    def __init__(self, GITHUB_TOKEN):
         """
         Parameters
         ----------
 
-        contrib_types : dict
-            xxx
+        GITHUB_TOKEN : str
+            GitHub token string
         """
+        ProcessContributors.__init__(self, [], [], GITHUB_TOKEN)
 
         self.contrib_types = {
-            "reviewer_1": "packages-reviewed",
-            "reviewer_2": "packages-reviewed",
-            "editor": "packages-editor",
-            "submitting_author": "packages-submitted",
+            "reviewer_1": ["packages-reviewed", ["reviewer", "peer-review"]],
+            "reviewer_2": ["packages-reviewed", ["reviewer", "peer-review"]],
+            "editor": ["packages-editor", ["editor", "peer-review"]],
+            "submitting_author": [
+                "packages-submitted",
+                ["maintainer", "submitting-author", "peer-review"],
+            ],
+            "all_current_maintainers": [
+                "packages-submitted",
+                ["maintainer", "peer-review"],
+            ],
         }
 
     def _create_review_meta(self, areview: dict) -> dict:

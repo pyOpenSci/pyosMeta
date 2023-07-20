@@ -19,7 +19,7 @@ readme = "README.md"
 license = {text = "MIT"}
 
 [project.scripts]
-parse-contributors = "pyosmeta.cli.parse_contributors:main"
+parse-contributors = "pyosmeta.cli.update_contributors:main"
 parse-review-issues = "pyosmeta.cli.parse_review_issues:main"
 update-reviewers = "pyosmeta.cli.update_reviewers:main"
 
