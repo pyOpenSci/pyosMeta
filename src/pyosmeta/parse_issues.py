@@ -3,13 +3,13 @@ from datetime import datetime
 
 import requests
 
-from .file_io import YamlIO
+from .contributors import ProcessContributors
 
 
 # main reason to use this is attributes .. avoiding them being changed
 # in other instances...
 @dataclass
-class ProcessIssues(YamlIO):
+class ProcessIssues(ProcessContributors):
     """
     A class that processes GitHub issues in our peer review process and returns
     metadata about each package.
@@ -28,11 +28,14 @@ class ProcessIssues(YamlIO):
         Username needed to authenticate with GitHub
     """
 
+    # Can i get rid of this GH TOKEN as it comes from PContribs below?
     GITHUB_TOKEN: str = ""
     org: str = ""
     repo_name: str = ""
     label_name: str = ""
     username: str = ""
+
+    # ProcessContributors.__init__(self, [], [], GITHUB_TOKEN)
 
     @property
     def api_endpoint(self):
@@ -182,7 +185,6 @@ class ProcessIssues(YamlIO):
         review = {}
         for issue in issues:
             package_name, body_data = self.parse_comment(issue)
-            print(package_name)
             if not package_name:
                 continue
             # index of 15 should include date accepted
@@ -253,7 +255,8 @@ class ProcessIssues(YamlIO):
 
         Parameters
         ----------
-        review_issue : dict
+        review_issues : dict
+            Dictionary containing all of the review issue paths.
 
         Returns
         -------

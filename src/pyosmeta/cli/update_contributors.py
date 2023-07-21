@@ -23,10 +23,12 @@ def main():
     web_yaml_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
 
     # Instantiate contrib object
-    processContribs = ProcessContributors(json_files, web_yaml_path, GITHUB_TOKEN)
+    processContribs = ProcessContributors(json_files, GITHUB_TOKEN)
 
     # Returns a list of dict objects with gh usernames (lowercase) as keys
-    web_contribs = processContribs.load_website_yml()
+    web_contribs = processContribs.load_website_yml(
+        a_url=web_yaml_path, a_key="github_username"
+    )
     bot_all_contribs_dict = processContribs.combine_json_data()
 
     # Parse through each user in the web yaml, if they don't exist, add them

@@ -23,7 +23,7 @@ class UpdateReviewMeta(ProcessContributors):
         GITHUB_TOKEN : str
             GitHub token string
         """
-        ProcessContributors.__init__(self, [], [], GITHUB_TOKEN)
+        ProcessContributors.__init__(self, [], GITHUB_TOKEN)
 
         self.contrib_types = {
             "reviewer_1": ["packages-reviewed", ["reviewer", "peer-review"]],

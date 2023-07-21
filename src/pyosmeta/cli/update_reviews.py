@@ -11,8 +11,8 @@ Output: packages.yml file containing a list of
 To run at the CLI: parse_issue_metadata
 """
 
-# TODO: PRIORITIZE currently this recreates the review from scratch. but sometimes we might
-# update content manually.
+# TODO: PRIORITIZE Add date-accepted to review meta so i can sort on the website
+# TODO: Bug - last-commit date is always 1/1/1970 - why?!
 # TODO: add the link to the review issue to each package listing so we can link
 # to the review from the website.
 # TODO: if we export files we might want packages.yml and then under_review.yml
@@ -33,6 +33,8 @@ from pyosmeta.file_io import get_api_token
 def main():
     GITHUB_TOKEN = get_api_token()
 
+    web_reviews_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/packages.yml"
+
     issueProcess = ProcessIssues(
         org="pyopensci",
         repo_name="software-submission",
@@ -40,13 +42,27 @@ def main():
         GITHUB_TOKEN=GITHUB_TOKEN,
     )
 
+    # Open web yaml
+    web_reviews = issueProcess.load_website_yml(
+        a_key="package_name", a_url=web_reviews_path
+    )
+
     # Get all issues for approved packages
     issues = issueProcess.return_response()
-    review = issueProcess.parse_issue_header(issues, 12)
+    all_accepted_reviews = issueProcess.parse_issue_header(issues, 12)
 
-    repo_endpoints = issueProcess.get_repo_endpoints(review)
+    # Parse through reviews, identify new ones
+    # For some reason the keys are not always lower case - fix that in the
+    # class object
+    for review_key, review_meta in all_accepted_reviews.items():
+        if review_key.lower() not in web_reviews.keys():
+            print("Yay - pyOS has a new package:", review_key)
+            web_reviews[review_key.lower()] = review_meta
 
-    # Send a GET request to the API endpoint and include user agent header
+    #
+
+    # Update gh metrics via api for all packages
+    repo_endpoints = issueProcess.get_repo_endpoints(web_reviews)
     gh_stats = [
         "name",
         "description",
@@ -73,13 +89,13 @@ def main():
             package_api
         )
         # Add github meta to review metadata
-        review[package_name]["gh_meta"] = all_repo_meta[package_name]
+        web_reviews[package_name]["gh_meta"] = all_repo_meta[package_name]
 
     with open("all_reviews.pickle", "wb") as f:
-        pickle.dump(review, f)
+        pickle.dump(web_reviews, f)
 
     # Export and clean final yaml file
-    issueProcess.clean_export_yml(review, "packages.yml")
+    issueProcess.clean_export_yml(web_reviews, "packages.yml")
 
 
 if __name__ == "__main__":

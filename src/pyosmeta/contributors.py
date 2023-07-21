@@ -13,7 +13,7 @@ from .file_io import YamlIO
 class ProcessContributors(YamlIO):
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
-    def __init__(self, json_files: list, web_yml: str, GITHUB_TOKEN: str):
+    def __init__(self, json_files: list, GITHUB_TOKEN: str):
         """
         Parameters
         ----------
@@ -30,7 +30,6 @@ class ProcessContributors(YamlIO):
 
         self.json_files = json_files
         self.GITHUB_TOKEN = GITHUB_TOKEN
-        self.web_yml = web_yml
         self.update_keys = [
             "twitter",
             "website",
@@ -126,32 +125,34 @@ class ProcessContributors(YamlIO):
 
         return cleaned_list
 
-    def _list_to_dict(self, aList: list) -> dict:
+    def _list_to_dict(self, a_list: list, a_key: str) -> dict:
         """Takes a yaml file opened and turns into a dictionary
         The dict structure is key (gh_username) and then a dictionary
         containing all information for the username
 
-        aList : list
+        a_list : list
             A list of dictionary objects returned from load website yaml
+        a_key : str
+            A string representing the dict key to use as the main key to call
+            each sub dict in the object.
 
         """
         final_dict = {}
-        for dict in aList:
+        for dict in a_list:
             # All github usernames are lower to make this a key
-            final_dict[dict["github_username"].lower()] = dict
+            final_dict[dict[a_key].lower()] = dict
 
         return final_dict
 
     # TODO: this is io stuff...
-    def load_website_yml(self):
+    def load_website_yml(self, a_key: str, a_url: str):
         """
         This opens a website contrib yaml file and turns it in a
         dictionary
         """
-        yml_list = self.open_yml_file(self.web_yml)
-        # Make all keys lower case
+        yml_list = self.open_yml_file(a_url)
 
-        return self._list_to_dict(yml_list)
+        return self._list_to_dict(yml_list, a_key)
 
     # TODO - this might be better in the IO module?
     def load_json(self, json_path: str) -> dict:
