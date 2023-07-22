@@ -1,5 +1,4 @@
 import os
-import re
 import urllib.request
 from dataclasses import dataclass
 
@@ -29,6 +28,25 @@ class YamlIO:
     Parameters
     ----------
     """
+
+    # TODO: this is io stuff...
+    def load_website_yml(self, a_key: str, a_url: str):
+        """
+        This opens a website contrib yaml file and turns it in a
+        dictionary
+        """
+        yml_list = self.open_yml_file(a_url)
+
+        return self._list_to_dict(yml_list, a_key)
+
+    def load_json(self, json_path: str) -> dict:
+        """
+        Helper function that deserializes a json file to a dict.
+
+        """
+
+        response = requests.get(json_path)
+        return json.loads(response.text)
 
     def dict_to_list(self, pyosDict: dict) -> list:
         """Turn dict into list for parsing to jekyll friendly yaml"""
@@ -83,6 +101,8 @@ class YamlIO:
             yaml.indent(mapping=4, sequence=4, offset=2)
             yaml.dump(data_list, file)
 
+    # TODO: Double check - i may be able to combine this with the other clean
+    # function created
     def clean_string(self, astr: str) -> str:
         """
         Clean a string by removing occurrences of strings starting with "*id0" and "[]".

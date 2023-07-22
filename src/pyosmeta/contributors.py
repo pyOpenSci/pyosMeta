@@ -13,7 +13,7 @@ from .file_io import YamlIO
 class ProcessContributors(YamlIO):
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
-    def __init__(self, json_files: list, GITHUB_TOKEN: str):
+    def __init__(self, json_files: list, GITHUB_TOKEN: str) -> None:
         """
         Parameters
         ----------
@@ -39,8 +39,10 @@ class ProcessContributors(YamlIO):
             "github_username",
         ]
 
-    # TODO - create a function that returns this structure
-    def create_contrib_template(self):
+    def create_contrib_template(self) -> Dict:
+        """A small helper that creates a template for a new contributor
+        that we are adding to our contributor.yml file"""
+
         return {
             "name": "",
             "bio": "",
@@ -61,7 +63,9 @@ class ProcessContributors(YamlIO):
             "email": "",
         }
 
-    # TODO - these might be better in a utility type class?
+    # TODO - This utility is used across all scripts.
+    # Could file IO because a utility class that each other class
+    # inherits?
     def clean_list(self, a_list: Union[str, List[str]]) -> List[str]:
         """Helper function that takes an input object as a list or string.
         If it is a list containing none, it returns an empty list
@@ -77,12 +81,22 @@ class ProcessContributors(YamlIO):
             a_list = []
         return a_list
 
-    # TODO - these can then be helpers!
+    # TODO - There is likely a better way to do this. If it returns an
+    # empty list then we know there are no new vals... so it likely can
+    # return a single thing
     def unique_new_vals(
         self, a_list: List[str], a_item: List[str]
     ) -> Tuple[bool, Optional[List[str]]]:
         """Checks two objects either a list and string or two lists
-        and evaluates whether there are differences between them."""
+        and evaluates whether there are differences between them.
+
+        Returns
+        -------
+        Tuple
+            Containing a boolean representing whether there are difference
+            or not and a list containing new value if there are differences.
+
+        """
 
         default = (False, None)
         list_lower = [al.lower() for al in a_list]
@@ -92,6 +106,7 @@ class ProcessContributors(YamlIO):
             default = (True, diff)
         return default
 
+    # TODO - also a helper used by all scripts
     def update_contrib_list(
         self,
         existing_contribs: Union[List, str],
@@ -100,8 +115,6 @@ class ProcessContributors(YamlIO):
         """Method that gets an existing list of contribs.
         cleans the list and then checks the list against a
         new contribution to see if it should be added.
-
-        This should work for both packages and contribs.
 
         Parameters
         ----------
@@ -141,26 +154,6 @@ class ProcessContributors(YamlIO):
 
         return final_dict
 
-    # TODO: this is io stuff...
-    def load_website_yml(self, a_key: str, a_url: str):
-        """
-        This opens a website contrib yaml file and turns it in a
-        dictionary
-        """
-        yml_list = self.open_yml_file(a_url)
-
-        return self._list_to_dict(yml_list, a_key)
-
-    # TODO - this might be better in the IO module?
-    def load_json(self, json_path: str) -> dict:
-        """
-        Helper function that deserializes a json file to a dict.
-
-        """
-
-        response = requests.get(json_path)
-        return json.loads(response.text)
-
     def check_contrib_type(self, json_file: str):
         """
         Determine the type of contribution the person
@@ -178,12 +171,7 @@ class ProcessContributors(YamlIO):
         str
             Contribution type.
         """
-        # guides = ["python-package-guide", "software-peer-review"]
 
-        # Check whether the person contributed to a
-        # guidebook, website or peer review
-        # if any([x in json_file for x in guides]):
-        #     contrib_type = "guidebook-contrib"
         if "software-peer-review" in json_file:
             contrib_type = "peer-review-guide"
         elif "python-package-guide" in json_file:
@@ -213,9 +201,6 @@ class ProcessContributors(YamlIO):
             print("Missing user", gh_user, "adding them now.")
             return self.add_new_user(gh_user)
 
-    # TODO: this is the most complicated function ever
-    # SIMPLIFY
-    # RENAME - get_json_contribs and remove second input (combined data)
     def process_json_file(self, json_file: str) -> Tuple[str, List]:
         """Deserialize a JSON file from a URL and cleanup data
 
@@ -234,10 +219,7 @@ class ProcessContributors(YamlIO):
 
         data = self.load_json(json_file)
         contrib_type = self.check_contrib_type(json_file)
-        # What if this just returns a contrib type and associated
-        # list of users?
-        # TODO: return all users in file and skip everything below
-        user_dict = {}
+
         all_users = []
         for entry in data["contributors"]:
             all_users.append(entry["login"].lower())
@@ -262,9 +244,6 @@ class ProcessContributors(YamlIO):
             # Process the JSON file and add the data to the combined dictionary
             try:
                 key, users = self.process_json_file(json_file)
-                # combined_data, data = self.process_json_file(
-                #     json_file, combined_data
-                # )
                 combined_data[key] = users
             except:
                 print("Oops - can't process", json_file)
@@ -311,6 +290,7 @@ class ProcessContributors(YamlIO):
         response_json = response.json()
 
         user_data = {}
+        # TODO: make an attribute and call it here?
         update_keys = {
             "name": "name",
             "location": "location",
@@ -401,7 +381,6 @@ class ProcessContributors(YamlIO):
             This dict also contains updated contribution types for each user.
         """
 
-        # TODO: (aitem renamed to gh_user)
         for gh_user in repoDict.keys():
             if gh_user in webDict.keys():
                 # Return a list of updated contributor type keys and use it to
@@ -410,17 +389,6 @@ class ProcessContributors(YamlIO):
                     webDict[gh_user]["contributor_type"],
                     repoDict[gh_user]["contributor_type"],
                 )
-                # if webDict[gh_user]["contributor_type"] is None:
-                #     webDict[gh_user]["contributor_type"] = repoDict[gh_user][
-                #         "contributor_type"
-                #     ]
-                # else:
-                #     existing_contribs = set(webDict[gh_user]["contributor_type"])
-                #     new_contribs = set(repoDict[gh_user]["contributor_type"])
-                #     missing = list(sorted(new_contribs - existing_contribs))
-
-                #     if len(missing) > 0:
-                #         webDict[gh_user]["contributor_type"] += missing
 
             # If the user is not in the web dict, add them
             else:
@@ -453,7 +421,6 @@ class ProcessContributors(YamlIO):
         new[gh_user] = self.create_contrib_template()
         gh_data = self.get_gh_data([gh_user])
         # Update their metadata in the dict and return
-        # It's updating the contrib dict object in this method why?
         updated_data = self.update_contrib_data(new, gh_data)
         return updated_data
 
@@ -474,7 +441,7 @@ class ProcessContributors(YamlIO):
         all_user_info = {}
         for gh_user in contribs:
             print("Getting github data for: ", gh_user)
-            # Feat: If the user already has a name in the dict, don't update
+            # If the user already has a name in the dict, don't update
             # Important to allow us to update names to ensure correct spelling,
             # etc on website
             if isinstance(contribs, list):
@@ -525,10 +492,7 @@ class ProcessContributors(YamlIO):
 
         for i, gh_name in enumerate(contrib_data.keys()):
             print(i, gh_name)
-            # Assign gh username
             # Update the key:value pairs for data pulled from GitHub
-            # Note that some data needs to be manual updated such as which
-            # packages someone has reviewed.
             for akey in self.update_keys:
                 if akey == "website":
                     url = gh_data[gh_name][gh_name][akey]
