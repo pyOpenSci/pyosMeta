@@ -32,6 +32,7 @@ from pyosmeta.file_io import get_api_token
 
 def main():
     GITHUB_TOKEN = get_api_token()
+    update_all = True
 
     web_reviews_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/packages.yml"
 
@@ -49,15 +50,18 @@ def main():
 
     # Get all issues for approved packages
     issues = issueProcess.return_response()
+    # TODO - get date accepted and add to yaml file
     all_accepted_reviews = issueProcess.parse_issue_header(issues, 12)
 
-    # Parse through reviews, identify new ones
-    # For some reason the keys are not always lower case - fix that in the
-    # class object
-    for review_key, review_meta in all_accepted_reviews.items():
-        if review_key.lower() not in web_reviews.keys():
-            print("Yay - pyOS has a new package:", review_key)
+    # Parse through reviews, identify new ones, fix case
+    if update_all == True:
+        for review_key, review_meta in all_accepted_reviews.items():
             web_reviews[review_key.lower()] = review_meta
+    else:
+        for review_key, review_meta in all_accepted_reviews.items():
+            if review_key.lower() not in web_reviews.keys():
+                print("Yay - pyOS has a new package:", review_key)
+                web_reviews[review_key.lower()] = review_meta
 
     #
 

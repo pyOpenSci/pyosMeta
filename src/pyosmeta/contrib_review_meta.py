@@ -23,7 +23,7 @@ class UpdateReviewMeta(ProcessContributors):
         GITHUB_TOKEN : str
             GitHub token string
         """
-        ProcessContributors.__init__(self, [], GITHUB_TOKEN)
+        super().__init__(self, GITHUB_TOKEN)
 
         self.contrib_types = {
             "reviewer_1": ["packages-reviewed", ["reviewer", "peer-review"]],
@@ -38,6 +38,21 @@ class UpdateReviewMeta(ProcessContributors):
                 ["maintainer", "peer-review"],
             ],
         }
+
+    def refresh_contribs(self, contribs: Dict, new_contribs, review_role):
+        contrib_types = self.contrib_types
+        contrib_key_yml = ""
+        # Contributor type will be updated which is a list of roles
+        if new_contribs:
+            contrib_key_yml = contrib_types[review_role][0]
+            existing_contribs = contribs[contrib_key_yml]
+        # Else this is a specific review role meant to update package list
+        else:
+            new_contribs = contrib_types[review_role][1]
+            existing_contribs = contribs["contributor_type"]
+
+        final_list = self.update_contrib_list(existing_contribs, new_contribs)
+        return (contrib_key_yml, final_list)
 
     def _create_review_meta(self, areview: dict) -> dict:
         """

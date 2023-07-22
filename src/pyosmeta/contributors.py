@@ -21,9 +21,6 @@ class ProcessContributors(YamlIO):
         json_files : list
             A list of string objects each of which represents a URL to a JSON
             file to be parsed
-        web_yml : str
-            A string containing a path to a online website yml file
-            This file contains contributor data used to build the website contribs list
         GITHUB_TOKEN : str
             A string containing your API token needed to access the github API
         """

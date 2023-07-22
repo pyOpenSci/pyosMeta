@@ -14,26 +14,33 @@ class ProcessIssues(ProcessContributors):
     A class that processes GitHub issues in our peer review process and returns
     metadata about each package.
 
-    Parameters
-    ----------
-    org : str
-        Organization name where the issues exist
-    repo_name : str
-        Repo name where the software review issues live
-    tag_name : str
-        Tag of issues to grab - e.g. pyos approved
-    GITHUB_TOKEN : str
-        API token needed to authenticate with GitHub
-    username : str
-        Username needed to authenticate with GitHub
+
     """
 
+    # Ivan mentioned i might be able to use composition here vs
+    # inheritance
     # Can i get rid of this GH TOKEN as it comes from PContribs below?
-    GITHUB_TOKEN: str = ""
-    org: str = ""
-    repo_name: str = ""
-    label_name: str = ""
-    username: str = ""
+    def __init__(self, org, repo_name, label_name, GITHUB_TOKEN):
+        """
+        More here...
+
+        Parameters
+        ----------
+        org : str
+            Organization name where the issues exist
+        repo_name : str
+            Repo name where the software review issues live
+        label_name : str
+            Label of issues to grab - e.g. pyos approved
+        GITHUB_TOKEN : str
+            API token needed to authenticate with GitHub
+            Inherited from super() class
+        """
+        super().__init__(self, GITHUB_TOKEN)
+        self.org: str = org
+        self.repo_name: str = repo_name
+        self.label_name: str = label_name
+        # self.username: str = ""
 
     # ProcessContributors.__init__(self, [], [], GITHUB_TOKEN)
 
@@ -42,7 +49,6 @@ class ProcessIssues(ProcessContributors):
         return f"https://api.github.com/repos/{self.org}/{self.repo_name}/issues?labels={self.label_name}&state=all"
 
     # Set up the API endpoint
-    # TODO: can i call the API endpoint above
     def _get_response(self):
         """
         # Make a GET request to the API endpoint
@@ -175,6 +181,7 @@ class ProcessIssues(ProcessContributors):
             "reviewer_2",
             "archive",
             "version_accepted",
+            "date_accepted",
             "created_at",
             "updated_at",
             "closed_at",
@@ -206,7 +213,6 @@ class ProcessIssues(ProcessContributors):
                     )
 
             review[package_name] = issue_meta
-            # TODO: returning empty cat list - fix next
             review[package_name]["categories"] = self.get_categories(body_data)
             review[package_name]["issue_link"] = issue["url"].replace(
                 "https://api.github.com/repos/", "https://github.com/"
@@ -246,7 +252,12 @@ class ProcessIssues(ProcessContributors):
         """
         issue_meta = {}
         for item in body_data[0:end_range]:
+            # Clean date accepted element
+            if "Date accepted" in item[0]:
+                print("True", item[0])
+                item[0] = "Date accepted"
             issue_meta.update(self._get_line_meta(item))
+
         return issue_meta
 
     def get_repo_endpoints(self, review_issues: dict[str, str]) -> dict[str, str]:
