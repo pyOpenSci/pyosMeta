@@ -11,18 +11,12 @@ Output: packages.yml file containing a list of
 To run at the CLI: parse_issue_metadata
 """
 
-# TODO: PRIORITIZE Add date-accepted to review meta so i can sort on the website
 # TODO: Bug - last-commit date is always 1/1/1970 - why?!
-# TODO: add the link to the review issue to each package listing so we can link
-# to the review from the website.
 # TODO: if we export files we might want packages.yml and then under_review.yml
 # thus we'd want to add a second input parameters which was file_name
 # TODO: Would be cool to create an "under review now" list as well -
 # ideally this could be passed as a CLI argument with the label we want to
 # search for
-# TODO: ASFSGAP has this  Data visualization - see presubmission so that becomes the category.
-# a fix for this would be to check / validate  each category maybe at the end
-# ?
 
 import pickle
 
