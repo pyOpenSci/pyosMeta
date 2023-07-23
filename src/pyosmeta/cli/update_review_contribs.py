@@ -26,7 +26,7 @@ import pickle
 from typing import Dict, List, Optional, Tuple, Union
 
 from pyosmeta.contrib_review_meta import UpdateReviewMeta
-from pyosmeta.file_io import get_api_token
+from pyosmeta.file_io import clean_export_yml, get_api_token
 
 
 def get_clean_user(username: str):
@@ -130,8 +130,8 @@ def main():
                     packages[pkg_name][issue_role]["name"] = contribs[gh_user]["name"]
 
     # Export to yaml
-    updateContribs.clean_export_yml(contribs, "contribs.yml")
-    updateContribs.clean_export_yml(packages, "packs.yml")
+    clean_export_yml(contribs, "contribs.yml")
+    clean_export_yml(packages, "packs.yml")
 
 
 if __name__ == "__main__":

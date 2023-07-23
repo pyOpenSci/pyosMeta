@@ -21,12 +21,6 @@ def get_api_token() -> str:
     load_dotenv()
     return os.environ["GITHUB_TOKEN"]
 
-    # @dataclass
-    # class YamlIO:
-    """
-    A set of functions that provides file output and cleanup methods.
-    """
-
 
 def _list_to_dict(a_list: list, a_key: str) -> dict:
     """Takes a yaml file opened and turns into a dictionary
