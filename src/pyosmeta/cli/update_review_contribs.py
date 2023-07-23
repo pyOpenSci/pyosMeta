@@ -11,7 +11,7 @@ the review issues in the contributor file and updates that file.
 This script assumes that update_contributors and update_reviews has been run.
 Rather than hit any api's it just updates information from the issues.
 To run: update_reviewers
-"""
+
 # TODO - FEATURE we have some packages that were NOT approved but we had editors and reviewers.
 # We need to acknowledge these people as well. maybe tag them with waiting on maintainer response??
 # TODO: package-wide feature: create a flag for entries that we do not want to update
@@ -21,12 +21,14 @@ To run: update_reviewers
 # emeritus ones.
 # TODO - ?create a class for person types??
 
+"""
+
 
 import pickle
 from typing import Dict, List, Optional, Tuple, Union
 
-from pyosmeta.contrib_review_meta import UpdateReviewMeta
-from pyosmeta.file_io import clean_export_yml, get_api_token
+from pyosmeta.contributors import ProcessContributors
+from pyosmeta.file_io import clean_export_yml, get_api_token, load_pickle
 
 
 def get_clean_user(username: str):
@@ -37,17 +39,14 @@ def main():
     GITHUB_TOKEN = get_api_token()
     # TODO: move refresh contribs and contribs dict attr to
     # processContribs and remove this module altogether
-    updateContribs = UpdateReviewMeta(GITHUB_TOKEN)
+    updateContribs = ProcessContributors([], GITHUB_TOKEN)
 
     # Two pickle files are outputs of the two other scripts
-    # use that data to avoid having to hit the API again to retrieve.
-    # Since i open pickles a lot might be a good helper in fileIio
-    with open("all_contribs.pickle", "rb") as f:
-        contribs = pickle.load(f)
+    # use that data to limit web calls
+    contribs = load_pickle("all_contribs.pickle")
 
-    # Open packages yaml created by running parse_review_issues.py
-    with open("all_reviews.pickle", "rb") as f:
-        packages = pickle.load(f)
+    # Output of update_reviews.py
+    packages = load_pickle("all_reviews.pickle")
 
     contrib_types = updateContribs.contrib_types
 

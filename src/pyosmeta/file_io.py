@@ -1,13 +1,11 @@
 import os
+import pickle
 import urllib.request
 from dataclasses import dataclass
 
 import requests
 import ruamel.yaml
 from dotenv import load_dotenv
-
-# TODO: this likely doesn't need to be a class at all.
-# it would be simpler to just call functions here.
 
 
 def get_api_token() -> str:
@@ -20,6 +18,12 @@ def get_api_token() -> str:
     """
     load_dotenv()
     return os.environ["GITHUB_TOKEN"]
+
+
+def load_pickle(filename):
+    """Opens a pickle"""
+    with open(filename, "rb") as f:
+        return pickle.load(f)
 
 
 def _list_to_dict(a_list: list, a_key: str) -> dict:

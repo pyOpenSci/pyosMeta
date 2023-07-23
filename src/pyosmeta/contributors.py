@@ -39,6 +39,44 @@ class ProcessContributors:
             "github_username",
         ]
 
+        self.contrib_types = {
+            "reviewer_1": ["packages-reviewed", ["reviewer", "peer-review"]],
+            "reviewer_2": ["packages-reviewed", ["reviewer", "peer-review"]],
+            "editor": ["packages-editor", ["editor", "peer-review"]],
+            "submitting_author": [
+                "packages-submitted",
+                ["maintainer", "submitting-author", "peer-review"],
+            ],
+            "all_current_maintainers": [
+                "packages-submitted",
+                ["maintainer", "peer-review"],
+            ],
+        }
+
+    def refresh_contribs(self, contribs: Dict, new_contribs, review_role):
+        """Need to add ....
+
+        Parameters
+        ----------
+
+
+        Returns
+        -------
+        """
+        contrib_types = self.contrib_types
+        contrib_key_yml = ""
+        # Contributor type will be updated which is a list of roles
+        if new_contribs:
+            contrib_key_yml = contrib_types[review_role][0]
+            existing_contribs = contribs[contrib_key_yml]
+        # Else this is a specific review role meant to update package list
+        else:
+            new_contribs = contrib_types[review_role][1]
+            existing_contribs = contribs["contributor_type"]
+
+        final_list = self.update_contrib_list(existing_contribs, new_contribs)
+        return (contrib_key_yml, final_list)
+
     def create_contrib_template(self) -> Dict:
         """A small helper that creates a template for a new contributor
         that we are adding to our contributor.yml file"""
@@ -64,8 +102,6 @@ class ProcessContributors:
         }
 
     # TODO - This utility is used across all scripts.
-    # Could file IO because a utility class that each other class
-    # inherits?
     def clean_list(self, a_list: Union[str, List[str]]) -> List[str]:
         """Helper function that takes an input object as a list or string.
         If it is a list containing none, it returns an empty list
@@ -77,8 +113,8 @@ class ProcessContributors:
             a_list = [a_list]
         elif not a_list:
             a_list = []
-        elif None in a_list:
-            a_list = []
+        # Remove None from list
+        a_list = list(filter(lambda x: x, a_list))
         return a_list
 
     # TODO - There is likely a better way to do this. If it returns an
