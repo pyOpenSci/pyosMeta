@@ -1,15 +1,16 @@
+import json
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
 
 import requests
 
-from .file_io import YamlIO
+# from .file_io import YamlIO
 
 # SOLID guidelines to improve code
 
 
 @dataclass
-class ProcessContributors(YamlIO):
+class ProcessContributors:
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
     def __init__(self, json_files: list, GITHUB_TOKEN: str) -> None:
@@ -134,25 +135,6 @@ class ProcessContributors(YamlIO):
 
         return cleaned_list
 
-    def _list_to_dict(self, a_list: list, a_key: str) -> dict:
-        """Takes a yaml file opened and turns into a dictionary
-        The dict structure is key (gh_username) and then a dictionary
-        containing all information for the username
-
-        a_list : list
-            A list of dictionary objects returned from load website yaml
-        a_key : str
-            A string representing the dict key to use as the main key to call
-            each sub dict in the object.
-
-        """
-        final_dict = {}
-        for dict in a_list:
-            # All github usernames are lower to make this a key
-            final_dict[dict[a_key].lower()] = dict
-
-        return final_dict
-
     def check_contrib_type(self, json_file: str):
         """
         Determine the type of contribution the person
@@ -200,6 +182,17 @@ class ProcessContributors(YamlIO):
             print("Missing user", gh_user, "adding them now.")
             return self.add_new_user(gh_user)
 
+    def load_json(self, json_path: str) -> dict:
+        """
+        Helper function that deserializes a json file to a dict.
+
+        """
+        try:
+            response = requests.get(json_path)
+        except Exception as ae:
+            print(ae)
+        return json.loads(response.text)
+
     def process_json_file(self, json_file: str) -> Tuple[str, List]:
         """Deserialize a JSON file from a URL and cleanup data
 
@@ -244,8 +237,8 @@ class ProcessContributors(YamlIO):
             try:
                 key, users = self.process_json_file(json_file)
                 combined_data[key] = users
-            except:
-                print("Oops - can't process", json_file)
+            except Exception as e:
+                print("Oops - can't process", json_file, e)
         return combined_data
 
     def get_gh_usernames(self, contrib_data: list) -> list:

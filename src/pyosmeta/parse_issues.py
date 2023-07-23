@@ -3,13 +3,13 @@ from datetime import datetime
 
 import requests
 
-from .contributors import ProcessContributors
+from pyosmeta.contributors import ProcessContributors
 
 
 # main reason to use this is attributes .. avoiding them being changed
 # in other instances...
 @dataclass
-class ProcessIssues(ProcessContributors):
+class ProcessIssues:
     """
     A class that processes GitHub issues in our peer review process and returns
     metadata about each package.
@@ -17,9 +17,7 @@ class ProcessIssues(ProcessContributors):
 
     """
 
-    # Ivan mentioned i might be able to use composition here vs
-    # inheritance
-    # Can i get rid of this GH TOKEN as it comes from PContribs below?
+    # TODO: turn file io into functions and remove inheritance here
     def __init__(self, org, repo_name, label_name, GITHUB_TOKEN):
         """
         More here...
@@ -36,11 +34,11 @@ class ProcessIssues(ProcessContributors):
             API token needed to authenticate with GitHub
             Inherited from super() class
         """
-        super().__init__(self, GITHUB_TOKEN)
+        # super().__init__(self, GITHUB_TOKEN)
         self.org: str = org
         self.repo_name: str = repo_name
         self.label_name: str = label_name
-        # self.username: str = ""
+        self.GITHUB_TOKEN: str = GITHUB_TOKEN
 
     # ProcessContributors.__init__(self, [], [], GITHUB_TOKEN)
 
@@ -158,6 +156,9 @@ class ProcessIssues(ProcessContributors):
         self, issues: list[str], total_lines: int = 15
     ) -> dict[str, str]:
         """
+        A function that parses through the header of an issue.
+        It returns
+
         Parameters
         ----------
         issues : list
@@ -166,6 +167,13 @@ class ProcessIssues(ProcessContributors):
         total_lines : int
             an integer representing the total number of lines to parse in the
             issue header. Default = 15
+
+        Returns
+        -------
+        Dict
+            A dictionary containing metadata for the issue including the
+            package name, description, review team, version submitted etc.
+            See key_order below for the full list of keys.
         """
         # Reorder data
         key_order = [
@@ -197,8 +205,9 @@ class ProcessIssues(ProcessContributors):
             # index of 15 should include date accepted
             issue_meta = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta
+            # Created, opened & closed dates are in GitHub Issue response
             for adate in meta_dates:
-                issue_meta[adate] = issue[adate]
+                issue_meta[adate] = self._clean_date(issue[adate])
 
             # Clean markdown url's from editor, and reviewer lines
             types = ["editor", "reviewer_1", "reviewer_2"]
@@ -254,7 +263,6 @@ class ProcessIssues(ProcessContributors):
         for item in body_data[0:end_range]:
             # Clean date accepted element
             if "Date accepted" in item[0]:
-                print("True", item[0])
                 item[0] = "Date accepted"
             issue_meta.update(self._get_line_meta(item))
 
@@ -328,9 +336,16 @@ class ProcessIssues(ProcessContributors):
     def _clean_date(self, date: str) -> str:
         """Cleans up a datetime  from github and returns a date string"""
 
-        date_clean = (
-            datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").date().strftime("%m/%d/%Y")
-        )
+        try:
+            date_clean = (
+                datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+                .date()
+                .strftime("%m/%d/%Y")
+            )
+        except:
+            print("Oops - i need a string to process date")
+            print("setting date to missing")
+            date_clean = "missing"
         return date_clean
 
     def get_repo_meta(self, url: str, stats_list: list) -> dict:
@@ -398,8 +413,8 @@ class ProcessIssues(ProcessContributors):
         ).json()
         date = (
             response[0]["commit"]["author"]["date"]
-            if 0 in response
-            else "1970-01-01T00:00:00Z"
+            # if 0 in response
+            # else "1970-01-01T00:00:00Z"
         )
 
         return self._clean_date(date)

@@ -11,17 +11,16 @@ Output: packages.yml file containing a list of
 To run at the CLI: parse_issue_metadata
 """
 
-# TODO: Bug - last-commit date is always 1/1/1970 - why?!
 # TODO: if we export files we might want packages.yml and then under_review.yml
 # thus we'd want to add a second input parameters which was file_name
-# TODO: Would be cool to create an "under review now" list as well -
+# TODO: feature - Would be cool to create an "under review now" list as well -
 # ideally this could be passed as a CLI argument with the label we want to
 # search for
 
 import pickle
 
 from pyosmeta import ProcessIssues
-from pyosmeta.file_io import get_api_token
+from pyosmeta.file_io import clean_export_yml, get_api_token, load_website_yml
 
 
 def main():
@@ -37,14 +36,11 @@ def main():
         GITHUB_TOKEN=GITHUB_TOKEN,
     )
 
-    # Open web yaml
-    web_reviews = issueProcess.load_website_yml(
-        a_key="package_name", a_url=web_reviews_path
-    )
+    # Open web yaml & return dict with package name as key
+    web_reviews = load_website_yml(a_key="package_name", a_url=web_reviews_path)
 
     # Get all issues for approved packages
     issues = issueProcess.return_response()
-    # TODO - get date accepted and add to yaml file
     all_accepted_reviews = issueProcess.parse_issue_header(issues, 12)
 
     # Parse through reviews, identify new ones, fix case
@@ -91,7 +87,7 @@ def main():
         pickle.dump(web_reviews, f)
 
     # Export and clean final yaml file
-    issueProcess.clean_export_yml(web_reviews, "packages.yml")
+    clean_export_yml(web_reviews, "packages.yml")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import pickle
 
 from pyosmeta.contributors import ProcessContributors
-from pyosmeta.file_io import get_api_token
+from pyosmeta.file_io import clean_export_yml, get_api_token, load_website_yml
 
 # TODO: will this still run in gh actions??
 # TODO: add update=True like i did for update_reviews
@@ -31,9 +31,7 @@ def main():
 
     # Returns a list of dict objects with gh usernames (lowercase) as keys
     # TODO: File io module (could just be a function)
-    web_contribs = processContribs.load_website_yml(
-        a_url=web_yaml_path, a_key="github_username"
-    )
+    web_contribs = load_website_yml(a_url=web_yaml_path, a_key="github_username")
     bot_all_contribs_dict = processContribs.combine_json_data()
 
     # Parse through each user in the web yaml, if they don't exist, add them
@@ -68,7 +66,7 @@ def main():
         pickle.dump(web_contribs, f)
 
     # TODO: clean export yml if from fileio class and used in all three scripts
-    processContribs.clean_export_yml(web_contribs, "contributors.yml")
+    clean_export_yml(web_contribs, "contributors.yml")
 
 
 ### ONE TIME REORDER OF WEB YAML ###
