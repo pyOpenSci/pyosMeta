@@ -6,6 +6,9 @@ from pyosmeta.file_io import get_api_token
 # TODO: will this still run in gh actions??
 # TODO: add update=True like i did for update_reviews
 # TODO: still need to add a flag to not update specific fields
+# TODO: if i use composition and there are helpers in a class
+# that are used in a method that i call via composition are the helpers
+# still available?
 
 
 def main():

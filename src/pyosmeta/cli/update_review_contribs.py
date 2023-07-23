@@ -35,10 +35,13 @@ def get_clean_user(username: str):
 
 def main():
     GITHUB_TOKEN = get_api_token()
+    # TODO: move refresh contribs and contribs dict attr to
+    # processContribs and remove this module altogether
     updateContribs = UpdateReviewMeta(GITHUB_TOKEN)
 
     # Two pickle files are outputs of the two other scripts
     # use that data to avoid having to hit the API again to retrieve.
+    # Since i open pickles a lot might be a good helper in fileIio
     with open("all_contribs.pickle", "rb") as f:
         contribs = pickle.load(f)
 
