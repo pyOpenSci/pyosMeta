@@ -54,55 +54,6 @@ class UpdateReviewMeta(ProcessContributors):
         final_list = self.update_contrib_list(existing_contribs, new_contribs)
         return (contrib_key_yml, final_list)
 
-    # # TODO - is this ever used?
-    # def _create_review_meta(self, areview: dict) -> dict:
-    #     """
-    #     Generate a dictionary entry for a single review with
-    #     the submitting author, editor and both reviewers.
-
-    #     Parameters
-    #     ----------
-    #     areview : dict
-    #         A dictionary containing all of the metadata for a package parsed
-    #         from the GitHub Issue.
-
-    #     Returns
-    #     -------
-    #         Dict
-    #         Dictionary containing just the submitting author, editor and reviews
-    #         for a package review.
-    #     """
-
-    #     return {
-    #         "submitting_author": areview["submitting_author"],
-    #         "editor": areview["editor"],
-    #         "reviewer_1": areview["reviewer_1"],
-    #         "reviewer_2": areview["reviewer_2"],
-    #     }
-
-    # # TODO - i don't think i use this ever
-    # def create_review_meta_dict(self, all_reviews: dict) -> dict:
-    #     """
-
-    #     Parameters
-    #     ----------
-    #     all_reviews: dict
-    #         dict containing all of the issue review metadata for pyos reviews
-
-    #     Returns
-    #     -------
-    #         dict
-    #         A dictionary containing only review package name, editors, reviewers &
-    #         authors.
-
-    #     """
-    #     review_meta = {}
-    #     for areview in all_reviews:
-    #         review_meta[areview["package_name"]] = self._create_review_meta(areview)
-    #     return review_meta
-
-    # This could easily be in the processContribs obj
-    # but also the functinoality is generic so it might already exist
     def check_add_package(self, user_packages: list, pkgname: str) -> list:
         """Grabs the users list of packages and adds a new one
         (pkgname) if it already isn't in their list.
