@@ -1,11 +1,11 @@
+import json
 import os
 import urllib.request
 from dataclasses import dataclass
 
+import requests
 import ruamel.yaml
 from dotenv import load_dotenv
-
-# file io
 
 
 def get_api_token() -> str:
@@ -44,8 +44,10 @@ class YamlIO:
         Helper function that deserializes a json file to a dict.
 
         """
-
-        response = requests.get(json_path)
+        try:
+            response = requests.get(json_path)
+        except Exception as ae:
+            print(ae)
         return json.loads(response.text)
 
     def dict_to_list(self, pyosDict: dict) -> list:

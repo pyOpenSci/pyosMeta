@@ -57,8 +57,6 @@ def main():
                 print("Yay - pyOS has a new package:", review_key)
                 web_reviews[review_key.lower()] = review_meta
 
-    #
-
     # Update gh metrics via api for all packages
     repo_endpoints = issueProcess.get_repo_endpoints(web_reviews)
     gh_stats = [

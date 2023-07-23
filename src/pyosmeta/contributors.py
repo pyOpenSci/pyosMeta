@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -430,7 +429,7 @@ class ProcessContributors(YamlIO):
 
         Parameters
         ----------
-        gh_usernames : dict
+        contribs : dict
             Dict containing all current contrib info
 
         Returns
