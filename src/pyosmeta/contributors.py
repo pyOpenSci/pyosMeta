@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 class ProcessContributors:
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
-    def __init__(self, json_files: list) -> None:
+    def __init__(self, json_files: List) -> None:
         """
         Parameters
         ----------
@@ -291,7 +291,7 @@ class ProcessContributors:
                 print("Oops - can't process", json_file, e)
         return combined_data
 
-    def get_gh_usernames(self, contrib_data: list) -> list:
+    def get_gh_usernames(self, contrib_data: List) -> List:
         """Get a list of all gh usernames
 
         Parameters
@@ -364,7 +364,7 @@ class ProcessContributors:
         return user_data
 
     def _update_contrib_type(
-        self, webContribTypes: list, repoContribTypes: list
+        self, webContribTypes: List, repoContribTypes: List
     ) -> list:
         """
         Compares contrib types for a single gh user from the website to

@@ -12,7 +12,6 @@ from pyosmeta.file_io import clean_export_yml, load_website_yml
 
 
 def main():
-    # GITHUB_TOKEN = get_api_token()
     update_all = False
 
     # TODO - maybe add these as an attr in the contribs class?
@@ -28,17 +27,13 @@ def main():
     json_files = [base_url + repo + end_url for repo in repos]
 
     # Get existing contribs from pyopensci.github.io repo (website data)
-    web_yaml_path = (
-        base_url + "pyopensci.github.io/main/_data/contributors.yml"
-    )
+    web_yaml_path = base_url + "pyopensci.github.io/main/_data/contributors.yml"
 
     process_contribs = ProcessContributors(json_files)
 
     # Returns a list of dict objects with gh usernames (lowercase) as keys
     # TODO: File io module (could just be a function)
-    web_contribs = load_website_yml(
-        a_url=web_yaml_path, a_key="github_username"
-    )
+    web_contribs = load_website_yml(a_url=web_yaml_path, a_key="github_username")
     bot_all_contribs_dict = process_contribs.combine_json_data()
 
     # Parse through each user in the web yaml, if they don't exist, add them
@@ -65,9 +60,7 @@ def main():
 
     if update_all:
         gh_data = process_contribs.get_gh_data(web_contribs)
-        web_contribs = process_contribs.update_contrib_data(
-            web_contribs, gh_data
-        )
+        web_contribs = process_contribs.update_contrib_data(web_contribs, gh_data)
 
     # Export data
     # Pickle supports updates after parsing reviews
