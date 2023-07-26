@@ -1,23 +1,8 @@
-import os
 import pickle
 import urllib.request
 from dataclasses import dataclass
 
-import requests
 import ruamel.yaml
-from dotenv import load_dotenv
-
-
-def get_api_token() -> str:
-    """Fetches the GitHub API key from the .env file
-
-    Returns
-    -------
-    str
-        The provided API key in the .env file.
-    """
-    load_dotenv()
-    return os.environ["GITHUB_TOKEN"]
 
 
 def load_pickle(filename):

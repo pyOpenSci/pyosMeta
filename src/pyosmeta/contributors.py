@@ -1,8 +1,10 @@
 import json
+import os
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
 
 import requests
+from dotenv import load_dotenv
 
 # from .file_io import YamlIO
 
@@ -13,7 +15,7 @@ import requests
 class ProcessContributors:
     # When initializing how do you decide what should be an input
     # attribute vs just something a method accepted when called?
-    def __init__(self, json_files: list, GITHUB_TOKEN: str) -> None:
+    def __init__(self, json_files: list) -> None:
         """
         Parameters
         ----------
@@ -26,7 +28,7 @@ class ProcessContributors:
         """
 
         self.json_files = json_files
-        self.GITHUB_TOKEN = GITHUB_TOKEN
+        # self.GITHUB_TOKEN = GITHUB_TOKEN
         self.update_keys = [
             "twitter",
             "website",
@@ -52,6 +54,18 @@ class ProcessContributors:
                 ["maintainer", "peer-review"],
             ],
         }
+
+    def get_token(self) -> str:
+        """Fetches the GitHub API key from the users environment. If running
+        local from an .env file.
+
+        Returns
+        -------
+        str
+            The provided API key in the .env file.
+        """
+        load_dotenv()
+        return os.environ["GITHUB_TOKEN"]
 
     def refresh_contribs(self, contribs: Dict, new_contribs, review_role):
         """Need to add ....
@@ -311,7 +325,7 @@ class ProcessContributors:
         """
 
         url = f"https://api.github.com/users/{username}"
-        headers = {"Authorization": f"Bearer {self.GITHUB_TOKEN}"}
+        headers = {"Authorization": f"Bearer {self.get_token()}"}
         response = requests.get(url, headers=headers)
         # TODO: add check here for if credentials are bad
         # if message = Bad credentials
