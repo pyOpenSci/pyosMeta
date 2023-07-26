@@ -67,13 +67,6 @@ def main():
     with open("all_contribs.pickle", "wb") as f:
         pickle.dump(web_contribs, f)
 
-    # TODO: clean export yml if from fileio class and used in all three scripts
-    clean_export_yml(web_contribs, "contributors.yml")
 
-
-### ONE TIME REORDER OF WEB YAML ###
-# review[package_name] = {
-#                 key: review[package_name][key] for key in key_order
-#             }
 if __name__ == "__main__":
     main()
