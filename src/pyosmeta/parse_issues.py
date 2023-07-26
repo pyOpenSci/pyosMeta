@@ -3,43 +3,49 @@ from datetime import datetime
 
 import requests
 
-from .file_io import YamlIO
+from pyosmeta.contributors import ProcessContributors
 
 
 # main reason to use this is attributes .. avoiding them being changed
 # in other instances...
 @dataclass
-class ProcessIssues(YamlIO):
+class ProcessIssues:
     """
     A class that processes GitHub issues in our peer review process and returns
     metadata about each package.
 
-    Parameters
-    ----------
-    org : str
-        Organization name where the issues exist
-    repo_name : str
-        Repo name where the software review issues live
-    tag_name : str
-        Tag of issues to grab - e.g. pyos approved
-    GITHUB_TOKEN : str
-        API token needed to authenticate with GitHub
-    username : str
-        Username needed to authenticate with GitHub
+
     """
 
-    GITHUB_TOKEN: str = ""
-    org: str = ""
-    repo_name: str = ""
-    label_name: str = ""
-    username: str = ""
+    # TODO: turn file io into functions and remove inheritance here
+    def __init__(self, org, repo_name, label_name):
+        """
+        More here...
+
+        Parameters
+        ----------
+        org : str
+            Organization name where the issues exist
+        repo_name : str
+            Repo name where the software review issues live
+        label_name : str
+            Label of issues to grab - e.g. pyos approved
+        GITHUB_TOKEN : str
+            API token needed to authenticate with GitHub
+            Inherited from super() class
+        """
+        self.org: str = org
+        self.repo_name: str = repo_name
+        self.label_name: str = label_name
+        self.contrib_instance = ProcessContributors([])
+
+        self.GITHUB_TOKEN = self.contrib_instance.get_token()
 
     @property
     def api_endpoint(self):
         return f"https://api.github.com/repos/{self.org}/{self.repo_name}/issues?labels={self.label_name}&state=all"
 
     # Set up the API endpoint
-    # TODO: can i call the API endpoint above
     def _get_response(self):
         """
         # Make a GET request to the API endpoint
@@ -84,6 +90,15 @@ class ProcessIssues(YamlIO):
             ("Submitting", "Editor", "Reviewer", "All current maintainers")
         )
 
+    def _clean_name(self, a_str: str) -> str:
+        """Helper to strip unwanted chars from text"""
+
+        unwanted = ["(", ")", "@"]
+        for char in unwanted:
+            a_str = a_str.replace(char, "")
+
+        return a_str.strip()
+
     def _get_line_meta(self, line_item: list[str]) -> dict[str, object]:
         """
         Parameters
@@ -100,47 +115,49 @@ class ProcessIssues(YamlIO):
         """
 
         meta = {}
-        theKey = line_item[0].lower().replace(" ", "_")
+        a_key = line_item[0].lower().replace(" ", "_")
         if self._contains_keyword(line_item[0]):
             if line_item[0].startswith("All current maintainers"):
                 names = line_item[1].split(",")
                 # There are at least 2 maintainers if there is a comma
-                if len(names) > 1:
-                    meta[theKey] = []
-                    for aname in names:
-                        # Add each maintainer to the dict
-                        user = aname.split("@")
-                        a_maint = {
-                            "name": user[0].replace("(", "").replace(")", "").strip(),
-                            "github_username": user[1]
-                            .replace("(", "")
-                            .replace(")", "")
-                            .strip(),
-                        }
-
-                        # filtered_list = list(filter(None, my_list))
-                        meta[theKey].append(a_maint)
+                # if len(names) > 1:
+                meta[a_key] = []
+                for aname in names:
+                    # Add each maintainer to the dict
+                    user = aname.split("@")
+                    # Clean
+                    user = [self._clean_name(l) for l in user]
+                    a_maint = {
+                        "name": self._clean_name(user[0]),
+                        "github_username": self._clean_name(user[1]),
+                    }
+                    # filtered_list = list(filter(None, my_list))
+                    meta[a_key].append(a_maint)
             else:
                 names = line_item[1].split("(", 1)
                 if len(names) > 1:
-                    meta[theKey] = {
-                        "github_username": names[1].strip().lstrip("@").rstrip(")"),
-                        "name": names[0].strip(),
+                    meta[a_key] = {
+                        "github_username": self._clean_name(names[1]),
+                        "name": self._clean_name(names[0]),
                     }
                 else:
-                    meta[theKey] = {
-                        "github_username": names[0].strip().lstrip("@"),
+                    meta[a_key] = {
+                        "github_username": self._clean_name(names[0]),
                         "name": "",
                     }
+        elif len(line_item) > 1:
+            meta[a_key] = line_item[1].strip()
         else:
-            if len(line_item) > 1:
-                meta[theKey] = line_item[1].strip()
+            meta[a_key] = self._clean_name(line_item[0])
         return meta
 
     def parse_issue_header(
         self, issues: list[str], total_lines: int = 15
     ) -> dict[str, str]:
         """
+        A function that parses through the header of an issue.
+        It returns
+
         Parameters
         ----------
         issues : list
@@ -149,6 +166,13 @@ class ProcessIssues(YamlIO):
         total_lines : int
             an integer representing the total number of lines to parse in the
             issue header. Default = 15
+
+        Returns
+        -------
+        Dict
+            A dictionary containing metadata for the issue including the
+            package name, description, review team, version submitted etc.
+            See key_order below for the full list of keys.
         """
         # Reorder data
         key_order = [
@@ -164,9 +188,11 @@ class ProcessIssues(YamlIO):
             "reviewer_2",
             "archive",
             "version_accepted",
+            "date_accepted",
             "created_at",
             "updated_at",
             "closed_at",
+            "issue_link",
         ]
         meta_dates = ["created_at", "updated_at", "closed_at"]
 
@@ -176,25 +202,29 @@ class ProcessIssues(YamlIO):
             if not package_name:
                 continue
             # index of 15 should include date accepted
-
             issue_meta = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta
+            # Created, opened & closed dates are in GitHub Issue response
             for adate in meta_dates:
-                issue_meta[adate] = issue[adate]
+                issue_meta[adate] = self._clean_date(issue[adate])
 
             # Clean markdown url's from editor, and reviewer lines
             types = ["editor", "reviewer_1", "reviewer_2"]
             user_values = ["github_username", "name"]
-            for aType in types:
+            for a_type in types:
                 for user_value in user_values:
-                    issue_meta[aType][user_value] = (
-                        issue_meta[aType][user_value]
+                    issue_meta[a_type][user_value] = (
+                        issue_meta[a_type][user_value]
                         .replace("https://github.com/", "")
                         .replace("[", "")
                         .replace("]", "")
                     )
+
             review[package_name] = issue_meta
             review[package_name]["categories"] = self.get_categories(body_data)
+            review[package_name]["issue_link"] = issue["url"].replace(
+                "https://api.github.com/repos/", "https://github.com/"
+            )
             # Rename package description & reorder keys
             review[package_name]["package_description"] = review[package_name].pop(
                 "one-line_description_of_package", ""
@@ -204,6 +234,7 @@ class ProcessIssues(YamlIO):
                 for key in key_order
                 if review[package_name].get(key)
             }
+
         return review
 
     def get_issue_meta(
@@ -229,7 +260,11 @@ class ProcessIssues(YamlIO):
         """
         issue_meta = {}
         for item in body_data[0:end_range]:
+            # Clean date accepted element
+            if "Date accepted" in item[0]:
+                item[0] = "Date accepted"
             issue_meta.update(self._get_line_meta(item))
+
         return issue_meta
 
     def get_repo_endpoints(self, review_issues: dict[str, str]) -> dict[str, str]:
@@ -238,7 +273,8 @@ class ProcessIssues(YamlIO):
 
         Parameters
         ----------
-        review_issue : dict
+        review_issues : dict
+            Dictionary containing all of the review issue paths.
 
         Returns
         -------
@@ -276,8 +312,10 @@ class ProcessIssues(YamlIO):
         # TODO: this var isn't used
         comments_url = issue["comments_url"]
         body = issue["body"]
-
-        lines = body.split("\r\n")
+        # Here sometimes the lines are split with \n, others \r\n
+        # To clean split on \n but may have to remove the \r
+        lines = body.split("\n")
+        lines = [a_line.strip("\r").strip() for a_line in lines]
         # Some users decide to hold the issue titles.
         # For those, clean the markdown bold ** element
         lines = [line.replace("**", "").strip() for line in lines if line.strip() != ""]
@@ -297,9 +335,16 @@ class ProcessIssues(YamlIO):
     def _clean_date(self, date: str) -> str:
         """Cleans up a datetime  from github and returns a date string"""
 
-        date_clean = (
-            datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").date().strftime("%m/%d/%Y")
-        )
+        try:
+            date_clean = (
+                datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+                .date()
+                .strftime("%m/%d/%Y")
+            )
+        except:
+            print("Oops - i need a string to process date")
+            print("setting date to missing")
+            date_clean = "missing"
         return date_clean
 
     def get_repo_meta(self, url: str, stats_list: list) -> dict:
@@ -367,8 +412,8 @@ class ProcessIssues(YamlIO):
         ).json()
         date = (
             response[0]["commit"]["author"]["date"]
-            if 0 in response
-            else "1970-01-01T00:00:00Z"
+            # if 0 in response
+            # else "1970-01-01T00:00:00Z"
         )
 
         return self._clean_date(date)
@@ -387,12 +432,16 @@ class ProcessIssues(YamlIO):
         fmt : bool
             Applies some formatting changes to the categories to match what is required for the website.
         """
-        # Find the starting index of the section we're interested in
+        # Find the starting index of the category section
         start_index = None
         for i in range(len(issue_body_list)):
             if issue_body_list[i][0].startswith("- Please indicate which"):
-                start_index = i
+                start_index = i + 1
                 break
+        # NOTE - some issues have line after that startswith "Check out our"
+        # For those issues advance i += 1
+        if issue_body_list[start_index][0].startswith("Check out our"):
+            start_index += 1
 
         if start_index is None:
             # If we couldn't find the starting index, return an empty list
@@ -401,7 +450,7 @@ class ProcessIssues(YamlIO):
         # Iterate through the lines starting at the starting index and grab the relevant text
         cat_matches = ["[x]", "[X]"]
         categories: list[str] = []
-        for i in range(start_index + 1, len(issue_body_list)):  # 30):
+        for i in range(start_index, len(issue_body_list)):  # 30):
             line = issue_body_list[i][0].strip()
             checked = any([x in line for x in cat_matches])
 

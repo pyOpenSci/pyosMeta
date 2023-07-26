@@ -11,42 +11,49 @@ Output: packages.yml file containing a list of
 To run at the CLI: parse_issue_metadata
 """
 
-# TODO: PRIORITIZE currently this recreates the review from scratch. but sometimes we might
-# update content manually.
-# TODO: add the link to the review issue to each package listing so we can link
-# to the review from the website.
 # TODO: if we export files we might want packages.yml and then under_review.yml
 # thus we'd want to add a second input parameters which was file_name
-# TODO: This returns key errors and name errors when hitting api limits
-# Would be good to track API return responses / figure out wait time so it
-# continues to run
-# TODO: Would be cool to create an "under review now" list as well -
+# TODO: feature - Would be cool to create an "under review now" list as well -
 # ideally this could be passed as a CLI argument with the label we want to
 # search for
 
 import pickle
 
 from pyosmeta import ProcessIssues
-from pyosmeta.file_io import get_api_token
+from pyosmeta.file_io import clean_export_yml, load_website_yml
 
 
 def main():
-    GITHUB_TOKEN = get_api_token()
+    # GITHUB_TOKEN = get_api_token()
+    update_all = True
+
+    web_reviews_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/packages.yml"
 
     issueProcess = ProcessIssues(
         org="pyopensci",
         repo_name="software-submission",
         label_name="6/pyOS-approved 🚀🚀🚀",
-        GITHUB_TOKEN=GITHUB_TOKEN,
     )
+
+    # Open web yaml & return dict with package name as key
+    web_reviews = load_website_yml(key="package_name", url=web_reviews_path)
 
     # Get all issues for approved packages
     issues = issueProcess.return_response()
-    review = issueProcess.parse_issue_header(issues, 12)
+    all_accepted_reviews = issueProcess.parse_issue_header(issues, 12)
 
-    repo_endpoints = issueProcess.get_repo_endpoints(review)
+    # Parse through reviews, identify new ones, fix case
+    if update_all == True:
+        for review_key, review_meta in all_accepted_reviews.items():
+            web_reviews[review_key.lower()] = review_meta
+    else:
+        for review_key, review_meta in all_accepted_reviews.items():
+            if review_key.lower() not in web_reviews.keys():
+                print("Yay - pyOS has a new package:", review_key)
+                web_reviews[review_key.lower()] = review_meta
 
-    # Send a GET request to the API endpoint and include user agent header
+    # Update gh metrics via api for all packages
+    repo_endpoints = issueProcess.get_repo_endpoints(web_reviews)
     gh_stats = [
         "name",
         "description",
@@ -73,13 +80,13 @@ def main():
             package_api
         )
         # Add github meta to review metadata
-        review[package_name]["gh_meta"] = all_repo_meta[package_name]
+        web_reviews[package_name]["gh_meta"] = all_repo_meta[package_name]
 
     with open("all_reviews.pickle", "wb") as f:
-        pickle.dump(review, f)
+        pickle.dump(web_reviews, f)
 
     # Export and clean final yaml file
-    issueProcess.clean_export_yml(review, "packages.yml")
+    clean_export_yml(web_reviews, "packages.yml")
 
 
 if __name__ == "__main__":
