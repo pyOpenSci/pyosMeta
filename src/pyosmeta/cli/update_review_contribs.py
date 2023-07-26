@@ -28,7 +28,7 @@ import pickle
 from typing import Dict, List, Optional, Tuple, Union
 
 from pyosmeta.contributors import ProcessContributors
-from pyosmeta.file_io import clean_export_yml, get_api_token, load_pickle
+from pyosmeta.file_io import clean_export_yml, load_pickle
 
 
 def get_clean_user(username: str):
@@ -36,10 +36,9 @@ def get_clean_user(username: str):
 
 
 def main():
-    GITHUB_TOKEN = get_api_token()
     # TODO: move refresh contribs and contribs dict attr to
     # processContribs and remove this module altogether
-    updateContribs = ProcessContributors([], GITHUB_TOKEN)
+    updateContribs = ProcessContributors([])
 
     # Two pickle files are outputs of the two other scripts
     # use that data to limit web calls

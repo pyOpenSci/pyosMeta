@@ -18,7 +18,7 @@ class ProcessIssues:
     """
 
     # TODO: turn file io into functions and remove inheritance here
-    def __init__(self, org, repo_name, label_name, GITHUB_TOKEN):
+    def __init__(self, org, repo_name, label_name):
         """
         More here...
 
@@ -34,13 +34,12 @@ class ProcessIssues:
             API token needed to authenticate with GitHub
             Inherited from super() class
         """
-        # super().__init__(self, GITHUB_TOKEN)
         self.org: str = org
         self.repo_name: str = repo_name
         self.label_name: str = label_name
-        self.GITHUB_TOKEN: str = GITHUB_TOKEN
+        self.contrib_instance = ProcessContributors([])
 
-    # ProcessContributors.__init__(self, [], [], GITHUB_TOKEN)
+        self.GITHUB_TOKEN = self.contrib_instance.get_token()
 
     @property
     def api_endpoint(self):

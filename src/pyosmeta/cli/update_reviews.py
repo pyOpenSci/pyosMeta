@@ -20,11 +20,11 @@ To run at the CLI: parse_issue_metadata
 import pickle
 
 from pyosmeta import ProcessIssues
-from pyosmeta.file_io import clean_export_yml, get_api_token, load_website_yml
+from pyosmeta.file_io import clean_export_yml, load_website_yml
 
 
 def main():
-    GITHUB_TOKEN = get_api_token()
+    # GITHUB_TOKEN = get_api_token()
     update_all = True
 
     web_reviews_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/packages.yml"
@@ -33,11 +33,10 @@ def main():
         org="pyopensci",
         repo_name="software-submission",
         label_name="6/pyOS-approved 🚀🚀🚀",
-        GITHUB_TOKEN=GITHUB_TOKEN,
     )
 
     # Open web yaml & return dict with package name as key
-    web_reviews = load_website_yml(a_key="package_name", a_url=web_reviews_path)
+    web_reviews = load_website_yml(key="package_name", url=web_reviews_path)
 
     # Get all issues for approved packages
     issues = issueProcess.return_response()
