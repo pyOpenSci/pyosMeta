@@ -23,9 +23,7 @@ To run: update_reviewers
 
 """
 
-
-import pickle
-from typing import Dict, List, Optional, Tuple, Union
+import os
 
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
@@ -128,8 +126,8 @@ def main():
                     packages[pkg_name][issue_role]["name"] = contribs[gh_user]["name"]
 
     # Export to yaml
-    clean_export_yml(contribs, "contribs.yml")
-    clean_export_yml(packages, "packs.yml")
+    clean_export_yml(contribs, os.path.join("_data", "contributors.yml"))
+    clean_export_yml(packages, os.path.join("_data", "packages.yml"))
 
 
 if __name__ == "__main__":

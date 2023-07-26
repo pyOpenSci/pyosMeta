@@ -85,9 +85,6 @@ def main():
     with open("all_reviews.pickle", "wb") as f:
         pickle.dump(web_reviews, f)
 
-    # Export and clean final yaml file
-    clean_export_yml(web_reviews, "packages.yml")
-
 
 if __name__ == "__main__":
     main()
