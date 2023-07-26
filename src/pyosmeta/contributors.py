@@ -6,10 +6,6 @@ from typing import Dict, List, Optional, Tuple, Union
 import requests
 from dotenv import load_dotenv
 
-# from .file_io import YamlIO
-
-# SOLID guidelines to improve code
-
 
 @dataclass
 class ProcessContributors:

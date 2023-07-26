@@ -1,6 +1,6 @@
 import pickle
 import urllib.request
-from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple, Union
 
 import ruamel.yaml
 
@@ -11,7 +11,7 @@ def load_pickle(filename):
         return pickle.load(f)
 
 
-def _list_to_dict(a_list: list, a_key: str) -> dict:
+def _list_to_dict(a_list: List, a_key: str) -> Dict:
     """Takes a yaml file opened and turns into a dictionary
     The dict structure is key (gh_username) and then a dictionary
     containing all information for the username
@@ -23,32 +23,40 @@ def _list_to_dict(a_list: list, a_key: str) -> dict:
         each sub dict in the object.
 
     """
-    final_dict = {}
-    for dict in a_list:
-        # All github usernames are lower to make this a key
-        final_dict[dict[a_key].lower()] = dict
 
-    return final_dict
+    return {a_dict[a_key].lower(): a_dict for a_dict in a_list}
 
 
-def load_website_yml(a_key: str, a_url: str):
+def load_website_yml(key: str, url: str):
     """
     This opens a website contrib yaml file and turns it in a
     dictionary
     """
-    yml_list = open_yml_file(a_url)
+    yml_list = open_yml_file(url)
 
-    return _list_to_dict(yml_list, a_key)
+    return _list_to_dict(yml_list, key)
 
 
-def dict_to_list(pyosDict: dict) -> list:
-    """Turn dict into list for parsing to jekyll friendly yaml"""
+# def dict_to_list(pyos_meta: Dict[str, Union[str, List[str]]]) -> List[Dict]:
+#     """Turn dict into list for parsing to jekyll friendly yaml
 
-    # Turn dict into list for parsing
-    final_contribs = []
-    for key in pyosDict:
-        final_contribs.append(pyosDict[key])
-    return final_contribs
+#     Parameters
+#     ----------
+#     pyos_meta : Dict
+#         A dictionary containing metadata for pyos contributors or review issues
+
+#     Returns
+#     -------
+#     List
+#         A list of dictionaries containing pyos metadata for contribs or reviews
+
+#     """
+#     print("a")
+#     # Turn dict into list for parsing
+#     return [pyos_meta[key] for key in pyos_meta]
+#     # for key in pyos_meta:
+#     #     final_contribs.append(pyos_meta[key])
+#     # return final_contribs
 
 
 def open_yml_file(file_path: str) -> dict:
@@ -148,15 +156,29 @@ def clean_yaml_file(filename):
         f.write(cleaned_text)
 
 
-def clean_export_yml(a_dict: dict, filename: str) -> None:
+def clean_export_yml(a_dict: Dict[str, Union[str, List[str]]], filename: str) -> None:
     """Inputs a dictionary with keys - contribs or packages.
     It then converse to a list for export, and creates a cleaned
     YAML file that is jekyll friendly
-    """
-    final_data = []
-    for key in a_dict:
-        final_data.append(a_dict[key])
 
+    Parameters
+    ----------
+    a_dict : Dict
+        A dictionary containing final pyos metadata information
+    filename : str
+        Name of the YML file to export
+
+    Returns
+    -------
+    None
+        Outputs a yaml file with the input name containing the pyos meta
+    """
+    # TODO: why doesn't .values() work here? it returns a representation
+    # error.
+    # final_data = []
+    # for key in a_dict:
+    #     final_data.append(a_dict[key])
+    # print("sdf")
     # Export to yaml
-    export_yaml(filename, final_data)
+    export_yaml(filename, list(a_dict.values()))
     clean_yaml_file(filename)

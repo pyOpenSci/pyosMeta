@@ -33,7 +33,7 @@ def main():
 
     # Returns a list of dict objects with gh usernames (lowercase) as keys
     # TODO: File io module (could just be a function)
-    web_contribs = load_website_yml(a_url=web_yaml_path, a_key="github_username")
+    web_contribs = load_website_yml(url=web_yaml_path, key="github_username")
     bot_all_contribs_dict = process_contribs.combine_json_data()
 
     # Parse through each user in the web yaml, if they don't exist, add them
