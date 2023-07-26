@@ -27,7 +27,7 @@ def main():
     # Get existing contribs from pyopensci.github.io repo (website data)
     web_yaml_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/contributors.yml"
 
-    processContribs = ProcessContributors(json_files, GITHUB_TOKEN)
+    process_contribs = ProcessContributors(json_files, GITHUB_TOKEN)
 
     # Returns a list of dict objects with gh usernames (lowercase) as keys
     # TODO: File io module (could just be a function)
