@@ -201,13 +201,21 @@ class ProcessIssues:
             package_name, body_data = self.parse_comment(issue)
             if not package_name:
                 continue
-            # index of 15 should include date accepted
+            # Index of 15 should include date accepted in the review meta
             issue_meta = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta
             # Created, opened & closed dates are in GitHub Issue response
-            for adate in meta_dates:
-                issue_meta[adate] = self._clean_date(issue[adate])
+            for a_date in meta_dates:
+                issue_meta[a_date] = self._clean_date(issue[a_date])
 
+            # Date accepted is a manually added value. Fix format separately
+            # Using dashes because it's jekyll friendly
+            try:
+                issue_meta["date_accepted"] = issue_meta["date_accepted"].replace(
+                    "/", "-"
+                )
+            except KeyError as ke:
+                print("Oops,", package_name, "is missing date_accepted key.")
             # Clean markdown url's from editor, and reviewer lines
             types = ["editor", "reviewer_1", "reviewer_2"]
             user_values = ["github_username", "name"]
@@ -261,7 +269,7 @@ class ProcessIssues:
         issue_meta = {}
         for item in body_data[0:end_range]:
             # Clean date accepted element
-            if "Date accepted" in item[0]:
+            if "Date accepted".lower() in item[0].lower():
                 item[0] = "Date accepted"
             issue_meta.update(self._get_line_meta(item))
 
@@ -339,7 +347,7 @@ class ProcessIssues:
             date_clean = (
                 datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
                 .date()
-                .strftime("%m/%d/%Y")
+                .strftime("%m-%d-%Y")
             )
         except:
             print("Oops - i need a string to process date")

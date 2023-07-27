@@ -40,7 +40,7 @@ def main():
 
     # Get all issues for approved packages
     issues = issueProcess.return_response()
-    all_accepted_reviews = issueProcess.parse_issue_header(issues, 12)
+    all_accepted_reviews = issueProcess.parse_issue_header(issues, 15)
 
     # Parse through reviews, identify new ones, fix case
     if update_all == True:
