@@ -1,3 +1,4 @@
+import argparse
 import pickle
 
 from pyosmeta.contributors import ProcessContributors
@@ -13,6 +14,18 @@ from pyosmeta.file_io import clean_export_yml, load_website_yml
 
 def main():
     update_all = False
+    parser = argparse.ArgumentParser(
+        description="A CLI script to update pyOpenSci contributors"
+    )
+    parser.add_argument(
+        "--update",
+        type=str,
+        help="Will force update contrib info from GitHub for every contributor",
+    )
+    args = parser.parse_args()
+
+    if args:
+        update_all = True
 
     # TODO - maybe add these as an attr in the contribs class?
     base_url = "https://raw.githubusercontent.com/pyOpenSci/"

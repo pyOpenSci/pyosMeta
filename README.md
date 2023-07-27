@@ -1,27 +1,66 @@
-# PyOS Consolidate Contributor Data & Update Review Metadata
+# PyOS Update and Clean Contributor & Peer Review Metadata
 
-This repo contains a small module and some scripts that
+This repo contains a small module and 3 CLI scripts.
 
-1. Parse through all of the all-contributors bot `.json` files across our pyOpenSci repos to gather contributors to our organization. This allows us to [acknowledge contributors on our website](https://www.pyopensci.org/our-community/#pyopensci-community-contributors) who are not always making explicit code contributions (thus might not have commits) but are reviewing guidebooks, participating in peer review, and performing other important tasks that are critical to our pyOpenSci mission.
+## Notes
+
+To run `update-reviewers` you will need to run both `update-reviews` and `update-contributors` first to create the required input `.pickle` files.
+
+The scripts run as follows:
+
+## update-contributors script
+
+This script parses data from all-contributors bot `.json`
+files in the following repos:
+
+- [software-submission repo](https://github.com/pyOpenSci/software-submission) where peer review happens
+- [python-package-guide repo](https://github.com/pyOpenSci/python-package-guide)
+- [peer review guide repo](https://github.com/pyOpenSci/software-peer-review)
+- [pyopensci.github.io (website) repo](https://github.com/pyOpenSci/pyopensci.github.io)
+- [update-package-meta repo](https://github.com/pyOpenSci/update-web-metadata) _(this repo)_
+
+Running this this script:
+
+1. Parses through all of the all-contributors bot `.json` files across our pyOpenSci repos to gather contributors to our organization. This allows us to [acknowledge contributors on our website](https://www.pyopensci.org/our-community/#pyopensci-community-contributors) who are not always making explicit code contributions (thus might not have commits). These contributors are reviewing guidebooks, participating in peer review, and performing other important tasks that are critical to our pyOpenSci mission. We acknowledge all contributions at pyOpenSci regardless of volume or size.
 2. Updates the existing [contributors.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml) file found in our website repo with new contributors and the contributor role (package guides, code workflows, peer review, etc).
-   a. This update includes hitting the GitHub api to pull down public information about the contributors including website social links and location.
-3. Parse through our review issues to find packages that have been accepted. It then grabs each review's editor, reviewers and package authors. This information allows us to
-   a. Update a contributors contribution type to include reviewing software
-   b. Update the website's package listing with the package's DOI, documentation URL.
-   c. Update the package's stats including stars, contributors, etc. using the GitHub API
-4. TODO: finally we plan to create a small function that allows us to update package maintainer names in the package listing using the contributors.yml file.
+   a. If you run the script using `--update update_all`, this script will also use the GitHub api to update the users metadata from their GitHub profile.
+
+## update-reviews script
+
+This script parses through our (_accepted_) review issues to find packages that have been accepted. It then grabs each reviews editor, reviewers and package authors / maintainers. This information allows us to
+
+1. Update a contributor's peer review metadata in the contributors.yml file in the third script.
+1. Update the pyOpenSci website's package listing with the package's DOI, documentation URL.
+1. Update the package's stats including stars, contributors, etc. using the GitHub API
+
+## update-reviewers script
+
+This final script is a bridge between the first it uses pickle files outputted from the
+first two scripts to update each contributors peer review contributions including
+
+1. packages submitted or reviewed
+1. packages in which the contributor served as editors
+1. contributor types associated with peer review including:
+
+- peer-review
+- package-maintainer
+- package-reviewer
+- package-editor
+
+These general contributor types are used to drive our [website's
+contributor search and filter functionality that you can see here.](https://www.pyopensci.org/our-community/index.html#pyopensci-community-contributors)
 
 ## Local setup
 
 To begin:
 
 1. Create a local environment and activate it.
-2. Install the required dependencies via the requirement.txt file by running the following command;
+2. Install the required dependencies via the `requirement.txt` file by running the following command;
    `pip install -r requirements.txt`
-3. Install the pyos meta package in development/editable mode:
+3. Install the pyosmeta package in development/editable mode:
    `pip install -e . `
 
-## Setup token to authenticate with the GitHub API
+### Setup token to authenticate with the GitHub API
 
 To run this you need to [create a TOKEN that can be used to access the GitHub
 API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens)
@@ -33,9 +72,16 @@ After obtaining a token;
 
 ## How to run each script
 
-`python3 parse-contributors.py`
+Each script is available through the command line through entry points specified in our `pyproject.toml` file.
 
-The parse-contributors.py script does the following:
+## update-contributors script
+
+To run:
+
+`update-contributors`
+`update-contributors --update update_all`
+
+The `update-contributors` script does the following:
 
 1. It grabs the `all-contribs.json` files from each repository and turns that json data into a dictionary of all unique contributors across repos. Repos include:
    - peer review guide
@@ -45,103 +91,86 @@ The parse-contributors.py script does the following:
    - update-package-meta (this repo)
 2. It then:
 
-- Updates their profile information including name (TODO: only update name if
-  name is empty) using whatever information is available their public github
+If you use the `--update update_all` flag, it will:
+
+- Update contrib profile information including name using whatever information is available their public github
   account for website, location, organization, twitter, etc).
-- Checks to see that the website in their profile works, if not removes it so it doesn't begin to fail our website ci tests.
+- Check to see that the website in their profile works, if not removes it so it doesn't begin to fail our website ci tests.
 
-Returns
+Without the `update` flag, running `update-contributors` will only add any new users that
+are not already in the website `contributors.yml` file to a output `.pickle` file.
 
-- [`contributors.yml` file to be added to the \_data directory of our website](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml). This format can be easily parsed by jekyll.
+### update-reviews Returns:
 
-### TODO's - parse-contributors.py
+- `all-contributors.pickle` file that will be used in the final update-reviewers script to update all reviewer contribution data.
 
-- In some cases users haven't updated their name on GitHub. Their profile may either contain a first name or no name. In those instances we may update a name manually. If a
-  name exists in the contributors.yml file and it has at least two words (first and last), we should leave it as is in the `contributors.yml` file.
-
-### parse_review_issues script
+## update-reviews script
 
 To run:
-`python3 parse_review_issues.py`
+`update-reviews` or
+`update-reviews --update update_all`
 
-This script parses through all pyOpenSci software review issues where the package was accepted. It then collects the
-GitHub id and user information for
+- This script parses through all pyOpenSci issues in the [software-submissions repo](https://github.com/pyOpenSci/software-submission) issues where the issue has a label of 6/`pyOS-approved 🚀🚀🚀`.
+- Grabs crucial metadata including the reviewers and editors for each.
+- Adds people who have participated in peer review who are NOT listed currently in the website `contributors.yml` file
+
+It then collects the
+GitHub id and user information for:
 
 - reviewers,
 - submitting authors,
 - editors and
 - maintainers.
 
-It also goes to the repo for each package and updates stats
-such as stars, last commit date and more repo metadata.
+Finally, it updates GitHub statistics for
+each packages including stars, last commit date and more repo metadata.
 
 ### Returns
 
-This returns a `packages.yml` file that can be used to update
-the website [packages.yml file located in the \_data/ directory](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/packages.yml).
+This returns a `packages.pickle` file that will be used in the final script which bridges data between the first two scripts.
 
-TODOs:
+## update_reviewers script`
 
-- In some cases we only have maintainer's github usernames in that file - update to add their names [for nicer listing on the website](https://www.pyopensci.org/python-packages.html).
+This script is a bridge between `update-contributors` and `update-reviews`. It parses each review in the output
+`update-reviews.pickle` file and
 
-### `python3 update_reviewers.py`
+1. updates contributor name in the review data (often the github username is there but the first and last name is missing). This allows us to publish the maintainer names (rather than github usernames) [on our website package listing.](https://www.pyopensci.org/python-packages.html#explore-our-accepted-scientific-python-open-source-packages)
+1. Updates each review issue contributor's name in the contributor metadata. This allows us to ensure we have updated contributor types, package submission information etc, in the contributor.yml file on our website.
 
 To run:
-`python3 update_reviewers.py`
+`update_reviewers`
 
-This script uses the updated contributor and review information
-created from the scripts above. It then adds / updates the packages that
-each contributor has reviewed, served as editor or submitted. If the contributor has not been added to our contributors.yml file it will first add them and update their information from their GitHub profile page. It will then update their roles in the review process.
+### Returns
+
+This final script uses the two pickle files
+to update information. It then returns
+two output files:
+
+1. `_data/contributors.yml`
+2. `_data/packages.yml`
+
+Each are stored in the `/_data/file.yml` directory to mimic the directory structure of our website.
+
+## How these scripts are used in our organization
+
+The scripts above are called in the [GitHub
+actions located here](https://github.com/pyOpenSci/pyopensci.github.io/tree/main/.github/workflows). These actions can be run manually via workflow dispatch but also have a cron job to update our metadata periodically.
+
+### Data that these scripts update / maintain
+
+- [website contributors.yml file](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml)
+- [website packages.yml file is here](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/packages.yml).
 
 ## Rate limiting
 
+TODO: right now this isn't an issue but it will be in the future I suspect....
 Rate limiting - how to handle this...
-
-## Update contributors across repositories
-
-The contributors script parses data from:
-
-- software-review repo where peer review happens
-- python-package-guide repo
-- peer-review-guide repo
-- pyopensci.github.io (website) repo
-- update-package-meta repo (this repo)
-
-The first script updates contributor data by:
-
-1. Grabbing each contributor `.json` file generated by the all-contributors bot in each repository
-2. Parsing the website contributors.yml from the website.
-3. Adding all contributors identified in step 1 to the website yaml file.
-4. Finally it updates contributor metadata using each user's GitHub profile to get website, location, twitter handle, etc (if it is available)
-
-This script allows pyOpenSci to quickly update the website contributor list with the current list of contributors. It also ensures contributor metadata is current (or up to date with what the user is maintaining on their GitHub user page)
-
-## Update contributors across repositories
-
-To update package and review metadata you can
-use `parse_review_issues.py.py`.
-
-This script:
-
-- Parses each issue that has a label of 6/`pyOS-approved 🚀🚀🚀`.
-- Grabs crucial metadata including the reviewers and editors for each.
-- Finally it grabs package metadata to add to the packages.yml file including stats around last commit date, package stars and other github metrics.
-- It should also add people who have participated in peer review who are NOT listed currently in the website contributors.yml file
-
-python3 parse_review_issues.py
 
 ## Using this
 
 Create environment:
 
 `mamba env create -f environment.yml`
-
-## Notes
-
-First run parse-contributors.py - this will parse through and create a current up-to-date contributors.yml file.
-
-- Next run `parse_review_issues.py` - this will parse through all of our open issues and will create a new packages.yml file
-- Once you have that you can run update-reviewers: This not yet created script will take the output of parse-contributors (which can be ingested as a dict from the output pickle file) with a key being the gh username.
 
 ## Contributors ✨
 
