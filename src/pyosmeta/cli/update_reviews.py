@@ -17,6 +17,7 @@ To run at the CLI: parse_issue_metadata
 # ideally this could be passed as a CLI argument with the label we want to
 # search for
 
+import argparse
 import pickle
 
 from pyosmeta import ProcessIssues
@@ -24,8 +25,19 @@ from pyosmeta.file_io import clean_export_yml, load_website_yml
 
 
 def main():
-    # GITHUB_TOKEN = get_api_token()
-    update_all = True
+    update_all = False
+    parser = argparse.ArgumentParser(
+        description="A CLI script to update pyOpenSci reviews"
+    )
+    parser.add_argument(
+        "--update",
+        type=str,
+        help="Will force update review info from GitHub for every review",
+    )
+    args = parser.parse_args()
+
+    if args:
+        update_all = True
 
     web_reviews_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/packages.yml"
 
