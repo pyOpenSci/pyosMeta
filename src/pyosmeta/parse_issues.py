@@ -217,7 +217,7 @@ class ProcessIssues:
                 else:
                     issue_meta[
                         "date_accepted"
-                    ] = f"{the_date[2]}-{the_date[1]}-{the_date[0]}"
+                    ] = f"{the_date[2]}-{the_date[0]}-{the_date[1]}"
             except KeyError as ke:
                 print("Oops,", package_name, "is missing date_accepted key.")
             # Clean markdown url's from editor, and reviewer lines
