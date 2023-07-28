@@ -211,9 +211,13 @@ class ProcessIssues:
             # Date accepted is a manually added value. Fix format separately
             # Using dashes because it's jekyll friendly
             try:
-                issue_meta["date_accepted"] = issue_meta["date_accepted"].replace(
-                    "/", "-"
-                )
+                the_date = issue_meta["date_accepted"].replace("/", "-").split("-")
+                if the_date[0] == "TBD":
+                    continue
+                else:
+                    issue_meta[
+                        "date_accepted"
+                    ] = f"{the_date[2]}-{the_date[1]}-{the_date[0]}"
             except KeyError as ke:
                 print("Oops,", package_name, "is missing date_accepted key.")
             # Clean markdown url's from editor, and reviewer lines
@@ -347,7 +351,7 @@ class ProcessIssues:
             date_clean = (
                 datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
                 .date()
-                .strftime("%m-%d-%Y")
+                .strftime("%Y-%m-%d")
             )
         except:
             print("Oops - i need a string to process date")
