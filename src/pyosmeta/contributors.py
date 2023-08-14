@@ -1,16 +1,126 @@
 import json
 import os
+import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import requests
 from dotenv import load_dotenv
+from pydantic import (AliasChoices, BaseModel, ConfigDict, Field,
+                      field_validator)
+
+
+class PersonModel(BaseModel):
+    # Make sure model populates both aliases and original attr name
+    model_config = ConfigDict(populate_by_name=True, anystr_strip_whitespace=True)
+
+    name: Optional[str] = None
+    title: Optional[str] = None
+    sort: Optional[int] = None
+    bio: Optional[str] = None
+    organization: Optional[str] = Field(None, validation_alias=AliasChoices("company"))
+    github_username: str = Field(None, validation_alias=AliasChoices("login"))
+    github_image_id: int = Field(None, validation_alias=AliasChoices("id"))
+    deia_advisory: Optional[bool] = False
+    editorial_board: Optional[bool] = Field(
+        None, validation_alias=AliasChoices("editorial-board")
+    )
+    advisory: Optional[bool] = False
+    twitter: Optional[str] = Field(
+        None, validation_alias=AliasChoices("twitter_username")
+    )
+    mastodon: Optional[str] = Field(
+        None, validation_alias=AliasChoices("mastodon_username", "mastodon")
+    )
+    orcidid: Optional[str] = None
+    website: Optional[str] = Field(
+        None, validation_alias=AliasChoices("blog", "website")
+    )
+    board: Optional[bool] = False
+    contributor_type: Optional[list[str]] = []
+    packages_editor: Optional[list[str | None]] = Field(
+        None,
+        validation_alias=AliasChoices("packages-editor"),
+    )
+    packages_submitted: Optional[list[str | None]] = Field(
+        None,
+        validation_alias=AliasChoices("packages-submitted", "packages_submitted"),
+    )
+    packages_reviewed: Optional[list[str | None]] = Field(
+        None,
+        validation_alias=AliasChoices("packages-reviewed", "packages_reviewed"),
+    )
+    location: Optional[str] = None
+    email: Optional[str] = None
+
+    # @field_validator("advisory", "deia_advisory", mode="before")
+    # def fix_bools(cls, value):
+    #     value = "value"
+    #     print(value)
+    #     if value == "false":
+    #         return False
+    #     elif value == "true":
+    #         return True
+
+    @field_validator(
+        "packages_reviewed",
+        "packages_submitted",
+        "packages_editor",
+        mode="before",
+    )
+    @classmethod
+    def string_to_list(cls, value):
+        """
+        For fields such as packages-reviewed edited etc we want
+        a list of elements not just a single string. this will
+        fix that issue.
+        """
+        # If the input value is a string, convert it to a list
+        if isinstance(value, list):
+            return value
+        if isinstance(value, str):
+            return [value]
+        # If the input value is None, return an empty list
+        elif value is None:
+            return []
+
+    @field_validator("bio", mode="before")
+    @classmethod
+    def clean_strings(cls, string: str) -> str:
+        """This is a cleaning step that will remove spurious
+        characters from string fields.
+
+        """
+        if isinstance(string, str):
+            # Remove "\r\n" from the string value
+            string = re.sub(r"[\r\n]", "", string)
+        return string
+
+    def update(self, data: dict) -> "PersonModel":
+        """
+        this doesn't currently validate the data - the discussion
+        below describes one way to do that but uses pydantic 1.x not
+        2.x approach.
+
+        https://github.com/pydantic/pydantic/discussions/3139#discussioncomment-4797649
+        """
+
+        # Note that this will not validate new data :(
+        for aval in data.keys():
+            if isinstance(getattr(self, aval), str) and "# noupdate" in getattr(
+                self, aval
+            ):
+                print("The", aval, "field has a noupdate flag. Skipping update.")
+            else:
+                setattr(self, aval, data[aval])
+        return self
 
 
 @dataclass
 class ProcessContributors:
-    # When initializing how do you decide what should be an input
-    # attribute vs just something a method accepted when called?
+    """A class that contains some basic methods to support populating and
+    updating contributor data."""
+
     def __init__(self, json_files: List) -> None:
         """
         Parameters
@@ -87,29 +197,30 @@ class ProcessContributors:
         final_list = self.update_contrib_list(existing_contribs, new_contribs)
         return (contrib_key_yml, final_list)
 
-    def create_contrib_template(self) -> Dict:
-        """A small helper that creates a template for a new contributor
-        that we are adding to our contributor.yml file"""
+    # TODO: this can go away now that i have a personmodel obj
+    # def create_contrib_template(self) -> Dict:
+    #     """A small helper that creates a template for a new contributor
+    #     that we are adding to our contributor.yml file"""
 
-        return {
-            "name": "",
-            "bio": "",
-            "organization": "",
-            "title": "",
-            "github_username": "",
-            "github_image_id": "",
-            "editorial-board": "",
-            "twitter": "",
-            "mastodon": "",
-            "orcidid": "",
-            "website": "",
-            "contributor_type": [],
-            "packages-editor": [],
-            "packages-submitted": [],
-            "packages-reviewed": [],
-            "location": "",
-            "email": "",
-        }
+    #     return {
+    #         "name": "",
+    #         "bio": "",
+    #         "organization": "",
+    #         "title": "",
+    #         "github_username": "",
+    #         "github_image_id": "",
+    #         "editorial-board": "",
+    #         "twitter": "",
+    #         "mastodon": "",
+    #         "orcidid": "",
+    #         "website": "",
+    #         "contributor_type": [],
+    #         "packages-editor": [],
+    #         "packages-submitted": [],
+    #         "packages-reviewed": [],
+    #         "location": "",
+    #         "email": "",
+    #     }
 
     # TODO - This utility is used across all scripts.
     def clean_list(self, a_list: Union[str, List[str]]) -> List[str]:
@@ -212,7 +323,8 @@ class ProcessContributors:
         return contrib_type
 
     def check_add_user(self, gh_user: str, contribs: Dict[str, str]) -> None:
-        """Check to make sure user exists and if not, add them
+        """Check to make sure user exists in the existing contrib data. If they
+        don't' exist, add them
 
         Parameters
         ----------
@@ -278,6 +390,8 @@ class ProcessContributors:
         # Create an empty dictionary to hold the combined data
         combined_data = {}
 
+        # TODO: to make this faster, it might be better to return a dict
+        # with username : [contrib1, contrib2]
         for json_file in self.json_files:
             # Process the JSON file and add the data to the combined dictionary
             try:
@@ -287,20 +401,22 @@ class ProcessContributors:
                 print("Oops - can't process", json_file, e)
         return combined_data
 
-    def get_gh_usernames(self, contrib_data: List) -> List:
-        """Get a list of all gh usernames
+    # TODO: see if this is every used. it seems completley unecccsary
+    # given we can use.keys*()
+    # def get_gh_usernames(self, contrib_data: List) -> List:
+    #     """Get a list of all gh usernames
 
-        Parameters
-        ----------
-        contrib_data : list
-            Dict containing all of the contributor information for the website.
+    #     Parameters
+    #     ----------
+    #     contrib_data : list
+    #         Dict containing all of the contributor information for the website.
 
-        """
-        all_usernames = []
-        for item in contrib_data:
-            all_usernames.append(item["github_username"])
+    #     """
+    #     all_usernames = []
+    #     for item in contrib_data:
+    #         all_usernames.append(item["github_username"])
 
-        return all_usernames
+    #     return all_usernames
 
     def get_user_info(self, username: str, aname: Optional[str] = None) -> dict:
         """
@@ -327,7 +443,6 @@ class ProcessContributors:
         # if message = Bad credentials
         response_json = response.json()
 
-        user_data = {}
         # TODO: make an attribute and call it here?
         update_keys = {
             "name": "name",
@@ -342,20 +457,9 @@ class ProcessContributors:
             "github_username": "login",
         }
 
-        user_data[username] = {}
-        for akey in update_keys:
-            # If the key is name, check to see if there is name data
-            # already there. don't force update if there's a name!
-            if akey == "name":
-                if aname is None:
-                    user_data[username][akey] = response_json.get(
-                        update_keys[akey], None
-                    )
-                else:
-                    # Else just keep the original name
-                    user_data[username][akey] = aname
-            else:
-                user_data[username][akey] = response_json.get(update_keys[akey], None)
+        user_data = {}
+        for key in update_keys:
+            user_data[key] = response_json.get(update_keys[key], None)
 
         return user_data
 
@@ -456,6 +560,7 @@ class ProcessContributors:
         """
 
         new = {}
+        # Rather than this template i can use the person_model
         new[gh_user] = self.create_contrib_template()
         gh_data = self.get_gh_data([gh_user])
         # Update their metadata in the dict and return

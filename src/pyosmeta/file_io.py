@@ -173,12 +173,7 @@ def clean_export_yml(a_dict: Dict[str, Union[str, List[str]]], filename: str) ->
     None
         Outputs a yaml file with the input name containing the pyos meta
     """
-    # TODO: why doesn't .values() work here? it returns a representation
-    # error.
-    # final_data = []
-    # for key in a_dict:
-    #     final_data.append(a_dict[key])
-    # print("sdf")
+
     # Export to yaml
-    export_yaml(filename, list(a_dict.values()))
+    export_yaml(filename, a_dict)
     clean_yaml_file(filename)
