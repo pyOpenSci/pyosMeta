@@ -66,6 +66,15 @@ update-reviewers = "pyosmeta.cli.update_review_contribs:main"
 # Right now i'm not using pdm to add dependencies.
 # Will explore that later
 # Below using dynamic versioning / which is setuptools scm like
+[tool.black]
+line-length = 79
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+py_version = 27
+
 [tool.flake8]
 # List of error codes to ignore (comma-separated)
 ignore = "E203, W503"

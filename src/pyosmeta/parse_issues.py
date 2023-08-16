@@ -1,10 +1,9 @@
-from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Optional
 
 import requests
-from pydantic import (AliasChoices, BaseModel, ConfigDict, Field,
-                      field_validator)
+from dataclasses import dataclass
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+from typing import Any, Optional
 
 from pyosmeta.contributors import ProcessContributors
 
@@ -29,8 +28,8 @@ def clean_date(a_date: Optional[str]) -> str:
                 .date()
                 .strftime("%Y-%m-%d")
             )
-        except:
-            print("Oops - missing data. Setting date to missing")
+        except TypeError as te:
+            print("Oops - missing data. Setting date to missing", te)
             return "missing"
 
 
@@ -152,7 +151,11 @@ class ProcessIssues:
 
     @property
     def api_endpoint(self):
-        return f"https://api.github.com/repos/{self.org}/{self.repo_name}/issues?labels={self.label_name}&state=all"
+        url = (
+            f"https://api.github.com/repos/{self.org}/{self.repo_name}/"
+            f"issues?labels={self.label_name}&state=all"
+        )
+        return url
 
     # Set up the API endpoint
     def _get_response(self):
@@ -215,7 +218,7 @@ class ProcessIssues:
         line_item : list
             A single list item representing a single line in the issue
             containing metadata for the review.
-            This comment is the metadata for the review that the author fills out.
+            This comment is metadata for the review that the author fills out.
 
         Returns
         -------
@@ -235,7 +238,7 @@ class ProcessIssues:
                     # Add each maintainer to the dict
                     user = aname.split("@")
                     # Clean
-                    user = [self._clean_name(l) for l in user]
+                    user = [self._clean_name(a_str) for a_str in user]
                     a_maint = {
                         "name": self._clean_name(user[0]),
                         "github_username": self._clean_name(user[1]),
@@ -334,11 +337,11 @@ class ProcessIssues:
         Parameters
         ----------
         body_data : list
-            A list containing all of the body data for the top comment in an issue.
+            A list containing all body data for the top comment in an issue.
         end_range : int
-            The number of lines to parse at the top of the issue (this may change
-            over time so this variable allows us to have different processing
-            based upon the date of the issue being opened)
+            The number of lines to parse at the top of the issue (this may
+            change over time so this variable allows us to have different
+            processing based upon the date of the issue being opened)
 
         Returns
         -------
@@ -353,7 +356,9 @@ class ProcessIssues:
 
         return issue_meta
 
-    def get_repo_endpoints(self, review_issues: dict[str, str]) -> dict[str, str]:
+    def get_repo_endpoints(
+        self, review_issues: dict[str, str]
+    ) -> dict[str, str]:
         """
         Returns a list of repository endpoints
 
@@ -373,7 +378,9 @@ class ProcessIssues:
         for a_package in review_issues.keys():
             repo = review_issues[a_package]["repository_link"].strip("/")
             owner, repo = repo.split("/")[-2:]
-            all_repos[a_package] = f"https://api.github.com/repos/{owner}/{repo}"
+            all_repos[
+                a_package
+            ] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
 
     def parse_comment(self, issue: dict[str, str]) -> tuple[str, list[str]]:
@@ -395,46 +402,33 @@ class ProcessIssues:
                 A list containing the comment elements in order
         """
 
-        # TODO: this var isn't used
-        comments_url = issue["comments_url"]
         body = issue["body"]
-        # Here sometimes the lines are split with \n, others \r\n
-        # To clean split on \n but may have to remove the \r
+        # Clean line breaks (could be done with a regex too)
         lines = body.split("\n")
         lines = [a_line.strip("\r").strip() for a_line in lines]
         # Some users decide to hold the issue titles.
         # For those, clean the markdown bold ** element
-        lines = [line.replace("**", "").strip() for line in lines if line.strip() != ""]
+        lines = [
+            line.replace("**", "").strip()
+            for line in lines
+            if line.strip() != ""
+        ]
         # You need a space after : or else it will break https:// in two
         body_data = [line.split(": ") for line in lines if line.strip() != ""]
 
         # Loop through issue header and grab relevant review metadata
         name_index = next(
-            (i for i, sublist in enumerate(body_data) if sublist[0] == "Package Name"),
+            (
+                i
+                for i, sublist in enumerate(body_data)
+                if sublist[0] == "Package Name"
+            ),
             None,
         )
 
         package_name = body_data[name_index][1] if name_index else None
 
         return package_name, body_data
-
-    # def _clean_date(self, date: str) -> str:
-    #     """Cleans up a datetime  from github and returns a date string"""
-
-    #     try:
-    #         print(date)
-    #         date_clean = (
-    #             datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-    #             .date()
-    #             .strftime("%Y-%m-%d")
-    #         )
-    #     except:
-    #         print(
-    #             "date is this", date, "Oops - i need a string to process date"
-    #         )
-    #         print("setting date to missing")
-    #         date_clean = "missing"
-    #     return date_clean
 
     def get_gh_metrics(
         self,
@@ -475,7 +469,7 @@ class ProcessIssues:
 
         """
         stats_dict = {}
-        # Small script to get the url (normally the docs) and description of a repo!
+        # get the url (normally the docs) and description of a repo!
         print(url)
         response = requests.get(
             url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
@@ -551,10 +545,12 @@ class ProcessIssues:
         Parameters
         ----------
         issue_body_list : list[list[str]]
-            The first comment from the issue split into lines and then the lines split as by self.parse_comment()
+            The first comment from the issue split into lines and then the
+            lines split as by self.parse_comment()
 
         fmt : bool
-            Applies some formatting changes to the categories to match what is required for the website.
+            Applies some formatting changes to the categories to match what is
+            required for the website.
         """
         # Find the starting index of the category section
         start_index = None
@@ -571,7 +567,7 @@ class ProcessIssues:
             # If we couldn't find the starting index, return an empty list
             return []
 
-        # Iterate through the lines starting at the starting index and grab the relevant text
+        # Iterate through lines and grab the relevant text
         cat_matches = ["[x]", "[X]"]
         categories: list[str] = []
         for i in range(start_index, len(issue_body_list)):  # 30):
@@ -587,6 +583,3 @@ class ProcessIssues:
         if fmt:
             categories = [c.lower().replace(" ", "-") for c in categories]
         return categories
-
-
-# https://api.github.com/repos/pyopensci/python-package-guide/commits

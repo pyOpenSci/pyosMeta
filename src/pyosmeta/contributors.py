@@ -1,18 +1,12 @@
 import json
 import os
 import re
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Union
 
 import requests
+from dataclasses import dataclass
 from dotenv import load_dotenv
-from pydantic import (
-    AliasChoices,
-    BaseModel,
-    ConfigDict,
-    Field,
-    field_validator,
-)
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+from typing import Dict, List, Optional, Tuple, Union
 
 
 class PersonModel(BaseModel):
@@ -581,7 +575,7 @@ class ProcessContributors:
         try:
             response = requests.get(url, timeout=6)
             return response.status_code == 200
-        except:
+        except Exception:
             print("Oops, url", url, "is not valid, removing it")
             return False
 

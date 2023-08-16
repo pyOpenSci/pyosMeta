@@ -53,12 +53,18 @@ def main():
             if issue_role == "all_current_maintainers":
                 if issue_role in issue_meta:
                     # Loop through each maintainer in the list
-                    for i, a_maintainer in enumerate(issue_meta.get(issue_role)):
-                        gh_user = get_clean_user(a_maintainer["github_username"])
+                    for i, a_maintainer in enumerate(
+                        issue_meta.get(issue_role)
+                    ):
+                        gh_user = get_clean_user(
+                            a_maintainer["github_username"]
+                        )
 
                         if gh_user not in contribs.keys():
                             contribs.update(
-                                updateContribs.check_add_user(gh_user, contribs)
+                                updateContribs.check_add_user(
+                                    gh_user, contribs
+                                )
                             )
 
                         # Update contrib packages for peer review
@@ -100,7 +106,9 @@ def main():
 
                 if gh_user not in contribs.keys():
                     # If they aren't already in contribs, add them
-                    contribs.update(updateContribs.check_add_user(gh_user, contribs))
+                    contribs.update(
+                        updateContribs.check_add_user(gh_user, contribs)
+                    )
                 # Update user package contributions
                 (
                     contrib_key,
@@ -123,7 +131,9 @@ def main():
 
                 # If users's name is missing in issue, populate from contribs dict
                 if issue_meta[issue_role]["name"] == "":
-                    packages[pkg_name][issue_role]["name"] = contribs[gh_user]["name"]
+                    packages[pkg_name][issue_role]["name"] = contribs[gh_user][
+                        "name"
+                    ]
 
     # Export to yaml
     clean_export_yml(contribs, os.path.join("_data", "contributors.yml"))
