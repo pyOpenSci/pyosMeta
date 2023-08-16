@@ -29,9 +29,16 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only", # BE sure to specify that you use python 3.x
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+version = "0.1.0"
+description = "Tools for contributors"
+authors = [{ name = "Leah Wasser", email = "leah@pyopensci.org" }]
+dependencies = [
+    "ruamel-yaml>=0.17.21",
+    "requests",
+    "python-dotenv",
+    "pydantic>=2.0",
 ]
 
-dependencies = ["ruamel-yaml>=0.17.21", "requests", "python-dotenv", "pydantic"]
 # This is the metadata that pip reads to understand what versions your package supports
 requires-python = ">=3.10"
 readme = "README.md"
@@ -59,6 +66,10 @@ update-reviewers = "pyosmeta.cli.update_review_contribs:main"
 # Right now i'm not using pdm to add dependencies.
 # Will explore that later
 # Below using dynamic versioning / which is setuptools scm like
+[tool.flake8]
+# List of error codes to ignore (comma-separated)
+ignore = "E203, W503"
+
 [tool.pdm]
 
 
@@ -70,6 +81,7 @@ package-dir = "src"
 
 # Versioning is a backend feature - instructions are in pdm-backend docs
 # https://pdm-backend.fming.dev/metadata/
+
 [tool.pdm.version]
 # Note that you need to create the tag after all commits are created - otherwise
 # pdm adds dev info after the tag number which won't publish to pypi

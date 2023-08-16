@@ -2,23 +2,30 @@ import json
 import os
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import requests
 from dotenv import load_dotenv
-from pydantic import (AliasChoices, BaseModel, ConfigDict, Field,
-                      field_validator)
+from pydantic import (
+    AliasChoices,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+)
 
 
 class PersonModel(BaseModel):
     # Make sure model populates both aliases and original attr name
-    model_config = ConfigDict(populate_by_name=True, anystr_strip_whitespace=True)
+    model_config = ConfigDict(populate_by_name=True, str_strip_whitespace=True)
 
     name: Optional[str] = None
-    title: Optional[str] = None
+    title: Optional[Union[list[str], str]] = None
     sort: Optional[int] = None
     bio: Optional[str] = None
-    organization: Optional[str] = Field(None, validation_alias=AliasChoices("company"))
+    organization: Optional[str] = Field(
+        None, validation_alias=AliasChoices("company")
+    )
     github_username: str = Field(None, validation_alias=AliasChoices("login"))
     github_image_id: int = Field(None, validation_alias=AliasChoices("id"))
     deia_advisory: Optional[bool] = False
@@ -44,23 +51,18 @@ class PersonModel(BaseModel):
     )
     packages_submitted: Optional[list[str | None]] = Field(
         None,
-        validation_alias=AliasChoices("packages-submitted", "packages_submitted"),
+        validation_alias=AliasChoices(
+            "packages-submitted", "packages_submitted"
+        ),
     )
     packages_reviewed: Optional[list[str | None]] = Field(
         None,
-        validation_alias=AliasChoices("packages-reviewed", "packages_reviewed"),
+        validation_alias=AliasChoices(
+            "packages-reviewed", "packages_reviewed"
+        ),
     )
     location: Optional[str] = None
-    email: Optional[str] = None
-
-    # @field_validator("advisory", "deia_advisory", mode="before")
-    # def fix_bools(cls, value):
-    #     value = "value"
-    #     print(value)
-    #     if value == "false":
-    #         return False
-    #     elif value == "true":
-    #         return True
+    email: Optional[str] = ModuleNotFoundError
 
     @field_validator(
         "packages_reviewed",
@@ -95,25 +97,6 @@ class PersonModel(BaseModel):
             # Remove "\r\n" from the string value
             string = re.sub(r"[\r\n]", "", string)
         return string
-
-    def update(self, data: dict) -> "PersonModel":
-        """
-        this doesn't currently validate the data - the discussion
-        below describes one way to do that but uses pydantic 1.x not
-        2.x approach.
-
-        https://github.com/pydantic/pydantic/discussions/3139#discussioncomment-4797649
-        """
-
-        # Note that this will not validate new data :(
-        for aval in data.keys():
-            if isinstance(getattr(self, aval), str) and "# noupdate" in getattr(
-                self, aval
-            ):
-                print("The", aval, "field has a noupdate flag. Skipping update.")
-            else:
-                setattr(self, aval, data[aval])
-        return self
 
 
 @dataclass
@@ -401,24 +384,9 @@ class ProcessContributors:
                 print("Oops - can't process", json_file, e)
         return combined_data
 
-    # TODO: see if this is every used. it seems completley unecccsary
-    # given we can use.keys*()
-    # def get_gh_usernames(self, contrib_data: List) -> List:
-    #     """Get a list of all gh usernames
-
-    #     Parameters
-    #     ----------
-    #     contrib_data : list
-    #         Dict containing all of the contributor information for the website.
-
-    #     """
-    #     all_usernames = []
-    #     for item in contrib_data:
-    #         all_usernames.append(item["github_username"])
-
-    #     return all_usernames
-
-    def get_user_info(self, username: str, aname: Optional[str] = None) -> dict:
+    def get_user_info(
+        self, username: str, aname: Optional[str] = None
+    ) -> dict:
         """
         Get a single user's information from their GitHub username using the
         GitHub API
@@ -430,6 +398,7 @@ class ProcessContributors:
             Github username to retrieve data for
         aname : str default=None
             A user's name from the contributors.yml file.
+            https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
 
         Returns
         -------
@@ -527,7 +496,9 @@ class ProcessContributors:
             if gh_user in webDict.keys():
                 # Return a list of updated contributor type keys and use it to
                 # update the web dict
-                webDict[gh_user]["contributor_type"] = self._update_contrib_type(
+                webDict[gh_user][
+                    "contributor_type"
+                ] = self._update_contrib_type(
                     webDict[gh_user]["contributor_type"],
                     repoDict[gh_user]["contributor_type"],
                 )
@@ -567,7 +538,9 @@ class ProcessContributors:
         updated_data = self.update_contrib_data(new, gh_data)
         return updated_data
 
-    def get_gh_data(self, contribs: Union[Dict[str, str], List]) -> dict[str, str]:
+    def get_gh_data(
+        self, contribs: Union[Dict[str, str], List]
+    ) -> dict[str, str]:
         """Parses through each GitHub username and hits the GitHub
         API to grab user information.
 
@@ -647,7 +620,9 @@ class ProcessContributors:
                     else:
                         contrib_data[gh_name][akey] = ""
                 else:
-                    contrib_data[gh_name][akey] = gh_data[gh_name][gh_name][akey]
+                    contrib_data[gh_name][akey] = gh_data[gh_name][gh_name][
+                        akey
+                    ]
 
         return contrib_data
 

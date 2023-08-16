@@ -1,6 +1,6 @@
 import pickle
 import urllib.request
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Union
 
 import ruamel.yaml
 
@@ -27,6 +27,25 @@ def _list_to_dict(a_list: List, a_key: str) -> Dict:
     return {a_dict[a_key].lower(): a_dict for a_dict in a_list}
 
 
+def create_paths(repos: Union[list[str], str]) -> Union[list[str], str]:
+    """ """
+    base_url = "https://raw.githubusercontent.com/pyOpenSci/"
+    end_url = "/main/.all-contributorsrc"
+    repos = [
+        "python-package-guide",
+        "software-peer-review",
+        "pyopensci.github.io",
+        "software-review",
+        "update-web-metadata",
+    ]
+    if isinstance(repos, list):
+        all_paths = [base_url + repo + end_url for repo in repos]
+    else:
+        all_paths = base_url + repos + end_url
+
+    return all_paths
+
+
 def load_website_yml(key: str, url: str):
     """
     This opens a website contrib yaml file and turns it in a
@@ -35,28 +54,6 @@ def load_website_yml(key: str, url: str):
     yml_list = open_yml_file(url)
 
     return _list_to_dict(yml_list, key)
-
-
-# def dict_to_list(pyos_meta: Dict[str, Union[str, List[str]]]) -> List[Dict]:
-#     """Turn dict into list for parsing to jekyll friendly yaml
-
-#     Parameters
-#     ----------
-#     pyos_meta : Dict
-#         A dictionary containing metadata for pyos contributors or review issues
-
-#     Returns
-#     -------
-#     List
-#         A list of dictionaries containing pyos metadata for contribs or reviews
-
-#     """
-#     print("a")
-#     # Turn dict into list for parsing
-#     return [pyos_meta[key] for key in pyos_meta]
-#     # for key in pyos_meta:
-#     #     final_contribs.append(pyos_meta[key])
-#     # return final_contribs
 
 
 def open_yml_file(file_path: str) -> dict:
@@ -109,7 +106,7 @@ def export_yaml(filename: str, data_list: list):
 # function created
 def clean_string(astr: str) -> str:
     """
-    Clean a string by removing occurrences of strings starting with "*id0" and "[]".
+    Clean - remove strings starting with "*id0" and "[]".
 
     Parameters
     ----------
@@ -139,7 +136,7 @@ def clean_yaml_file(filename):
     with open(filename, "r") as f:
         lines = f.readlines()
 
-    # TODO: regex would be cleaner here - https://stackoverflow.com/questions/27064964/python-replace-all-words-start-with
+    # TODO: regex would be cleaner here
     cleaned_lines = []
     for i, line in enumerate(lines):
         if i == 0 and line.startswith("  "):

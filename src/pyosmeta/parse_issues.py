@@ -1,13 +1,111 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any, Optional
 
 import requests
+from pydantic import (AliasChoices, BaseModel, ConfigDict, Field,
+                      field_validator)
 
 from pyosmeta.contributors import ProcessContributors
 
 
-# main reason to use this is attributes .. avoiding them being changed
-# in other instances...
+def clean_date(a_date: Optional[str]) -> str:
+    """Cleans up a datetime from github and returns a date string
+
+    In some cases the string is manually entered month-day-year and in
+    others it's a gh time stamp. finally sometimes it could be missing
+    or text. handle all of those cases with this validator.
+    """
+    print(a_date)
+    if a_date is None or a_date == "missing":
+        return "missing"
+    elif len(a_date) < 11:
+        new_date = a_date.replace("/", "-").split("-")
+        return f"{new_date[2]}-{new_date[0]}-{new_date[1]}"
+    else:
+        try:
+            return (
+                datetime.strptime(a_date, "%Y-%m-%dT%H:%M:%SZ")
+                .date()
+                .strftime("%Y-%m-%d")
+            )
+        except:
+            print("Oops - missing data. Setting date to missing")
+            return "missing"
+
+
+class GhMeta(BaseModel):
+    name: str
+    description: str
+    created_at: str
+    stargazers_count: int
+    watchers_count: int
+    forks: int
+    open_issues_count: int
+    forks_count: int
+    documentation: Optional[str]  # Jointly is missing documentation
+    contrib_count: int
+    last_commit: str
+
+    @field_validator(
+        "last_commit",
+        "created_at",
+        mode="before",
+    )
+    @classmethod
+    def clean_date(cls, a_date: Optional[str]) -> str:
+        """Cleans up a datetime from github and returns a date string
+
+        Runs the general clean_date function in this module as a validator.
+        """
+
+        return clean_date(a_date)
+
+
+class ReviewModel(BaseModel):
+    # Make sure model populates both aliases and original attr name
+    model_config = ConfigDict(populate_by_name=True, str_strip_whitespace=True)
+
+    package_name: Optional[str] = None
+    package_description: str = Field(
+        None, validation_alias=AliasChoices("one-line_description_of_package")
+    )
+    submitting_author: dict[str, str] = None
+    all_current_maintainers: list[dict[str, str]] = None
+    repository_link: Optional[str] = None
+    version_submitted: Optional[str] = None
+    categories: Optional[str] = None
+    categories: list[str] = None
+    editor: dict[str, str] = None
+    reviewer_1: dict[str, str] = None
+    reviewer_2: dict[str, str] = None
+    archive: str = None
+    version_accepted: str = None
+    date_accepted: str = None
+    created_at: str = None
+    updated_at: str = None
+    closed_at: str = None
+    issue_link: str = None
+    gh_meta: GhMeta
+
+    @field_validator(
+        "date_accepted",
+        "created_at",
+        "updated_at",
+        "closed_at",
+        mode="before",
+    )
+    @classmethod
+    def clean_date(cls, a_date: Optional[str]) -> str:
+        """Cleans up a datetime from github and returns a date string
+
+        Runs the general clean_date function in this module as a validator.
+
+        """
+
+        return clean_date(a_date)
+
+
 @dataclass
 class ProcessIssues:
     """
@@ -17,7 +115,6 @@ class ProcessIssues:
 
     """
 
-    # TODO: turn file io into functions and remove inheritance here
     def __init__(self, org, repo_name, label_name):
         """
         More here...
@@ -40,6 +137,18 @@ class ProcessIssues:
         self.contrib_instance = ProcessContributors([])
 
         self.GITHUB_TOKEN = self.contrib_instance.get_token()
+
+    gh_stats = [
+        "name",
+        "description",
+        "homepage",
+        "created_at",
+        "stargazers_count",
+        "watchers_count",
+        "forks",
+        "open_issues_count",
+        "forks_count",
+    ]
 
     @property
     def api_endpoint(self):
@@ -174,26 +283,7 @@ class ProcessIssues:
             package name, description, review team, version submitted etc.
             See key_order below for the full list of keys.
         """
-        # Reorder data
-        key_order = [
-            "package_name",
-            "package_description",
-            "submitting_author",
-            "all_current_maintainers",
-            "repository_link",
-            "version_submitted",
-            "categories",
-            "editor",
-            "reviewer_1",
-            "reviewer_2",
-            "archive",
-            "version_accepted",
-            "date_accepted",
-            "created_at",
-            "updated_at",
-            "closed_at",
-            "issue_link",
-        ]
+
         meta_dates = ["created_at", "updated_at", "closed_at"]
 
         review = {}
@@ -202,50 +292,34 @@ class ProcessIssues:
             if not package_name:
                 continue
             # Index of 15 should include date accepted in the review meta
-            issue_meta = self.get_issue_meta(body_data, total_lines)
+            review[package_name] = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta
             # Created, opened & closed dates are in GitHub Issue response
             for a_date in meta_dates:
-                issue_meta[a_date] = self._clean_date(issue[a_date])
-
-            # Date accepted is a manually added value. Fix format separately
-            # Using dashes because it's jekyll friendly
-            try:
-                the_date = issue_meta["date_accepted"].replace("/", "-").split("-")
-                if the_date[0] == "TBD":
-                    continue
-                else:
-                    issue_meta[
-                        "date_accepted"
-                    ] = f"{the_date[2]}-{the_date[0]}-{the_date[1]}"
-            except KeyError as ke:
-                print("Oops,", package_name, "is missing date_accepted key.")
-            # Clean markdown url's from editor, and reviewer lines
-            types = ["editor", "reviewer_1", "reviewer_2"]
-            user_values = ["github_username", "name"]
-            for a_type in types:
-                for user_value in user_values:
-                    issue_meta[a_type][user_value] = (
-                        issue_meta[a_type][user_value]
-                        .replace("https://github.com/", "")
-                        .replace("[", "")
-                        .replace("]", "")
-                    )
-
-            review[package_name] = issue_meta
+                # TODO: this could become a validator
+                review[package_name][a_date] = issue[
+                    a_date
+                ]  # self._clean_date(issue[a_date])
+            # Get categories and issue review link
             review[package_name]["categories"] = self.get_categories(body_data)
             review[package_name]["issue_link"] = issue["url"].replace(
                 "https://api.github.com/repos/", "https://github.com/"
             )
-            # Rename package description & reorder keys
-            review[package_name]["package_description"] = review[package_name].pop(
-                "one-line_description_of_package", ""
-            )
-            review[package_name] = {
-                key: review[package_name][key]
-                for key in key_order
-                if review[package_name].get(key)
-            }
+
+            # # Clean markdown url's from editor, and reviewer lines
+            # TODO - this could be a reviewer name cleanup validaotr
+            # types = ["editor", "reviewer_1", "reviewer_2"]
+            # user_values = ["github_username", "name"]
+            # for a_type in types:
+            #     for user_value in user_values:
+            #         issue_meta[a_type][user_value] = (
+            #             issue_meta[a_type][user_value]
+            #             .replace("https://github.com/", "")
+            #             .replace("[", "")
+            #             .replace("]", "")
+            #         )
+
+            # review[package_name] = issue_meta
 
         return review
 
@@ -344,20 +418,56 @@ class ProcessIssues:
 
         return package_name, body_data
 
-    def _clean_date(self, date: str) -> str:
-        """Cleans up a datetime  from github and returns a date string"""
+    # def _clean_date(self, date: str) -> str:
+    #     """Cleans up a datetime  from github and returns a date string"""
 
-        try:
-            date_clean = (
-                datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-                .date()
-                .strftime("%Y-%m-%d")
-            )
-        except:
-            print("Oops - i need a string to process date")
-            print("setting date to missing")
-            date_clean = "missing"
-        return date_clean
+    #     try:
+    #         print(date)
+    #         date_clean = (
+    #             datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+    #             .date()
+    #             .strftime("%Y-%m-%d")
+    #         )
+    #     except:
+    #         print(
+    #             "date is this", date, "Oops - i need a string to process date"
+    #         )
+    #         print("setting date to missing")
+    #         date_clean = "missing"
+    #     return date_clean
+
+    def get_gh_metrics(
+        self,
+        endpoints: dict[str, str],
+        reviews: dict[str, dict[str, Any]],
+    ) -> dict[str, dict[str, Any]]:
+        """
+        Get GitHub metrics for each review based on provided endpoints.
+
+        Parameters:
+        ----------
+        endpoints : dict
+            A dictionary mapping package names to their GitHub URLs.
+        reviews : dict
+            A dictionary containing review data.
+
+        Returns:
+        -------
+        dict
+            Updated review data with GitHub metrics.
+        """
+        pkg_meta = {}
+        for pkg_name, url in endpoints.items():
+            print("Getting GitHub stats for", pkg_name)
+
+            pkg_meta[pkg_name] = self.get_repo_meta(url, self.gh_stats)
+
+            pkg_meta[pkg_name]["contrib_count"] = self.get_repo_contribs(url)
+            pkg_meta[pkg_name]["last_commit"] = self.get_last_commit(url)
+            # Add github meta to review metadata
+            reviews[pkg_name]["gh_meta"] = pkg_meta[pkg_name]
+
+            return reviews
 
     def get_repo_meta(self, url: str, stats_list: list) -> dict:
         """
@@ -387,7 +497,9 @@ class ProcessIssues:
             for astat in stats_list:
                 stats_dict[astat] = data[astat]
             stats_dict["documentation"] = stats_dict.pop("homepage")
-            stats_dict["created_at"] = self._clean_date(stats_dict["created_at"])
+            # stats_dict["created_at"] = self._clean_date(
+            #     stats_dict["created_at"]
+            # )
 
         return stats_dict
 
@@ -428,7 +540,7 @@ class ProcessIssues:
             # else "1970-01-01T00:00:00Z"
         )
 
-        return self._clean_date(date)
+        return date
 
     def get_categories(
         self, issue_body_list: list[list[str]], fmt: bool = True
