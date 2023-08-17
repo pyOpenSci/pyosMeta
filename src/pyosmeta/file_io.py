@@ -71,8 +71,11 @@ def open_yml_file(file_path: str) -> dict:
 
     # TODO: this used to be self.web_yml so i'll need to reorganized
     # the contrib class
-    with urllib.request.urlopen(file_path) as f:
-        return ruamel.yaml.safe_load(f)
+    try:
+        with urllib.request.urlopen(file_path) as f:
+            return ruamel.yaml.safe_load(f)
+    except urllib.error.URLError as url_error:
+        print("Oops - can find the url", file_path, url_error)
 
 
 def export_yaml(filename: str, data_list: list):

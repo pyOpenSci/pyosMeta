@@ -46,7 +46,7 @@ def main():
     if args:
         update_all = False
     web_reviews_path = (
-        "htts://raw.githubusercontent.com/pyOpenSci/"
+        "https://raw.githubusercontent.com/pyOpenSci/"
         "pyopensci.github.io/main/_data/packages.yml"
     )
 
@@ -74,6 +74,7 @@ def main():
                 web_reviews[key.lower()] = meta
 
     # Update gh metrics via api for all packages
+    # TODO: for some reason cardsort is missing gh_metadata
     repo_endpoints = process_review.get_repo_endpoints(web_reviews)
     web_reviews = process_review.get_gh_metrics(repo_endpoints, web_reviews)
 
@@ -87,7 +88,7 @@ def main():
         try:
             all_reviews[key] = ReviewModel(**review)
         except ValidationError as ve:
-            print(ve)
+            print(key, ":", ve)
 
     with open("all_reviews.pickle", "wb") as f:
         pickle.dump(web_reviews, f)

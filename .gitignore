@@ -41,5 +41,5 @@ dmypy.json
 
 token.txt
 src/test-model.py
-
+src/pyosmeta/_version_generated.py
 .pdm-build/*

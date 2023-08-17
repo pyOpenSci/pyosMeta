@@ -1,8 +1,15 @@
+import re
 from datetime import datetime
 
 import requests
 from dataclasses import dataclass
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    AliasChoices,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+)
 from typing import Any, Optional
 
 from pyosmeta.contributors import ProcessContributors
@@ -15,7 +22,7 @@ def clean_date(a_date: Optional[str]) -> str:
     others it's a gh time stamp. finally sometimes it could be missing
     or text. handle all of those cases with this validator.
     """
-    print(a_date)
+
     if a_date is None or a_date == "missing":
         return "missing"
     elif len(a_date) < 11:
@@ -28,8 +35,8 @@ def clean_date(a_date: Optional[str]) -> str:
                 .date()
                 .strftime("%Y-%m-%d")
             )
-        except TypeError as te:
-            print("Oops - missing data. Setting date to missing", te)
+        except TypeError as t_error:
+            print("Oops - missing data. Setting date to missing", t_error)
             return "missing"
 
 
@@ -65,25 +72,24 @@ class ReviewModel(BaseModel):
     # Make sure model populates both aliases and original attr name
     model_config = ConfigDict(populate_by_name=True, str_strip_whitespace=True)
 
-    package_name: Optional[str] = None
+    package_name: Optional[str] = ""
     package_description: str = Field(
-        None, validation_alias=AliasChoices("one-line_description_of_package")
+        "", validation_alias=AliasChoices("one-line_description_of_package")
     )
-    submitting_author: dict[str, str] = None
-    all_current_maintainers: list[dict[str, str]] = None
+    submitting_author: dict[str, Optional[str]] = {}
+    all_current_maintainers: list[dict[str, str | None]] = {}
     repository_link: Optional[str] = None
     version_submitted: Optional[str] = None
-    categories: Optional[str] = None
-    categories: list[str] = None
-    editor: dict[str, str] = None
-    reviewer_1: dict[str, str] = None
-    reviewer_2: dict[str, str] = None
-    archive: str = None
-    version_accepted: str = None
-    date_accepted: str = None
+    categories: Optional[list[str]] = None
+    editor: dict[str, str | None] = {}
+    reviewer_1: dict[str, str | None] = {}
+    reviewer_2: dict[str, str | None] = {}
+    archive: Optional[str] = None
+    version_accepted: Optional[str] = None
+    date_accepted: Optional[str] = None
     created_at: str = None
     updated_at: str = None
-    closed_at: str = None
+    closed_at: Optional[str] = None
     issue_link: str = None
     gh_meta: GhMeta
 
@@ -309,6 +315,20 @@ class ProcessIssues:
                 "https://api.github.com/repos/", "https://github.com/"
             )
 
+            review_clean = {
+                key: value
+                for key, value in review[package_name].items()
+                if not key.startswith("##")
+                and not key.startswith("---")
+                and not key.startswith("-_[x]_i_agree")
+            }
+            review[package_name] = review_clean
+            # filtered = {}
+            # for key, value in review.items():
+            #     print(key)
+            #     if not key.startswith("##") and not key.startswith("-"):
+            #         filtered[key] = value
+
             # # Clean markdown url's from editor, and reviewer lines
             # TODO - this could be a reviewer name cleanup validaotr
             # types = ["editor", "reviewer_1", "reviewer_2"]
@@ -378,6 +398,10 @@ class ProcessIssues:
         for a_package in review_issues.keys():
             repo = review_issues[a_package]["repository_link"].strip("/")
             owner, repo = repo.split("/")[-2:]
+            # TODO: could be simpler code - Remove any link remnants
+            pattern = r"[\(\)\[\]?]"
+            owner = re.sub(pattern, "", owner)
+            repo = re.sub(pattern, "", repo)
             all_repos[
                 a_package
             ] = f"https://api.github.com/repos/{owner}/{repo}"
@@ -453,7 +477,6 @@ class ProcessIssues:
         pkg_meta = {}
         for pkg_name, url in endpoints.items():
             print("Getting GitHub stats for", pkg_name)
-
             pkg_meta[pkg_name] = self.get_repo_meta(url, self.gh_stats)
 
             pkg_meta[pkg_name]["contrib_count"] = self.get_repo_contribs(url)
@@ -461,7 +484,7 @@ class ProcessIssues:
             # Add github meta to review metadata
             reviews[pkg_name]["gh_meta"] = pkg_meta[pkg_name]
 
-            return reviews
+        return reviews
 
     def get_repo_meta(self, url: str, stats_list: list) -> dict:
         """
@@ -469,8 +492,7 @@ class ProcessIssues:
 
         """
         stats_dict = {}
-        # get the url (normally the docs) and description of a repo!
-        print(url)
+        # Get the url (normally the docs) and description of a repo!
         response = requests.get(
             url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
         )
@@ -510,7 +532,7 @@ class ProcessIssues:
         )
 
         if response.status_code == 404:
-            print("Can't find: ", url, ". Did the repo url change?")
+            print("Can't find: ", repo_contribs, ". Did the repo url change?")
         # Extract the description and homepage URL from the JSON response
         else:
             return len(response.json())
@@ -528,11 +550,7 @@ class ProcessIssues:
         response = requests.get(
             url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
         ).json()
-        date = (
-            response[0]["commit"]["author"]["date"]
-            # if 0 in response
-            # else "1970-01-01T00:00:00Z"
-        )
+        date = response[0]["commit"]["author"]["date"]
 
         return date
 
@@ -575,7 +593,7 @@ class ProcessIssues:
             checked = any([x in line for x in cat_matches])
 
             if line.startswith("- [") and checked:
-                category = line[line.index("]") + 2 :]
+                category = line[line.index("]") + 2]
                 categories.append(category)
             elif not line.startswith("- ["):
                 break
