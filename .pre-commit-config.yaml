@@ -17,7 +17,7 @@ ci:
   autofix_commit_msg: |
     '[pre-commit.ci 🤖] Apply code format tools to PR'
   # Update hook versions every quarter (so we don't get hit with weekly update pr's)
-  autoupdate_schedule: quarterly
+  autoupdate_schedule: weekly
 
 repos:
   # Misc commit checks
@@ -39,10 +39,11 @@ repos:
         additional_dependencies:
           - tomli
 
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: "" # Use the sha / tag you want to point at
-  #   hooks:
-  #     - id: mypy
+  # Linting: Python code (see the file .flake8)
+  - repo: https://github.com/PyCQA/flake8
+    rev: "6.1.0"
+    hooks:
+      - id: flake8
 
   - repo: https://github.com/psf/black
     rev: 23.3.0
@@ -54,3 +55,4 @@ repos:
     hooks:
       - id: isort
         files: \.py$
+        args: ["--profile", "black", --line-length=79]
