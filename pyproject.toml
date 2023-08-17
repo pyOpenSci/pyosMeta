@@ -21,7 +21,7 @@ classifiers = [
     "Development Status :: 4 - Beta",
 
     # Indicate who your project is intended for
-    "Intended Audience :: pyOpenSci",
+    "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
 
     # Pick your license  - we suggest MIT, BSD3 or Apache if you are corporate
