@@ -45,8 +45,10 @@ def main():
 
     if args:
         update_all = False
-
-    web_reviews_path = "https://raw.githubusercontent.com/pyOpenSci/pyopensci.github.io/main/_data/packages.yml"
+    web_reviews_path = (
+        "htts://raw.githubusercontent.com/pyOpenSci/"
+        "pyopensci.github.io/main/_data/packages.yml"
+    )
 
     process_review = ProcessIssues(
         org="pyopensci",
@@ -62,7 +64,7 @@ def main():
     accepted_reviews = process_review.parse_issue_header(issues, 15)
 
     # Parse through reviews, identify new ones, fix case
-    if update_all == True:
+    if update_all:
         for key, meta in accepted_reviews.items():
             web_reviews[key.lower()] = meta
     else:
