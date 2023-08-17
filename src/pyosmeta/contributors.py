@@ -5,7 +5,13 @@ import re
 import requests
 from dataclasses import dataclass
 from dotenv import load_dotenv
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    AliasChoices,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+)
 from typing import Dict, List, Optional, Tuple, Union
 
 
@@ -519,8 +525,8 @@ class ProcessContributors:
         Returns
         -------
         Dict
-            Username is the key and the updated github profile info is contained
-            in the dict.
+            Username is the key and the updated github profile info is
+            contained in the dict.
 
         """
 
