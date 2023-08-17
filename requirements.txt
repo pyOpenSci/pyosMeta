@@ -2,3 +2,6 @@ ruamel.yaml
 pre-commit
 requests
 python-dotenv
+
+# Build requirements
+pdm

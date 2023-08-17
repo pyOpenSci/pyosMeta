@@ -4,23 +4,75 @@ build-backend = "pdm.backend"
 
 [project]
 name = "pyosmeta"
-version = "0.1.0"
-description = "Tools for contributors"
-authors = [
-    {name = "Leah Wasser", email = "leah@pyopensci.org"},
+dynamic = ["version"]
+description = "Tools that update the pyOpenSci contributor and review metadata that is posted on our website"
+authors = [{ name = "Leah Wasser", email = "leah@pyopensci.org" }]
+maintainers = [
+    { name = "pyOpenSci", email = "admin@pyopensci.org" }, # Optional
 ]
-dependencies = [
-    "ruamel-yaml>=0.17.21",
-    "requests",
-    "python-dotenv",
+
+classifiers = [
+    # How mature is this project? Common values are
+    #   3 - Alpha
+    #   4 - Beta
+    #   5 - Production/Stable
+    "Development Status :: 4 - Beta",
+
+    # Indicate who your project is intended for
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+
+    # Pick your license  - we suggest MIT, BSD3 or Apache if you are corporate
+    "License :: OSI Approved :: MIT License",
+    # Specify the Python versions ensuring that you indicate you support Python 3.
+    # this is only for pypi and other metadata associated with your package - for your users to see
+    "Programming Language :: Python :: 3 :: Only", # BE sure to specify that you use python 3.x
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
+
+dependencies = ["ruamel-yaml>=0.17.21", "requests", "python-dotenv", "pydantic"]
+# This is the metadata that pip reads to understand what versions your package supports
 requires-python = ">=3.10"
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 
-[project.scripts]
+# Examples listed include a pattern for specifying where the package tracks
+# issues, where the source is hosted, where to say thanks to the package
+# maintainers, and where to support the project financially. The key is
+# what's used to render the link text on PyPI.
+[project.urls] # Optional
+"Homepage" = "https://www.pyopensci.org"
+"Bug Reports" = "https://github.com/pyopensci/pyosmeta/issues"
+#"Funding" = ""
+"Source" = "https://github.com/pyopensci/pyosmeta/issues"
+
+
+# These are entry points that allow you to surface specific functionality
+# for a user to run directly from the package.
+[project.scripts] # Optional
 update-contributors = "pyosmeta.cli.update_contributors:main"
 update-reviews = "pyosmeta.cli.update_reviews:main"
 update-reviewers = "pyosmeta.cli.update_review_contribs:main"
 
+
+# Right now i'm not using pdm to add dependencies.
+# Will explore that later
+# Below using dynamic versioning / which is setuptools scm like
 [tool.pdm]
+
+
+[tool.pdm.build]
+excludes = ["./**/.git"]
+# This config is important for telling pdm that the package should live in
+# a src directory
+package-dir = "src"
+
+# Versioning is a backend feature - instructions are in pdm-backend docs
+# https://pdm-backend.fming.dev/metadata/
+[tool.pdm.version]
+# Note that you need to create the tag after all commits are created - otherwise
+# pdm adds dev info after the tag number which won't publish to pypi
+source = "scm"
+write_to = "pyosmeta/_version_generated.py"
+write_template = "__version__ = 'v{}'"
