@@ -4,8 +4,10 @@ build-backend = "pdm.backend"
 
 [project]
 name = "pyosmeta"
-version = "0.1.0"
-description = "Tools that update the pyOpenSci contributor and review metadata that is posted on our website"
+dynamic = ["version"]
+description = """Tools that update the pyOpenSci contributor and review \
+    metadata that is posted on our website
+    """
 authors = [{ name = "Leah Wasser", email = "leah@pyopensci.org" }]
 maintainers = [
     { name = "pyOpenSci", email = "admin@pyopensci.org" }, # Optional
@@ -27,6 +29,7 @@ classifiers = [
     # Specify the Python versions you support here. In particular, ensure
     # that you indicate you support Python 3. These classifiers are *not*
     # checked by "pip install". See instead "python_requires" below.
+    "Programming Language :: Python :: 3 :: Only", # BE sure to specify that you use python 3.x
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
@@ -54,4 +57,21 @@ update-contributors = "pyosmeta.cli.update_contributors:main"
 update-reviews = "pyosmeta.cli.update_reviews:main"
 update-reviewers = "pyosmeta.cli.update_review_contribs:main"
 
+
+# Right now i'm not using pdm to add dependencies.
+# Will explore that later
+# Below using dynamic versioning / which is setuptools scm like
 [tool.pdm]
+
+[tool.pdm.build]
+excludes = ["./**/.git"]
+# This config is important for telling pdm that the package should live in
+# a src directory
+package-dir = "src"
+
+# Versioning is a backend feature - instructions are in pdm-backend docs
+# https://pdm-backend.fming.dev/metadata/
+[tool.pdm.version]
+source = "scm"
+write_to = "pyosmeta/_version_generated.py"
+write_template = "__version__ = 'v{}'"

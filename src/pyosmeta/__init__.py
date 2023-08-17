@@ -2,5 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .contributors import ProcessContributors
-from .parse_issues import ProcessIssues
+try:
+    from ._version_generated import __version__
+except ImportError:
+    __version__ = "unreleased"
