@@ -73,6 +73,8 @@ package-dir = "src"
 # Versioning is a backend feature - instructions are in pdm-backend docs
 # https://pdm-backend.fming.dev/metadata/
 [tool.pdm.version]
+# Note that you need to create the tag after all commits are created - otherwise
+# pdm adds dev info after the tag number which won't publish to pypi
 source = "scm"
 write_to = "pyosmeta/_version_generated.py"
 write_template = "__version__ = 'v{}'"
