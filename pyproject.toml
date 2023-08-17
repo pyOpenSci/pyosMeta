@@ -5,9 +5,7 @@ build-backend = "pdm.backend"
 [project]
 name = "pyosmeta"
 dynamic = ["version"]
-description = """Tools that update the pyOpenSci contributor and review \
-    metadata that is posted on our website
-    """
+description = "Tools that update the pyOpenSci contributor and review metadata that is posted on our website"
 authors = [{ name = "Leah Wasser", email = "leah@pyopensci.org" }]
 maintainers = [
     { name = "pyOpenSci", email = "admin@pyopensci.org" }, # Optional
