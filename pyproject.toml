@@ -63,6 +63,7 @@ update-reviewers = "pyosmeta.cli.update_review_contribs:main"
 # Below using dynamic versioning / which is setuptools scm like
 [tool.pdm]
 
+
 [tool.pdm.build]
 excludes = ["./**/.git"]
 # This config is important for telling pdm that the package should live in
