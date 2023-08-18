@@ -70,7 +70,11 @@ class GhMeta(BaseModel):
 
 class ReviewModel(BaseModel):
     # Make sure model populates both aliases and original attr name
-    model_config = ConfigDict(populate_by_name=True, str_strip_whitespace=True)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     package_name: Optional[str] = ""
     package_description: str = Field(

@@ -12,12 +12,16 @@ from pydantic import (
     Field,
     field_validator,
 )
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Set, Dict, List, Optional, Tuple, Union
 
 
 class PersonModel(BaseModel):
     # Make sure model populates both aliases and original attr name
-    model_config = ConfigDict(populate_by_name=True, str_strip_whitespace=True)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     name: Optional[str] = None
     title: Optional[Union[list[str], str]] = None
@@ -44,47 +48,67 @@ class PersonModel(BaseModel):
         None, validation_alias=AliasChoices("blog", "website")
     )
     board: Optional[bool] = False
-    contributor_type: Optional[list[str]] = []
-    packages_editor: Optional[list[str | None]] = Field(
-        None,
-        validation_alias=AliasChoices("packages-editor"),
-    )
-    packages_submitted: Optional[list[str | None]] = Field(
-        None,
-        validation_alias=AliasChoices(
-            "packages-submitted", "packages_submitted"
-        ),
-    )
-    packages_reviewed: Optional[list[str | None]] = Field(
-        None,
-        validation_alias=AliasChoices(
-            "packages-reviewed", "packages_reviewed"
-        ),
-    )
+    contributor_type: Set[str] = set()
+    packages_editor: Set[str] = set()
+    packages_submitted: Set[str] = set()
+    packages_reviewed: Set[str] = set()
     location: Optional[str] = None
-    email: Optional[str] = ModuleNotFoundError
+    email: Optional[str] = None
 
     @field_validator(
         "packages_reviewed",
         "packages_submitted",
         "packages_editor",
+        "contributor_type",
         mode="before",
     )
-    @classmethod
-    def string_to_list(cls, value):
-        """
-        For fields such as packages-reviewed edited etc we want
-        a list of elements not just a single string. this will
-        fix that issue.
-        """
-        # If the input value is a string, convert it to a list
+    def convert_to_set(cls, value):
         if isinstance(value, list):
-            return value
-        if isinstance(value, str):
-            return [value]
-        # If the input value is None, return an empty list
+            if value[0] is None:
+                return set()
+            else:
+                return set(value)
         elif value is None:
-            return []
+            return set()
+        return set(value)
+
+    def add_unique_value(self, attr_name: str, values: Union[str, list[str]]):
+        """A helper that will add only unique values to an existing list"""
+        if isinstance(values, str):
+            values = [values]
+        attribute = getattr(self, attr_name)
+        if isinstance(attribute, set):
+            attribute.update(values)
+        else:
+            raise ValueError(f"{attr_name} is not a set attribute")
+
+    # @field_validator(
+    #     "packages_reviewed",
+    #     "packages_submitted",
+    #     "packages_editor",
+    #     "contributor_type",
+    #     mode="before",
+    # )
+    # @classmethod
+    # def string_to_list(cls, value):
+    #     """
+    #     For fields such as packages-reviewed edited etc we want
+    #     a list of elements not just a single string. this will
+    #     fix that issue.
+    #     """
+    #     # If the input value is a string, convert it to a list
+    #     print("the value is", value)
+    #     if isinstance(value, list):
+    #         print("removing duplicates now")
+    #         return list(set(value))
+    #     if isinstance(value, str):
+    #         print("Found a string, turning to list")
+    #         return [value]
+    #     # If the input value is None, return an empty list
+    #     # This may never happen
+    #     elif value is None:
+    #         print("Found a none, returning empty list. Value is", value)
+    #         return []
 
     @field_validator("bio", mode="before")
     @classmethod
@@ -131,15 +155,15 @@ class ProcessContributors:
         ]
 
         self.contrib_types = {
-            "reviewer_1": ["packages-reviewed", ["reviewer", "peer-review"]],
-            "reviewer_2": ["packages-reviewed", ["reviewer", "peer-review"]],
-            "editor": ["packages-editor", ["editor", "peer-review"]],
+            "reviewer_1": ["packages_reviewed", ["reviewer", "peer-review"]],
+            "reviewer_2": ["packages_reviewed", ["reviewer", "peer-review"]],
+            "editor": ["packages_editor", ["editor", "peer-review"]],
             "submitting_author": [
-                "packages-submitted",
+                "packages_submitted",
                 ["maintainer", "submitting-author", "peer-review"],
             ],
             "all_current_maintainers": [
-                "packages-submitted",
+                "packages_submitted",
                 ["maintainer", "peer-review"],
             ],
         }
@@ -156,7 +180,14 @@ class ProcessContributors:
         load_dotenv()
         return os.environ["GITHUB_TOKEN"]
 
-    def refresh_contribs(self, contribs: Dict, new_contribs, review_role):
+    def refresh_contribs(
+        self,
+        person: PersonModel,
+        new_contribs: Optional[
+            str
+        ],  # I think this will always be a package name? if so rename is pkg_name
+        review_role: str,
+    ):
         """Need to add ....
 
         Parameters
@@ -167,43 +198,19 @@ class ProcessContributors:
         -------
         """
         contrib_types = self.contrib_types
-        contrib_key_yml = ""
         # Contributor type will be updated which is a list of roles
+        # TODO rename contribs to person
         if new_contribs:
             contrib_key_yml = contrib_types[review_role][0]
-            existing_contribs = contribs[contrib_key_yml]
-        # Else this is a specific review role meant to update package list
+            existing_contribs = getattr(person, contrib_key_yml)
+
         else:
-            new_contribs = contrib_types[review_role][1]
-            existing_contribs = contribs["contributor_type"]
+            # Else update review role(s) in contrib_type attribute
+            contrib_key_yml = contrib_types[review_role][1]
+            existing_contribs = person.contributor_type
 
         final_list = self.update_contrib_list(existing_contribs, new_contribs)
         return (contrib_key_yml, final_list)
-
-    # TODO: this can go away now that i have a personmodel obj
-    # def create_contrib_template(self) -> Dict:
-    #     """A small helper that creates a template for a new contributor
-    #     that we are adding to our contributor.yml file"""
-
-    #     return {
-    #         "name": "",
-    #         "bio": "",
-    #         "organization": "",
-    #         "title": "",
-    #         "github_username": "",
-    #         "github_image_id": "",
-    #         "editorial-board": "",
-    #         "twitter": "",
-    #         "mastodon": "",
-    #         "orcidid": "",
-    #         "website": "",
-    #         "contributor_type": [],
-    #         "packages-editor": [],
-    #         "packages-submitted": [],
-    #         "packages-reviewed": [],
-    #         "location": "",
-    #         "email": "",
-    #     }
 
     # TODO - This utility is used across all scripts.
     def clean_list(self, a_list: Union[str, List[str]]) -> List[str]:

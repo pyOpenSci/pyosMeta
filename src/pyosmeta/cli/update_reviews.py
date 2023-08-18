@@ -91,7 +91,7 @@ def main():
             print(key, ":", ve)
 
     with open("all_reviews.pickle", "wb") as f:
-        pickle.dump(web_reviews, f)
+        pickle.dump(all_reviews, f)
 
 
 if __name__ == "__main__":

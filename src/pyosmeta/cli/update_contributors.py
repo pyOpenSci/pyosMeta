@@ -8,8 +8,6 @@ from pyosmeta.contributors import PersonModel, ProcessContributors
 from pyosmeta.file_io import create_paths, open_yml_file
 
 print(pydantic.__version__)
-# TODO - fix the website by renaming   packages-editor, packages-submitted:
-# packages-reviewed: to use underscores. this will just make life easier
 
 
 def main():

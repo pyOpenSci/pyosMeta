@@ -12,58 +12,59 @@ This script assumes that update_contributors and update_reviews has been run.
 Rather than hit any api's it just updates information from the issues.
 To run: update_reviewers
 
-# TODO - FEATURE we have some packages that were NOT approved but we had editors and reviewers.
-# We need to acknowledge these people as well. maybe tag them with waiting on maintainer response??
-# TODO: package-wide feature: create a flag for entries that we do not want to update
+# TODO - FEATURE we have some packages that were NOT approved but we had
+# editors and reviewers.
+# We need to acknowledge these people as well. maybe tag them with waiting on
+# maintainer response??
+# TODO: package-wide feature: create no update flag for entries
 # TODO: make sure we can add a 3rd or 4th reviewer - crowsetta has this as
 # will biocypher
 # TODO: make sure to add a current editor boolean to the current editors and
 # emeritus ones.
-# TODO - ?create a class for person types??
 
 """
 
-import os
-
-from pyosmeta.contributors import ProcessContributors
+# TODO - running into validation errors again here.. but making lots
+# of progress!!
+from pyosmeta.contributors import PersonModel, ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
 
 
-def get_clean_user(username: str):
+def get_clean_user(username: str) -> str:
+    """A small helper that removes whitespace and ensures username is
+    lower case"""
     return username.lower().strip()
 
 
 def main():
     # TODO: move refresh contribs and contribs dict attr to
     # processContribs and remove this module altogether
-    updateContribs = ProcessContributors([])
+    process_contribs = ProcessContributors([])
 
     # Two pickle files are outputs of the two other scripts
     # use that data to limit web calls
-    contribs = load_pickle("all_contribs.pickle")
-
-    # Output of update_reviews.py
+    all_contribs = load_pickle("all_contribs.pickle")
     packages = load_pickle("all_reviews.pickle")
 
-    contrib_types = updateContribs.contrib_types
+    contrib_types = process_contribs.contrib_types
 
     for pkg_name, issue_meta in packages.items():
         print("Processing review team for:", pkg_name)
         for issue_role in contrib_types.keys():
             if issue_role == "all_current_maintainers":
-                if issue_role in issue_meta:
+                if issue_meta.all_current_maintainers:
                     # Loop through each maintainer in the list
                     for i, a_maintainer in enumerate(
-                        issue_meta.get(issue_role)
+                        issue_meta.all_current_maintainers
                     ):
                         gh_user = get_clean_user(
                             a_maintainer["github_username"]
                         )
 
-                        if gh_user not in contribs.keys():
-                            contribs.update(
-                                updateContribs.check_add_user(
-                                    gh_user, contribs
+                        if gh_user not in all_contribs.keys():
+                            all_contribs.update(
+                                process_contribs.check_add_user(
+                                    gh_user, all_contribs
                                 )
                             )
 
@@ -71,73 +72,79 @@ def main():
                         (
                             contrib_key,
                             pkg_list,
-                        ) = updateContribs.refresh_contribs(
-                            contribs[gh_user],
-                            pkg_name,  # new contribs
+                        ) = process_contribs.refresh_contribs(
+                            all_contribs[gh_user],
+                            pkg_name,  # new all_contribs
                             issue_role,
                         )
                         # Update users contrib list
-                        contribs[gh_user][contrib_key] = pkg_list
+                        setattr(all_contribs[gh_user], contrib_key, pkg_list)
 
-                        _, contrib_list = updateContribs.refresh_contribs(
-                            contribs[gh_user],
+                        _, contrib_list = process_contribs.refresh_contribs(
+                            all_contribs[gh_user],
                             None,
                             issue_role,
                         )
-                        contribs[gh_user]["contributor_type"] = contrib_list
 
-                        # If name is missing in issue summary, populate from contribs
+                        setattr(
+                            all_contribs[gh_user],
+                            "contributor_type",
+                            contrib_list,
+                        )
+
+                        # If name is missing in issue summary, populate from
+                        # all_contribs
+                        # TODO: this is currently not working as maintainer is
+                        # a string object
                         if a_maintainer["name"] == "":
-                            packages[pkg_name]["all_current_maintainers"][i][
-                                "name"
-                            ] = contribs[gh_user]["name"]
-
+                            maintainer = getattr(
+                                packages[pkg_name], "all_current_maintainers"
+                            )[i]["name"]
+                            setattr(
+                                packages[pkg_name],
+                                "all_current_maintainers",
+                                getattr(all_contribs[gh_user], "name"),
+                            )
                 else:
                     print(
-                        "All maintainers is missing in the review for ",
+                        "All maintainers is missing in the review for:",
                         pkg_name,
                     )
 
             else:
                 # Else we are processing editors, reviewers...
                 gh_user = get_clean_user(
-                    packages[pkg_name][issue_role]["github_username"]
+                    getattr(packages[pkg_name], issue_role)["github_username"]
                 )
 
-                if gh_user not in contribs.keys():
-                    # If they aren't already in contribs, add them
-                    contribs.update(
-                        updateContribs.check_add_user(gh_user, contribs)
-                    )
+                if gh_user not in all_contribs.keys():
+                    # If they aren't already in all_contribs, add them
+                    print("Found a new user!", gh_user)
+                    new_contrib = process_contribs.get_user_info(gh_user)
+                    all_contribs[gh_user] = PersonModel(**new_contrib)
+
                 # Update user package contributions
-                (
-                    contrib_key,
-                    pkg_list,
-                ) = updateContribs.refresh_contribs(
-                    contribs[gh_user],
-                    pkg_name,  # new contribs
-                    issue_role,
+                print(gh_user)
+                # Only add new contrib if it's unique
+                review_key = contrib_types[issue_role][0]
+                all_contribs[gh_user].add_unique_value(review_key, pkg_name)
+
+                # Update user contrib list
+                review_roles = contrib_types[issue_role][1]
+                all_contribs[gh_user].add_unique_value(
+                    "contributor_type", review_roles
                 )
 
-                # Update users contrib list
-                contribs[gh_user][contrib_key] = pkg_list
-
-                _, contrib_list = updateContribs.refresh_contribs(
-                    contribs[gh_user],
-                    None,
-                    issue_role,
-                )
-                contribs[gh_user]["contributor_type"] = contrib_list
-
-                # If users's name is missing in issue, populate from contribs dict
-                if issue_meta[issue_role]["name"] == "":
-                    packages[pkg_name][issue_role]["name"] = contribs[gh_user][
-                        "name"
-                    ]
+                # If users's name is missing in issue, populate from contribs
+                if getattr(issue_meta, issue_role)["name"] == "":
+                    attribute_value = getattr(packages[pkg_name], issue_role)
+                    attribute_value["name"] = getattr(
+                        all_contribs[gh_user], "name"
+                    )
 
     # Export to yaml
-    clean_export_yml(contribs, os.path.join("_data", "contributors.yml"))
-    clean_export_yml(packages, os.path.join("_data", "packages.yml"))
+    # clean_export_yml(contribs, os.path.join("_data", "contributors.yml"))
+    # clean_export_yml(packages, os.path.join("_data", "packages.yml"))
 
 
 if __name__ == "__main__":
