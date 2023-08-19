@@ -57,9 +57,7 @@ def main():
     for pkg_name, issue_meta in packages.items():
         print("Processing review team for:", pkg_name)
         for issue_role in contrib_types.keys():
-            # I wonder if there is a clever way to skip review if this is missing?
             if issue_role == "all_current_maintainers":
-                # if issue_meta.all_current_maintainers:
                 # Loop through each maintainer in the list
                 for i, a_maintainer in enumerate(
                     issue_meta.all_current_maintainers
@@ -73,7 +71,9 @@ def main():
 
                     # Update user package contributions (if it's unique)
                     review_key = contrib_types[issue_role][0]
-                    contribs[gh_user].add_unique_value(review_key, pkg_name)
+                    contribs[gh_user].add_unique_value(
+                        review_key, pkg_name.lower()
+                    )
 
                     # Update user contrib list (if it's unique)
                     review_roles = contrib_types[issue_role][1]
@@ -102,7 +102,9 @@ def main():
 
                 # Update user package contributions (if it's unique)
                 review_key = contrib_types[issue_role][0]
-                contribs[gh_user].add_unique_value(review_key, pkg_name)
+                contribs[gh_user].add_unique_value(
+                    review_key, pkg_name.lower()
+                )
 
                 # Update user contrib list (if it's unique)
                 review_roles = contrib_types[issue_role][1]

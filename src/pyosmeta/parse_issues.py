@@ -27,7 +27,7 @@ def clean_date(a_date: Optional[str]) -> str:
         return "missing"
     elif len(a_date) < 11:
         new_date = a_date.replace("/", "-").split("-")
-        return f"{new_date[2]}-{new_date[0]}-{new_date[1]}"
+        return f"{new_date[0]}-{new_date[1]}-{new_date[2]}"
     else:
         try:
             return (

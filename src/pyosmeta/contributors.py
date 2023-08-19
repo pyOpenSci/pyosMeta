@@ -63,15 +63,18 @@ class PersonModel(BaseModel):
         "contributor_type",
         mode="before",
     )
-    def convert_to_set(cls, value):
+    def convert_to_set(cls, value: list[str]):
         if isinstance(value, list):
-            if value[0] is None:
+            if not value:
+                return set()
+            elif value[0] is None:
                 return set()
             else:
+                value = [aval.lower() for aval in value]
                 return set(value)
         elif value is None:
             return set()
-        return set(value)
+        return set(value.lower())
 
     def add_unique_value(self, attr_name: str, values: Union[str, list[str]]):
         """A helper that will add only unique values to an existing list"""
@@ -162,38 +165,6 @@ class ProcessContributors:
         load_dotenv()
         return os.environ["GITHUB_TOKEN"]
 
-    def refresh_contribs(
-        self,
-        person: PersonModel,
-        new_contribs: Optional[
-            str
-        ],  # I think this will always be a package name? if so rename is pkg_name
-        review_role: str,
-    ):
-        """Need to add ....
-
-        Parameters
-        ----------
-
-
-        Returns
-        -------
-        """
-        contrib_types = self.contrib_types
-        # Contributor type will be updated which is a list of roles
-        # TODO rename contribs to person
-        if new_contribs:
-            contrib_key_yml = contrib_types[review_role][0]
-            existing_contribs = getattr(person, contrib_key_yml)
-
-        else:
-            # Else update review role(s) in contrib_type attribute
-            contrib_key_yml = contrib_types[review_role][1]
-            existing_contribs = person.contributor_type
-
-        final_list = self.update_contrib_list(existing_contribs, new_contribs)
-        return (contrib_key_yml, final_list)
-
     # TODO - This utility is used across all scripts.
     def clean_list(self, a_list: Union[str, List[str]]) -> List[str]:
         """Helper function that takes an input object as a list or string.
@@ -234,35 +205,6 @@ class ProcessContributors:
         if len(diff) > 0:
             default = (True, diff)
         return default
-
-    # TODO - also a helper used by all scripts
-    def update_contrib_list(
-        self,
-        existing_contribs: Union[List, str],
-        new_contrib: Union[List, str],
-    ) -> List:
-        """Method that gets an existing list of contribs.
-        cleans the list and then checks the list against a
-        new contribution to see if it should be added.
-
-        Parameters
-        ----------
-        existing_contribs: list or str
-            A users existing contributions
-        new_contrib: list or str
-            a list or a single new contribution to be added
-
-        """
-
-        # Cleanup first
-        cleaned_list = self.clean_list(existing_contribs)
-        new_contrib = self.clean_list(new_contrib)
-
-        unique_vals, new_vals = self.unique_new_vals(cleaned_list, new_contrib)
-        if unique_vals:
-            cleaned_list += new_vals
-
-        return cleaned_list
 
     def check_contrib_type(self, json_file: str):
         """

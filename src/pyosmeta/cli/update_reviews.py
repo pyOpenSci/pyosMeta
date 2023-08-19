@@ -46,7 +46,7 @@ def main():
     args = parser.parse_args()
 
     if args:
-        update_all = False
+        update_all = True
     web_reviews_path = (
         "https://raw.githubusercontent.com/pyOpenSci/"
         "pyopensci.github.io/main/_data/packages.yml"

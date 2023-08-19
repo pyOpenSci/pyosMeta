@@ -9,11 +9,13 @@ from pyosmeta.file_io import create_paths, open_yml_file
 
 print(pydantic.__version__)
 
-# TODO - https://stackoverflow.com/questions/55762673/how-to-parse-list-of-models-with-pydantic
+# TODO - https://stackoverflow.com
+# /questions/55762673/how-to-parse-list-of-models-with-pydantic
 # I can use TypeAdapter to convert the json data to model objects!
 
 
 def main():
+    update_all = False
     parser = argparse.ArgumentParser(
         description="A CLI script to update pyOpenSci contributors"
     )
@@ -72,12 +74,17 @@ def main():
                 all_contribs[gh_user] = PersonModel(**new_contrib)
 
             # Update contribution type list for all users
-            existing_contribs = all_contribs[gh_user].contributor_type
-            all_contribs[
-                gh_user
-            ].contributor_type = process_contribs.update_contrib_list(
-                existing_contribs, key
-            )
+            all_contribs[gh_user].add_unique_value("contributor_type", key)
+
+            # existing_contribs = all_contribs[gh_user].contributor_type
+            # # TODO: i can move all of these update items to just use the
+            # # personmodel.add_unique_value then i can get rid of update
+            # # contrib list
+            # all_contribs[
+            #     gh_user
+            # ].contributor_type = process_contribs.update_contrib_list(
+            #     existing_contribs, key
+            # )
 
     if update_all:
         for user in all_contribs.keys():
@@ -89,7 +96,7 @@ def main():
 
             for key, item in new_gh_data.items():
                 if key == "mastodon":
-                    # Mastodon isn't available in the api yet
+                    # Mastodon isn't available in the GH api yet
                     continue
                 # Don't replace the value if there is a noupdate flag
                 # TODO: This approach doesn't work, ruemal-yaml doesn't
