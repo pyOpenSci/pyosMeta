@@ -10,9 +10,10 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    field_serializer,
     field_validator,
 )
-from typing import Set, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 
 class PersonModel(BaseModel):
@@ -82,33 +83,14 @@ class PersonModel(BaseModel):
         else:
             raise ValueError(f"{attr_name} is not a set attribute")
 
-    # @field_validator(
-    #     "packages_reviewed",
-    #     "packages_submitted",
-    #     "packages_editor",
-    #     "contributor_type",
-    #     mode="before",
-    # )
-    # @classmethod
-    # def string_to_list(cls, value):
-    #     """
-    #     For fields such as packages-reviewed edited etc we want
-    #     a list of elements not just a single string. this will
-    #     fix that issue.
-    #     """
-    #     # If the input value is a string, convert it to a list
-    #     print("the value is", value)
-    #     if isinstance(value, list):
-    #         print("removing duplicates now")
-    #         return list(set(value))
-    #     if isinstance(value, str):
-    #         print("Found a string, turning to list")
-    #         return [value]
-    #     # If the input value is None, return an empty list
-    #     # This may never happen
-    #     elif value is None:
-    #         print("Found a none, returning empty list. Value is", value)
-    #         return []
+    @field_serializer(
+        "packages_reviewed",
+        "packages_submitted",
+        "packages_editor",
+        "contributor_type",
+    )
+    def serialize_set(self, items: Set[str]):
+        return list(items)
 
     @field_validator("bio", mode="before")
     @classmethod

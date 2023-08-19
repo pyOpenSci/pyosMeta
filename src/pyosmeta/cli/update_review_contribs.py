@@ -24,8 +24,14 @@ To run: update_reviewers
 
 """
 
-# TODO - running into validation errors again here.. but making lots
-# of progress!!
+# TODO - Case sensitivity is an issue with my validation using set
+#     - jointly
+# - Jointly
+# - devicely
+# - Devicely
+# - sevivi
+import os
+
 from pyosmeta.contributors import PersonModel, ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
 
@@ -43,7 +49,7 @@ def main():
 
     # Two pickle files are outputs of the two other scripts
     # use that data to limit web calls
-    all_contribs = load_pickle("all_contribs.pickle")
+    contribs = load_pickle("all_contribs.pickle")
     packages = load_pickle("all_reviews.pickle")
 
     contrib_types = process_contribs.contrib_types
@@ -51,65 +57,36 @@ def main():
     for pkg_name, issue_meta in packages.items():
         print("Processing review team for:", pkg_name)
         for issue_role in contrib_types.keys():
+            # I wonder if there is a clever way to skip review if this is missing?
             if issue_role == "all_current_maintainers":
-                if issue_meta.all_current_maintainers:
-                    # Loop through each maintainer in the list
-                    for i, a_maintainer in enumerate(
-                        issue_meta.all_current_maintainers
-                    ):
-                        gh_user = get_clean_user(
-                            a_maintainer["github_username"]
+                # if issue_meta.all_current_maintainers:
+                # Loop through each maintainer in the list
+                for i, a_maintainer in enumerate(
+                    issue_meta.all_current_maintainers
+                ):
+                    gh_user = get_clean_user(a_maintainer["github_username"])
+
+                    if gh_user not in contribs.keys():
+                        contribs.update(
+                            process_contribs.check_add_user(gh_user, contribs)
                         )
 
-                        if gh_user not in all_contribs.keys():
-                            all_contribs.update(
-                                process_contribs.check_add_user(
-                                    gh_user, all_contribs
-                                )
-                            )
+                    # Update user package contributions (if it's unique)
+                    review_key = contrib_types[issue_role][0]
+                    contribs[gh_user].add_unique_value(review_key, pkg_name)
 
-                        # Update contrib packages for peer review
-                        (
-                            contrib_key,
-                            pkg_list,
-                        ) = process_contribs.refresh_contribs(
-                            all_contribs[gh_user],
-                            pkg_name,  # new all_contribs
-                            issue_role,
-                        )
-                        # Update users contrib list
-                        setattr(all_contribs[gh_user], contrib_key, pkg_list)
-
-                        _, contrib_list = process_contribs.refresh_contribs(
-                            all_contribs[gh_user],
-                            None,
-                            issue_role,
-                        )
-
-                        setattr(
-                            all_contribs[gh_user],
-                            "contributor_type",
-                            contrib_list,
-                        )
-
-                        # If name is missing in issue summary, populate from
-                        # all_contribs
-                        # TODO: this is currently not working as maintainer is
-                        # a string object
-                        if a_maintainer["name"] == "":
-                            maintainer = getattr(
-                                packages[pkg_name], "all_current_maintainers"
-                            )[i]["name"]
-                            setattr(
-                                packages[pkg_name],
-                                "all_current_maintainers",
-                                getattr(all_contribs[gh_user], "name"),
-                            )
-                else:
-                    print(
-                        "All maintainers is missing in the review for:",
-                        pkg_name,
+                    # Update user contrib list (if it's unique)
+                    review_roles = contrib_types[issue_role][1]
+                    contribs[gh_user].add_unique_value(
+                        "contributor_type", review_roles
                     )
+
+                    # If name is missing in issue, populate from contribs
+                    if a_maintainer["name"] == "":
+                        name = getattr(contribs[gh_user], "name")
+                        packages[pkg_name].all_current_maintainers[i][
+                            "name"
+                        ] = name
 
             else:
                 # Else we are processing editors, reviewers...
@@ -117,21 +94,19 @@ def main():
                     getattr(packages[pkg_name], issue_role)["github_username"]
                 )
 
-                if gh_user not in all_contribs.keys():
-                    # If they aren't already in all_contribs, add them
+                if gh_user not in contribs.keys():
+                    # If they aren't already in contribs, add them
                     print("Found a new user!", gh_user)
                     new_contrib = process_contribs.get_user_info(gh_user)
-                    all_contribs[gh_user] = PersonModel(**new_contrib)
+                    contribs[gh_user] = PersonModel(**new_contrib)
 
-                # Update user package contributions
-                print(gh_user)
-                # Only add new contrib if it's unique
+                # Update user package contributions (if it's unique)
                 review_key = contrib_types[issue_role][0]
-                all_contribs[gh_user].add_unique_value(review_key, pkg_name)
+                contribs[gh_user].add_unique_value(review_key, pkg_name)
 
-                # Update user contrib list
+                # Update user contrib list (if it's unique)
                 review_roles = contrib_types[issue_role][1]
-                all_contribs[gh_user].add_unique_value(
+                contribs[gh_user].add_unique_value(
                     "contributor_type", review_roles
                 )
 
@@ -139,12 +114,17 @@ def main():
                 if getattr(issue_meta, issue_role)["name"] == "":
                     attribute_value = getattr(packages[pkg_name], issue_role)
                     attribute_value["name"] = getattr(
-                        all_contribs[gh_user], "name"
+                        contribs[gh_user], "name"
                     )
 
+    print("Export")
     # Export to yaml
-    # clean_export_yml(contribs, os.path.join("_data", "contributors.yml"))
-    # clean_export_yml(packages, os.path.join("_data", "packages.yml"))
+    contribs_ls = [model.model_dump() for model in contribs.values()]
+    # Getting error dumping packages
+    pkgs_ls = [model.model_dump() for model in packages.values()]
+
+    clean_export_yml(contribs_ls, os.path.join("_data", "contributors.yml"))
+    clean_export_yml(pkgs_ls, os.path.join("_data", "packages.yml"))
 
 
 if __name__ == "__main__":

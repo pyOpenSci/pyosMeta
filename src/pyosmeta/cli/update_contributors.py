@@ -9,6 +9,9 @@ from pyosmeta.file_io import create_paths, open_yml_file
 
 print(pydantic.__version__)
 
+# TODO - https://stackoverflow.com/questions/55762673/how-to-parse-list-of-models-with-pydantic
+# I can use TypeAdapter to convert the json data to model objects!
+
 
 def main():
     parser = argparse.ArgumentParser(

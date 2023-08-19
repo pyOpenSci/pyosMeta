@@ -16,10 +16,6 @@ To run at the CLI: parse_issue_metadata
 # TODO: feature - Would be cool to create an "under review now" list as well -
 # ideally this could be passed as a CLI argument with the label we want to
 # search for
-# TODO: 1. add gh metadata to the review object
-# prior to parsing
-# 2. work on update-all!!
-# 3. i think package_description might not be parsing right?
 
 
 import argparse
@@ -29,6 +25,12 @@ from pydantic import ValidationError
 
 from pyosmeta import ProcessIssues, ReviewModel
 from pyosmeta.file_io import load_website_yml
+
+# todo - dates are wrong in issues
+
+#   date_accepted: 5-2023-7
+#   created_at: 01-2023-03
+#   updated_at: 27-2023-07
 
 
 def main():
