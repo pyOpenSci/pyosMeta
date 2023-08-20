@@ -31,7 +31,14 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 
-dependencies = ["ruamel-yaml>=0.17.21", "requests", "python-dotenv", "pydantic"]
+
+dependencies = [
+    "ruamel-yaml>=0.17.21",
+    "requests",
+    "python-dotenv",
+    "pydantic>=2.0",
+]
+
 # This is the metadata that pip reads to understand what versions your package supports
 requires-python = ">=3.10"
 readme = "README.md"
@@ -52,14 +59,26 @@ license = { text = "MIT" }
 # for a user to run directly from the package.
 [project.scripts] # Optional
 update-contributors = "pyosmeta.cli.update_contributors:main"
-update-reviews = "pyosmeta.cli.update_reviews:main"
-update-reviewers = "pyosmeta.cli.update_review_contribs:main"
+update-reviews = "pyosmeta.cli.process_reviews:main"
+update-review-teams = "pyosmeta.cli.update_review_teams:main"
 
 
 # Right now i'm not using pdm to add dependencies.
 # Will explore that later
 # Below using dynamic versioning / which is setuptools scm like
-[tool.pdm]
+[tool.black]
+line-length = 79
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+py_version = 27
+
+# Precommit ignores this config so i added a .flake8 file
+# but why did it ignore it?
+[tool.flake8]
+extend-ignore = ["E203", "W503"]
 
 
 [tool.pdm.build]
@@ -70,6 +89,7 @@ package-dir = "src"
 
 # Versioning is a backend feature - instructions are in pdm-backend docs
 # https://pdm-backend.fming.dev/metadata/
+
 [tool.pdm.version]
 # Note that you need to create the tag after all commits are created - otherwise
 # pdm adds dev info after the tag number which won't publish to pypi

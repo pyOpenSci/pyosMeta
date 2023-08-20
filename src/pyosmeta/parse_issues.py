@@ -1,13 +1,160 @@
-from dataclasses import dataclass
+import re
 from datetime import datetime
 
 import requests
+from dataclasses import dataclass
+from pydantic import (
+    AliasChoices,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+)
+from typing import Any, Optional
 
-from pyosmeta.contributors import ProcessContributors
+from pyosmeta.contributors import ProcessContributors, UrlValidatorMixin
 
 
-# main reason to use this is attributes .. avoiding them being changed
-# in other instances...
+def clean_date(a_date: Optional[str]) -> str:
+    """Cleans up a datetime from github and returns a date string
+
+    In some cases the string is manually entered month-day-year and in
+    others it's a gh time stamp. finally sometimes it could be missing
+    or text. handle all of those cases with this validator.
+    """
+
+    if a_date is None or a_date == "missing":
+        return "missing"
+    # elif len(a_date) < 11:
+    #     new_date = a_date.replace("/", "-").split("-")
+    #     return f"{new_date[0]}-{new_date[1]}-{new_date[2]}"
+    else:
+        try:
+            return (
+                datetime.strptime(a_date, "%Y-%m-%dT%H:%M:%SZ")
+                .date()
+                .strftime("%Y-%m-%d")
+            )
+        except TypeError as t_error:
+            print("Oops - missing data. Setting date to missing", t_error)
+            return "missing"
+
+
+class GhMeta(BaseModel, UrlValidatorMixin):
+    name: str
+    description: str
+    created_at: str
+    stargazers_count: int
+    watchers_count: int
+    forks: int
+    open_issues_count: int
+    forks_count: int
+    documentation: Optional[str]  # Jointly is missing documentation
+    contrib_count: int
+    last_commit: str
+
+    @field_validator(
+        "last_commit",
+        "created_at",
+        mode="before",
+    )
+    @classmethod
+    def clean_date(cls, a_date: Optional[str]) -> str:
+        """Cleans up a datetime from github and returns a date string
+
+        Runs the general clean_date function in this module as a validator.
+        """
+
+        return clean_date(a_date)
+
+
+class ReviewModel(BaseModel):
+    # Make sure model populates both aliases and original attr name
+    model_config = ConfigDict(
+        populate_by_name=True,
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
+
+    package_name: Optional[str] = ""
+    package_description: str = Field(
+        "", validation_alias=AliasChoices("one-line_description_of_package")
+    )
+    submitting_author: dict[str, Optional[str]] = {}
+    all_current_maintainers: list[dict[str, str | None]] = {}
+    repository_link: Optional[str] = None
+    version_submitted: Optional[str] = None
+    categories: Optional[list[str]] = None
+    editor: dict[str, str | None] = {}
+    reviewer_1: dict[str, str | None] = {}
+    reviewer_2: dict[str, str | None] = {}
+    archive: Optional[str] = None
+    version_accepted: Optional[str] = None
+    date_accepted: Optional[str] = None
+    created_at: str = None
+    updated_at: str = None
+    closed_at: Optional[str] = None
+    issue_link: str = None
+    joss: Optional[str] = None
+    gh_meta: Optional[GhMeta] = None
+
+    @field_validator(
+        "date_accepted",
+        mode="before",
+    )
+    @classmethod
+    def clean_date_review(cls, a_date: Optional[str]) -> str:
+        """Clean a manually added datetime that is added to a review by an
+        editor when the review package is accepted.
+
+        """
+        if a_date is None or a_date in ["missing", "TBD"]:
+            return "missing"
+        else:
+            new_date = a_date.replace("/", "-").split("-")
+            if len(new_date[0]) == 4:
+                return f"{new_date[0]}-{new_date[1]}-{new_date[2]}"
+            else:
+                return f"{new_date[2]}-{new_date[0]}-{new_date[1]}"
+
+    @field_validator(
+        "created_at",
+        "updated_at",
+        "closed_at",
+        mode="before",
+    )
+    @classmethod
+    def clean_date(cls, a_date: Optional[str]) -> str:
+        """Cleans up a datetime from github and returns a date string
+
+        Runs the general clean_date function in this module as a validator.
+
+        """
+
+        return clean_date(a_date)
+
+    @field_validator(
+        "editor",
+        "reviewer_1",
+        "reviewer_2",
+        mode="before",
+    )
+    @classmethod
+    def clean_gh_url(cls, user: dict[str, str]) -> dict[str, str]:
+        """Remove markdown link remnants from gh usernames and name.
+
+        Sometimes editors and reviewers add names using github links.
+        Remove the link data.
+        """
+
+        user["github_username"] = user["github_username"].replace(
+            "https://github.com/", ""
+        )
+        user["name"] = re.sub(r"\[|\]", "", user["name"])
+
+        return user
+
+
 @dataclass
 class ProcessIssues:
     """
@@ -17,7 +164,6 @@ class ProcessIssues:
 
     """
 
-    # TODO: turn file io into functions and remove inheritance here
     def __init__(self, org, repo_name, label_name):
         """
         More here...
@@ -41,9 +187,25 @@ class ProcessIssues:
 
         self.GITHUB_TOKEN = self.contrib_instance.get_token()
 
+    gh_stats = [
+        "name",
+        "description",
+        "homepage",
+        "created_at",
+        "stargazers_count",
+        "watchers_count",
+        "forks",
+        "open_issues_count",
+        "forks_count",
+    ]
+
     @property
     def api_endpoint(self):
-        return f"https://api.github.com/repos/{self.org}/{self.repo_name}/issues?labels={self.label_name}&state=all"
+        url = (
+            f"https://api.github.com/repos/{self.org}/{self.repo_name}/"
+            f"issues?labels={self.label_name}&state=all"
+        )
+        return url
 
     # Set up the API endpoint
     def _get_response(self):
@@ -106,7 +268,7 @@ class ProcessIssues:
         line_item : list
             A single list item representing a single line in the issue
             containing metadata for the review.
-            This comment is the metadata for the review that the author fills out.
+            This comment is metadata for the review that the author fills out.
 
         Returns
         -------
@@ -126,7 +288,7 @@ class ProcessIssues:
                     # Add each maintainer to the dict
                     user = aname.split("@")
                     # Clean
-                    user = [self._clean_name(l) for l in user]
+                    user = [self._clean_name(a_str) for a_str in user]
                     a_maint = {
                         "name": self._clean_name(user[0]),
                         "github_username": self._clean_name(user[1]),
@@ -152,7 +314,7 @@ class ProcessIssues:
         return meta
 
     def parse_issue_header(
-        self, issues: list[str], total_lines: int = 15
+        self, issues: list[str], total_lines: int = 20
     ) -> dict[str, str]:
         """
         A function that parses through the header of an issue.
@@ -165,7 +327,7 @@ class ProcessIssues:
             metadata at the top of each issue
         total_lines : int
             an integer representing the total number of lines to parse in the
-            issue header. Default = 15
+            issue header. Default = 20
 
         Returns
         -------
@@ -174,78 +336,54 @@ class ProcessIssues:
             package name, description, review team, version submitted etc.
             See key_order below for the full list of keys.
         """
-        # Reorder data
-        key_order = [
-            "package_name",
-            "package_description",
-            "submitting_author",
-            "all_current_maintainers",
-            "repository_link",
-            "version_submitted",
-            "categories",
-            "editor",
-            "reviewer_1",
-            "reviewer_2",
-            "archive",
-            "version_accepted",
-            "date_accepted",
-            "created_at",
-            "updated_at",
-            "closed_at",
-            "issue_link",
-        ]
+
         meta_dates = ["created_at", "updated_at", "closed_at"]
 
         review = {}
         for issue in issues:
-            package_name, body_data = self.parse_comment(issue)
-            if not package_name:
+            pkg_name, body_data = self.parse_comment(issue)
+            if not pkg_name:
                 continue
             # Index of 15 should include date accepted in the review meta
-            issue_meta = self.get_issue_meta(body_data, total_lines)
-            # Add issue open and close date to package meta
-            # Created, opened & closed dates are in GitHub Issue response
+            review[pkg_name] = self.get_issue_meta(body_data, total_lines)
+            # Add issue open and close date to package meta from GH response
+            # Date cleaning happens via pydantic validator not here
             for a_date in meta_dates:
-                issue_meta[a_date] = self._clean_date(issue[a_date])
-
-            # Date accepted is a manually added value. Fix format separately
-            # Using dashes because it's jekyll friendly
-            try:
-                the_date = issue_meta["date_accepted"].replace("/", "-").split("-")
-                if the_date[0] == "TBD":
-                    continue
-                else:
-                    issue_meta[
-                        "date_accepted"
-                    ] = f"{the_date[2]}-{the_date[0]}-{the_date[1]}"
-            except KeyError as ke:
-                print("Oops,", package_name, "is missing date_accepted key.")
-            # Clean markdown url's from editor, and reviewer lines
-            types = ["editor", "reviewer_1", "reviewer_2"]
-            user_values = ["github_username", "name"]
-            for a_type in types:
-                for user_value in user_values:
-                    issue_meta[a_type][user_value] = (
-                        issue_meta[a_type][user_value]
-                        .replace("https://github.com/", "")
-                        .replace("[", "")
-                        .replace("]", "")
-                    )
-
-            review[package_name] = issue_meta
-            review[package_name]["categories"] = self.get_categories(body_data)
-            review[package_name]["issue_link"] = issue["url"].replace(
+                review[pkg_name][a_date] = issue[a_date]
+            # Get categories and issue review link
+            review[pkg_name]["categories"] = self.get_categories(body_data)
+            review[pkg_name]["issue_link"] = issue["url"].replace(
                 "https://api.github.com/repos/", "https://github.com/"
             )
-            # Rename package description & reorder keys
-            review[package_name]["package_description"] = review[package_name].pop(
-                "one-line_description_of_package", ""
-            )
-            review[package_name] = {
-                key: review[package_name][key]
-                for key in key_order
-                if review[package_name].get(key)
+
+            review_clean = {
+                key: value
+                for key, value in review[pkg_name].items()
+                if not key.startswith("##")
+                and not key.startswith("---")
+                and not key.startswith("-_[x]_i_agree")
             }
+            review[pkg_name] = review_clean
+            # filtered = {}
+            # for key, value in review.items():
+            #     print(key)
+            #     if not key.startswith("##") and not key.startswith("-"):
+            #         filtered[key] = value
+
+            # # Clean markdown url's from editor, and reviewer lines
+            # TODO - this could be a reviewer name cleanup validaotr
+            # types = ["editor", "reviewer_1", "reviewer_2"]
+            # user_values = ["github_username", "name"]
+            # for a_type in types:
+            #     for user_value in user_values:
+            #         issue_meta[a_type][user_value] = (
+            #             issue_meta[a_type][user_value]
+            #             .replace("https://github.com/", "")
+            #             .replace("[", "")
+            #             .replace("]", "")
+            #         )
+
+            # review[pkg_name] = issue_meta
 
         return review
 
@@ -260,11 +398,11 @@ class ProcessIssues:
         Parameters
         ----------
         body_data : list
-            A list containing all of the body data for the top comment in an issue.
+            A list containing all body data for the top comment in an issue.
         end_range : int
-            The number of lines to parse at the top of the issue (this may change
-            over time so this variable allows us to have different processing
-            based upon the date of the issue being opened)
+            The number of lines to parse at the top of the issue (this may
+            change over time so this variable allows us to have different
+            processing based upon the date of the issue being opened)
 
         Returns
         -------
@@ -279,7 +417,9 @@ class ProcessIssues:
 
         return issue_meta
 
-    def get_repo_endpoints(self, review_issues: dict[str, str]) -> dict[str, str]:
+    def get_repo_endpoints(
+        self, review_issues: dict[str, str]
+    ) -> dict[str, str]:
         """
         Returns a list of repository endpoints
 
@@ -291,7 +431,7 @@ class ProcessIssues:
         Returns
         -------
             Dict
-                Containing package_name: endpoint for each review.
+                Containing pkg_name: endpoint for each review.
 
         """
 
@@ -299,7 +439,13 @@ class ProcessIssues:
         for a_package in review_issues.keys():
             repo = review_issues[a_package]["repository_link"].strip("/")
             owner, repo = repo.split("/")[-2:]
-            all_repos[a_package] = f"https://api.github.com/repos/{owner}/{repo}"
+            # TODO: could be simpler code - Remove any link remnants
+            pattern = r"[\(\)\[\]?]"
+            owner = re.sub(pattern, "", owner)
+            repo = re.sub(pattern, "", repo)
+            all_repos[
+                a_package
+            ] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
 
     def parse_comment(self, issue: dict[str, str]) -> tuple[str, list[str]]:
@@ -315,49 +461,70 @@ class ProcessIssues:
 
         Returns
         -------
-            package_name : str
+            pkg_name : str
                 The name of the package
             comment : list
                 A list containing the comment elements in order
         """
 
-        # TODO: this var isn't used
-        comments_url = issue["comments_url"]
         body = issue["body"]
-        # Here sometimes the lines are split with \n, others \r\n
-        # To clean split on \n but may have to remove the \r
+        # Clean line breaks (could be done with a regex too)
         lines = body.split("\n")
         lines = [a_line.strip("\r").strip() for a_line in lines]
         # Some users decide to hold the issue titles.
         # For those, clean the markdown bold ** element
-        lines = [line.replace("**", "").strip() for line in lines if line.strip() != ""]
+        lines = [
+            line.replace("**", "").strip()
+            for line in lines
+            if line.strip() != ""
+        ]
         # You need a space after : or else it will break https:// in two
         body_data = [line.split(": ") for line in lines if line.strip() != ""]
 
         # Loop through issue header and grab relevant review metadata
         name_index = next(
-            (i for i, sublist in enumerate(body_data) if sublist[0] == "Package Name"),
+            (
+                i
+                for i, sublist in enumerate(body_data)
+                if sublist[0] == "Package Name"
+            ),
             None,
         )
 
-        package_name = body_data[name_index][1] if name_index else None
+        pkg_name = body_data[name_index][1] if name_index else None
 
-        return package_name, body_data
+        return pkg_name, body_data
 
-    def _clean_date(self, date: str) -> str:
-        """Cleans up a datetime  from github and returns a date string"""
+    def get_gh_metrics(
+        self,
+        endpoints: dict[str, str],
+        reviews: dict[str, dict[str, Any]],
+    ) -> dict[str, dict[str, Any]]:
+        """
+        Get GitHub metrics for each review based on provided endpoints.
 
-        try:
-            date_clean = (
-                datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-                .date()
-                .strftime("%Y-%m-%d")
-            )
-        except:
-            print("Oops - i need a string to process date")
-            print("setting date to missing")
-            date_clean = "missing"
-        return date_clean
+        Parameters:
+        ----------
+        endpoints : dict
+            A dictionary mapping package names to their GitHub URLs.
+        reviews : dict
+            A dictionary containing review data.
+
+        Returns:
+        -------
+        dict
+            Updated review data with GitHub metrics.
+        """
+        pkg_meta = {}
+        for pkg_name, url in endpoints.items():
+            pkg_meta[pkg_name] = self.get_repo_meta(url, self.gh_stats)
+
+            pkg_meta[pkg_name]["contrib_count"] = self.get_repo_contribs(url)
+            pkg_meta[pkg_name]["last_commit"] = self.get_last_commit(url)
+            # Add github meta to review metadata
+            reviews[pkg_name]["gh_meta"] = pkg_meta[pkg_name]
+
+        return reviews
 
     def get_repo_meta(self, url: str, stats_list: list) -> dict:
         """
@@ -365,8 +532,7 @@ class ProcessIssues:
 
         """
         stats_dict = {}
-        # Small script to get the url (normally the docs) and description of a repo!
-        print(url)
+        # Get the url (normally the docs) and description of a repo!
         response = requests.get(
             url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
         )
@@ -387,7 +553,9 @@ class ProcessIssues:
             for astat in stats_list:
                 stats_dict[astat] = data[astat]
             stats_dict["documentation"] = stats_dict.pop("homepage")
-            stats_dict["created_at"] = self._clean_date(stats_dict["created_at"])
+            # stats_dict["created_at"] = self._clean_date(
+            #     stats_dict["created_at"]
+            # )
 
         return stats_dict
 
@@ -404,7 +572,7 @@ class ProcessIssues:
         )
 
         if response.status_code == 404:
-            print("Can't find: ", url, ". Did the repo url change?")
+            print("Can't find: ", repo_contribs, ". Did the repo url change?")
         # Extract the description and homepage URL from the JSON response
         else:
             return len(response.json())
@@ -422,59 +590,48 @@ class ProcessIssues:
         response = requests.get(
             url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
         ).json()
-        date = (
-            response[0]["commit"]["author"]["date"]
-            # if 0 in response
-            # else "1970-01-01T00:00:00Z"
-        )
+        date = response[0]["commit"]["author"]["date"]
 
-        return self._clean_date(date)
+        return date
 
     def get_categories(
-        self, issue_body_list: list[list[str]], fmt: bool = True
+        self, issue_list: list[list[str]], fmt: bool = True
     ) -> list[str]:
         """Parse through a pyOS review issue and grab categories associated
         with a package
 
         Parameters
         ----------
-        issue_body_list : list[list[str]]
-            The first comment from the issue split into lines and then the lines split as by self.parse_comment()
+        issue_list : list[list[str]]
+            The first comment from the issue split into lines and then the
+            lines split as by self.parse_comment()
 
         fmt : bool
-            Applies some formatting changes to the categories to match what is required for the website.
+            Applies some formatting changes to the categories to match what is
+            required for the website.
         """
         # Find the starting index of the category section
-        start_index = None
-        for i in range(len(issue_body_list)):
-            if issue_body_list[i][0].startswith("- Please indicate which"):
-                start_index = i + 1
-                break
-        # NOTE - some issues have line after that startswith "Check out our"
-        # For those issues advance i += 1
-        if issue_body_list[start_index][0].startswith("Check out our"):
-            start_index += 1
+        try:
+            index = next(
+                i
+                for i, sublist in enumerate(issue_list)
+                if "## Scope" in sublist
+            )
+            # Iterate from scope index to first line starting with " - ["
+            # To find list of category check boxes
+            for i in range(index + 1, len(issue_list)):
+                if issue_list[i] and issue_list[i][0].startswith("- ["):
+                    cat_index = i
+                    break
+        except StopIteration:
+            print("'## Scope' not found in the list.")
 
-        if start_index is None:
-            # If we couldn't find the starting index, return an empty list
-            return []
+        # Get checked categories for package
+        cat_list = issue_list[cat_index : cat_index + 10]
+        categories = [
+            re.sub(r"- \[[xX]\] ", "", item[0])
+            for item in cat_list
+            if re.search(r"- \[[xX]\] ", item[0])
+        ]
 
-        # Iterate through the lines starting at the starting index and grab the relevant text
-        cat_matches = ["[x]", "[X]"]
-        categories: list[str] = []
-        for i in range(start_index, len(issue_body_list)):  # 30):
-            line = issue_body_list[i][0].strip()
-            checked = any([x in line for x in cat_matches])
-
-            if line.startswith("- [") and checked:
-                category = line[line.index("]") + 2 :]
-                categories.append(category)
-            elif not line.startswith("- ["):
-                break
-
-        if fmt:
-            categories = [c.lower().replace(" ", "-") for c in categories]
-        return categories
-
-
-# https://api.github.com/repos/pyopensci/python-package-guide/commits
+        return [item.lower().replace("[^1]", "") for item in categories]

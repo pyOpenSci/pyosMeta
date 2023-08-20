@@ -1,6 +1,14 @@
-# SPDX-FileCopyrightText: 2023-present Leah Wasser <leah@pyopensci.org>
-#
-# SPDX-License-Identifier: MIT
+from .contributors import PersonModel, ProcessContributors
+from .parse_issues import ProcessIssues, ReviewModel
+
+# Trick suggested by flake8 maintainer to ensure the imports above don't
+# get flagged as being "unused"
+__all__ = (
+    "ProcessIssues",
+    "ReviewModel",
+    "PersonModel",
+    "ProcessContributors",
+)
 
 try:
     from ._version_generated import __version__
