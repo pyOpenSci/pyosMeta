@@ -75,9 +75,10 @@ profile = "black"
 multi_line_output = 3
 py_version = 27
 
+# Precommit ignores this config so i added a .flake8 file
+# but why did it ignore it?
 [tool.flake8]
-# List of error codes to ignore (comma-separated)
-ignore = ["E203", "W503"]
+extend-ignore = ["E203", "W503"]
 
 
 [tool.pdm.build]

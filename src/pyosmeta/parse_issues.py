@@ -12,7 +12,7 @@ from pydantic import (
 )
 from typing import Any, Optional
 
-from pyosmeta.contributors import ProcessContributors
+from pyosmeta.contributors import ProcessContributors, UrlValidatorMixin
 
 
 def clean_date(a_date: Optional[str]) -> str:
@@ -40,7 +40,7 @@ def clean_date(a_date: Optional[str]) -> str:
             return "missing"
 
 
-class GhMeta(BaseModel):
+class GhMeta(BaseModel, UrlValidatorMixin):
     name: str
     description: str
     created_at: str
@@ -517,7 +517,6 @@ class ProcessIssues:
         """
         pkg_meta = {}
         for pkg_name, url in endpoints.items():
-            print("Getting GitHub stats for", pkg_name)
             pkg_meta[pkg_name] = self.get_repo_meta(url, self.gh_stats)
 
             pkg_meta[pkg_name]["contrib_count"] = self.get_repo_contribs(url)

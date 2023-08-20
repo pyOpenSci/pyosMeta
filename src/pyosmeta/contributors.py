@@ -16,7 +16,59 @@ from pydantic import (
 from typing import Dict, List, Optional, Set, Tuple, Union
 
 
-class PersonModel(BaseModel):
+class UrlValidatorMixin:
+    # Check fields is false because this is being inherited by two diff classes
+    @field_validator(
+        "website", "documentation", mode="before", check_fields=False
+    )
+    @classmethod
+    def format_url(cls, url: str) -> str:
+        """Append https to the beginning of URL if it doesn't exist & cleanup
+        If the url doesn't have https add it
+        If the url starts with http change it to https
+        Else do nothing
+
+        Parameters
+        ----------
+        url : str
+            String representing the url grabbed from the GH api
+
+        """
+
+        if not url:
+            return url  # Returns empty string if url is empty
+        else:
+            if url.startswith("http://"):
+                print(f"{url} 'http://' replacing w 'https://'")
+                url = url.replace("http://", "https://")
+            elif not url.startswith("http"):
+                print("Oops, missing http")
+                url = "https://" + url
+        if cls._check_url(url=url):
+            return url
+        else:
+            return None
+
+    @staticmethod
+    def _check_url(url: str) -> bool:
+        """Test url. Return true if there's a valid response, False if not
+
+        Parameters
+        ----------
+        url : str
+            String for a url to a website to test.
+
+        """
+
+        try:
+            response = requests.get(url, timeout=6)
+            return response.status_code == 200
+        except Exception:
+            print("Oops, url", url, "is not valid, removing it")
+            return False
+
+
+class PersonModel(BaseModel, UrlValidatorMixin):
     # Make sure model populates both aliases and original attr name
     model_config = ConfigDict(
         populate_by_name=True,
@@ -56,24 +108,6 @@ class PersonModel(BaseModel):
     location: Optional[str] = None
     email: Optional[str] = None
 
-    # # TODO - turn this into a validator for the user website
-    # def _check_url(self, url: str) -> bool:
-    #     """Test a url and return true if it works, false if not
-
-    #     Parameters
-    #     ----------
-    #     url : str
-    #         String for a url to a website to test.
-
-    #     """
-
-    #     try:
-    #         response = requests.get(url, timeout=6)
-    #         return response.status_code == 200
-    #     except Exception:
-    #         print("Oops, url", url, "is not valid, removing it")
-    #         return False
-
     @field_validator(
         "packages_reviewed",
         "packages_submitted",
@@ -81,6 +115,7 @@ class PersonModel(BaseModel):
         "contributor_type",
         mode="before",
     )
+    @classmethod
     def convert_to_set(cls, value: list[str]):
         if isinstance(value, list):
             if not value:
@@ -88,7 +123,7 @@ class PersonModel(BaseModel):
             elif value[0] is None:
                 return set()
             else:
-                value = [aval.lower() for aval in value]
+                value = [a_val.lower() for a_val in value]
                 return set(value)
         elif value is None:
             return set()
@@ -111,7 +146,9 @@ class PersonModel(BaseModel):
         "contributor_type",
     )
     def serialize_set(self, items: Set[str]):
-        return list(items)
+        """This is a serializer that runs on export. It ensures sets are
+        converted to lists"""
+        return sorted(list(items))
 
     @field_validator("bio", mode="before")
     @classmethod
@@ -562,26 +599,3 @@ class ProcessContributors:
     #                 ]
 
     #     return contrib_data
-
-    def format_url(self, url: str) -> str:
-        """Append https to the beginning of URL if it doesn't exist
-        If the url doesn't have https add it
-        If the url starts with http change it to https
-        Else do nothing
-
-        Parameters
-        ----------
-        url : str
-            String representing the url grabbed from the GH api
-
-        """
-        if not url:
-            return url  # returns empty string if url is empty
-        elif url.startswith("https://"):
-            return url
-        elif url.startswith("http://"):
-            print("Fixing", url, "https://" + url[7:])
-            return "https://" + url[7:]
-        else:
-            print("Missing https://, adding to ", url)
-            return "https://" + url

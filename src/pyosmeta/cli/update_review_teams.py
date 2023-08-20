@@ -32,11 +32,9 @@ To run: update_reviewers
 # - sevivi
 import os
 
-from pyosmeta.contributors import (
-    PersonModel,
-    ProcessContributors,
-    ValidationError,
-)
+from pydantic import ValidationError
+
+from pyosmeta.contributors import PersonModel, ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
 
 

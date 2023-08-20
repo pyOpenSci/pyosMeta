@@ -25,8 +25,9 @@ def main():
         help="Force update contrib info from GitHub for every contributor",
     )
     args = parser.parse_args()
+    update_value = args.update
 
-    if args:
+    if update_value:
         update_all = True
 
     repos = [
@@ -49,6 +50,7 @@ def main():
     # Populate all existing contribs into model objects
     all_contribs = {}
     for a_contrib in web_contribs:
+        print(a_contrib)
         try:
             all_contribs[a_contrib["github_username"].lower()] = PersonModel(
                 **a_contrib
@@ -64,7 +66,6 @@ def main():
     bot_all_contribs = process_contribs.combine_json_data()
 
     print("Updating contrib types and searching for new users now")
-    # bot_all_contribs: keys: contrib_type, value: ghuser contribs
     for key, users in bot_all_contribs.items():
         for gh_user in users:
             # Find and populate data for any new contributors
@@ -75,16 +76,6 @@ def main():
 
             # Update contribution type list for all users
             all_contribs[gh_user].add_unique_value("contributor_type", key)
-
-            # existing_contribs = all_contribs[gh_user].contributor_type
-            # # TODO: i can move all of these update items to just use the
-            # # personmodel.add_unique_value then i can get rid of update
-            # # contrib list
-            # all_contribs[
-            #     gh_user
-            # ].contributor_type = process_contribs.update_contrib_list(
-            #     existing_contribs, key
-            # )
 
     if update_all:
         for user in all_contribs.keys():
