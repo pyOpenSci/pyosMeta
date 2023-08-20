@@ -1,0 +1,110 @@
+"""
+Script that parses metadata from na issue and adds it to a yml file for the
+website. It also grabs some of the package metadata such as stars,
+last commit, etc.
+
+Output: packages.yml file containing a list of
+ 1. all packages with accepted reviews
+ 2. information related to the review including reviewers, editors
+ 3. basic package stats including stars, etc.
+
+To run at the CLI: parse_issue_metadata
+"""
+
+# TODO: if we export files we might want packages.yml and then under_review.yml
+# thus we'd want to add a second input parameters which was file_name
+# TODO: feature - Would be cool to create an "under review now" list as well -
+# ideally this could be passed as a CLI argument with the label we want to
+# search for
+
+
+# import argparse
+import pickle
+
+from pydantic import ValidationError
+
+from pyosmeta import ProcessIssues, ReviewModel
+
+# from pyosmeta.file_io import load_website_yml
+
+
+# TODO: change the template to ask for date accepted format year-month-day
+
+
+def main():
+    # update_all = False
+    # parser = argparse.ArgumentParser(
+    #     description="A CLI script to update pyOpenSci reviews"
+    # )
+    # parser.add_argument(
+    #     "--update",
+    #     type=str,
+    #     help="Will force update review info from GitHub for every review",
+    # )
+    # args = parser.parse_args()
+
+    # if args:
+    #     update_all = True
+    # web_reviews_path = (
+    #     "https://raw.githubusercontent.com/pyOpenSci/"
+    #     "pyopensci.github.io/main/_data/packages.yml"
+    # )
+
+    process_review = ProcessIssues(
+        org="pyopensci",
+        repo_name="software-submission",
+        label_name="6/pyOS-approved 🚀🚀🚀",
+    )
+
+    # Open web yaml & return dict with package name as key
+    # web_reviews = load_website_yml(key="package_name", url=web_reviews_path)
+
+    # Get all issues for approved packages - load as dict
+    issues = process_review.return_response()
+    accepted_reviews = process_review.parse_issue_header(issues, 45)
+
+    # TODO: clean out extra fields from accepted reviews??
+
+    # Parse through reviews, identify new ones, fix case
+    # TODO - right now i've reverted back to always updating all reviews.
+    # Is there a use-case to only update a new package vs updating everything?
+    # if update_all:
+    # all_reviews = {}
+    # for key, meta in accepted_reviews.items():
+    #     try:
+    #         all_reviews[key.lower()] = ReviewModel(**meta)
+    #     except ValidationError as ve:
+    #         print(ve)
+
+    # else:
+    #     for key, meta in accepted_reviews.items():
+    #         if key.lower() not in all_reviews.keys():
+    #             print("Yay - pyOS has a new package:", key)
+    #             all_reviews[key.lower()] = ReviewModel(**meta)
+
+    # Update gh metrics via api for all packages
+    # TODO: this is working but above i made everything a model object
+    # do i want to do that above or just do it all at once below?
+    repo_endpoints = process_review.get_repo_endpoints(accepted_reviews)
+    all_reviews = process_review.get_gh_metrics(
+        repo_endpoints, accepted_reviews
+    )
+
+    # Finally populate model objects with review data + metrics
+    # TODO: this is really close - it's erroring when populating date
+    # i suspect in the github metadata
+    final_reviews = {}
+    for key, review in all_reviews.items():
+        # First add gh meta to each dict
+        print("Parsing & validating", key)
+        try:
+            final_reviews[key] = ReviewModel(**review)
+        except ValidationError as ve:
+            print(key, ":", ve)
+
+    with open("all_reviews.pickle", "wb") as f:
+        pickle.dump(final_reviews, f)
+
+
+if __name__ == "__main__":
+    main()

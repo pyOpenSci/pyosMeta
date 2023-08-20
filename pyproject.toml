@@ -59,8 +59,8 @@ license = { text = "MIT" }
 # for a user to run directly from the package.
 [project.scripts] # Optional
 update-contributors = "pyosmeta.cli.update_contributors:main"
-update-reviews = "pyosmeta.cli.update_reviews:main"
-update-reviewers = "pyosmeta.cli.update_review_contribs:main"
+process-reviews = "pyosmeta.cli.process_reviews:main"
+update-review-teams = "pyosmeta.cli.update_review_teams:main"
 
 
 # Right now i'm not using pdm to add dependencies.
@@ -77,9 +77,7 @@ py_version = 27
 
 [tool.flake8]
 # List of error codes to ignore (comma-separated)
-ignore = "E203, W503"
-
-[tool.pdm]
+ignore = ["E203", "W503"]
 
 
 [tool.pdm.build]

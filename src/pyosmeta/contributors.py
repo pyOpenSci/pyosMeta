@@ -56,6 +56,24 @@ class PersonModel(BaseModel):
     location: Optional[str] = None
     email: Optional[str] = None
 
+    # # TODO - turn this into a validator for the user website
+    # def _check_url(self, url: str) -> bool:
+    #     """Test a url and return true if it works, false if not
+
+    #     Parameters
+    #     ----------
+    #     url : str
+    #         String for a url to a website to test.
+
+    #     """
+
+    #     try:
+    #         response = requests.get(url, timeout=6)
+    #         return response.status_code == 200
+    #     except Exception:
+    #         print("Oops, url", url, "is not valid, removing it")
+    #         return False
+
     @field_validator(
         "packages_reviewed",
         "packages_submitted",
@@ -236,23 +254,26 @@ class ProcessContributors:
             contrib_type = "community"
         return contrib_type
 
-    def check_add_user(self, gh_user: str, contribs: Dict[str, str]) -> None:
-        """Check to make sure user exists in the existing contrib data. If they
-        don't' exist, add them
+    # TODO possibly could repurpose this as a check in the code
+    # but it should return get_user_info
+    # def check_add_user(self, gh_user: str, contribs: Dict[str, str]) -> None:
+    #     """Check to make sure user exists in the existing contrib data. If
+    #     they
+    #     don't' exist, add them
 
-        Parameters
-        ----------
-        gh_user : str
-            github username
-        contribs: dict
-            A dictionary containing contributors with gh user being the key
+    #     Parameters
+    #     ----------
+    #     gh_user : str
+    #         github username
+    #     contribs: dict
+    #         A dictionary containing contributors with gh user being the key
 
-        This returns the updated dictionary with a new user at the end.
+    #     This returns the updated dictionary with a new user at the end.
 
-        """
-        if gh_user not in contribs.keys():
-            print("Missing user", gh_user, "adding them now.")
-            return self.add_new_user(gh_user)
+    #     """
+    #     if gh_user not in contribs.keys():
+    #         print("Missing user", gh_user, "adding them now.")
+    #         return self.get_user_info(gh_user)
 
     def load_json(self, json_path: str) -> dict:
         """
@@ -440,34 +461,35 @@ class ProcessContributors:
                 webDict[gh_user] = repoDict[gh_user]
         return webDict
 
-    def add_new_user(self, gh_user: str) -> dict:
-        """Add a new user to the contrib file using gh username
+    # # TODO: i think i can remove this method
+    # def add_new_user(self, gh_user: str) -> dict:
+    #     """Add a new user to the contrib file using gh username
 
-        This method does a few things.
-        1. Adds a new template entry for the user w no values populated
-        2. Gets user metadata from the user's github profile
-        3. Updates their contrib entry with the gh data
+    #     This method does a few things.
+    #     1. Adds a new template entry for the user w no values populated
+    #     2. Gets user metadata from the user's github profile
+    #     3. Updates their contrib entry with the gh data
 
-        Parameters
-        ----------
-        gh_user : str
-            String representing the GitHub username
+    #     Parameters
+    #     ----------
+    #     gh_user : str
+    #         String representing the GitHub username
 
-        Returns
-        -------
-        Dict
-            Username is the key and the updated github profile info is
-            contained in the dict.
+    #     Returns
+    #     -------
+    #     Dict
+    #         Username is the key and the updated github profile info is
+    #         contained in the dict.
 
-        """
+    #     """
 
-        new = {}
-        # Rather than this template i can use the person_model
-        new[gh_user] = self.create_contrib_template()
-        gh_data = self.get_gh_data([gh_user])
-        # Update their metadata in the dict and return
-        updated_data = self.update_contrib_data(new, gh_data)
-        return updated_data
+    #     new = {}
+    #     # Rather than this template i can use the person_model
+    #     new[gh_user] = self.create_contrib_template()
+    #     gh_data = self.get_gh_data([gh_user])
+    #     # Update their metadata in the dict and return
+    #     updated_data = self.update_contrib_data(new, gh_data)
+    #     return updated_data
 
     def get_gh_data(
         self, contribs: Union[Dict[str, str], List]
@@ -499,63 +521,47 @@ class ProcessContributors:
             all_user_info[gh_user] = self.get_user_info(gh_user, aname)
         return all_user_info
 
-    def _check_url(self, url: str) -> bool:
-        """Test a url and return true if it works, false if not
+    # Shouldn't need this anymore with pydantic
+    # def update_contrib_data(self, contrib_data: dict, gh_data: dict):
+    #     """Update contributor data from the GH API return.
 
-        Parameters
-        ----------
-        url : str
-            String for a url to a website to test.
+    #     Use the GitHub API to grab user profile data such as twitter handle,
+    #     mastodon, website, email and location and update contributor
+    #     information. GitHub profile data is the source of truth source for
+    #     contributor metadata.
 
-        """
+    #     Parameters
+    #     ----------
+    #     contrib_data : dict
+    #         A dict containing contributor data to be updated
+    #     gh_data : dict
+    #         Updated contributor data pulled from github API
 
-        try:
-            response = requests.get(url, timeout=6)
-            return response.status_code == 200
-        except Exception:
-            print("Oops, url", url, "is not valid, removing it")
-            return False
+    #     Returns
+    #     -------
+    #     dict
+    #         Dictionary containing updated contributor data.
+    #     """
 
-    def update_contrib_data(self, contrib_data: dict, gh_data: dict):
-        """Update contributor data from the GH API return.
+    #     for i, gh_name in enumerate(contrib_data.keys()):
+    #         print(i, gh_name)
+    #         # Update the key:value pairs for data pulled from GitHub
+    #         for akey in self.update_keys:
+    #             if akey == "website":
+    #                 url = gh_data[gh_name][gh_name][akey]
+    #                 # Fix the url format and check to see if it works online
+    #                 url = self.format_url(url)
+    #                 # It url is valid, add to dict
+    #                 if self._check_url(url):
+    #                     contrib_data[gh_name][akey] = url
+    #                 else:
+    #                     contrib_data[gh_name][akey] = ""
+    #             else:
+    #                 contrib_data[gh_name][akey] = gh_data[gh_name][gh_name][
+    #                     akey
+    #                 ]
 
-        Use the GitHub API to grab user profile data such as twitter handle,
-        mastodon, website, email and location and update contributor
-        information. GitHub profile data is the source of truth source for
-        contributor metadata.
-
-        Parameters
-        ----------
-        contrib_data : dict
-            A dict containing contributor data to be updated
-        gh_data : dict
-            Updated contributor data pulled from github API
-
-        Returns
-        -------
-        dict
-            Dictionary containing updated contributor data.
-        """
-
-        for i, gh_name in enumerate(contrib_data.keys()):
-            print(i, gh_name)
-            # Update the key:value pairs for data pulled from GitHub
-            for akey in self.update_keys:
-                if akey == "website":
-                    url = gh_data[gh_name][gh_name][akey]
-                    # Fix the url format and check to see if it works online
-                    url = self.format_url(url)
-                    # It url is valid, add to dict
-                    if self._check_url(url):
-                        contrib_data[gh_name][akey] = url
-                    else:
-                        contrib_data[gh_name][akey] = ""
-                else:
-                    contrib_data[gh_name][akey] = gh_data[gh_name][gh_name][
-                        akey
-                    ]
-
-        return contrib_data
+    #     return contrib_data
 
     def format_url(self, url: str) -> str:
         """Append https to the beginning of URL if it doesn't exist

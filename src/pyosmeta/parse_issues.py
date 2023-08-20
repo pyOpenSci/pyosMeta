@@ -25,9 +25,9 @@ def clean_date(a_date: Optional[str]) -> str:
 
     if a_date is None or a_date == "missing":
         return "missing"
-    elif len(a_date) < 11:
-        new_date = a_date.replace("/", "-").split("-")
-        return f"{new_date[0]}-{new_date[1]}-{new_date[2]}"
+    # elif len(a_date) < 11:
+    #     new_date = a_date.replace("/", "-").split("-")
+    #     return f"{new_date[0]}-{new_date[1]}-{new_date[2]}"
     else:
         try:
             return (
@@ -95,10 +95,29 @@ class ReviewModel(BaseModel):
     updated_at: str = None
     closed_at: Optional[str] = None
     issue_link: str = None
-    gh_meta: GhMeta
+    joss: Optional[str] = None
+    gh_meta: Optional[GhMeta] = None
 
     @field_validator(
         "date_accepted",
+        mode="before",
+    )
+    @classmethod
+    def clean_date_review(cls, a_date: Optional[str]) -> str:
+        """Clean a manually added datetime that is added to a review by an
+        editor when the review package is accepted.
+
+        """
+        if a_date is None or a_date in ["missing", "TBD"]:
+            return "missing"
+        else:
+            new_date = a_date.replace("/", "-").split("-")
+            if len(new_date[0]) == 4:
+                return f"{new_date[0]}-{new_date[1]}-{new_date[2]}"
+            else:
+                return f"{new_date[2]}-{new_date[0]}-{new_date[1]}"
+
+    @field_validator(
         "created_at",
         "updated_at",
         "closed_at",
@@ -113,6 +132,27 @@ class ReviewModel(BaseModel):
         """
 
         return clean_date(a_date)
+
+    @field_validator(
+        "editor",
+        "reviewer_1",
+        "reviewer_2",
+        mode="before",
+    )
+    @classmethod
+    def clean_gh_url(cls, user: dict[str, str]) -> dict[str, str]:
+        """Remove markdown link remnants from gh usernames and name.
+
+        Sometimes editors and reviewers add names using github links.
+        Remove the link data.
+        """
+
+        user["github_username"] = user["github_username"].replace(
+            "https://github.com/", ""
+        )
+        user["name"] = re.sub(r"\[|\]", "", user["name"])
+
+        return user
 
 
 @dataclass
@@ -274,7 +314,7 @@ class ProcessIssues:
         return meta
 
     def parse_issue_header(
-        self, issues: list[str], total_lines: int = 15
+        self, issues: list[str], total_lines: int = 20
     ) -> dict[str, str]:
         """
         A function that parses through the header of an issue.
@@ -287,7 +327,7 @@ class ProcessIssues:
             metadata at the top of each issue
         total_lines : int
             an integer representing the total number of lines to parse in the
-            issue header. Default = 15
+            issue header. Default = 20
 
         Returns
         -------
@@ -301,32 +341,29 @@ class ProcessIssues:
 
         review = {}
         for issue in issues:
-            package_name, body_data = self.parse_comment(issue)
-            if not package_name:
+            pkg_name, body_data = self.parse_comment(issue)
+            if not pkg_name:
                 continue
             # Index of 15 should include date accepted in the review meta
-            review[package_name] = self.get_issue_meta(body_data, total_lines)
-            # Add issue open and close date to package meta
-            # Created, opened & closed dates are in GitHub Issue response
+            review[pkg_name] = self.get_issue_meta(body_data, total_lines)
+            # Add issue open and close date to package meta from GH response
+            # Date cleaning happens via pydantic validator not here
             for a_date in meta_dates:
-                # TODO: this could become a validator
-                review[package_name][a_date] = issue[
-                    a_date
-                ]  # self._clean_date(issue[a_date])
+                review[pkg_name][a_date] = issue[a_date]
             # Get categories and issue review link
-            review[package_name]["categories"] = self.get_categories(body_data)
-            review[package_name]["issue_link"] = issue["url"].replace(
+            review[pkg_name]["categories"] = self.get_categories(body_data)
+            review[pkg_name]["issue_link"] = issue["url"].replace(
                 "https://api.github.com/repos/", "https://github.com/"
             )
 
             review_clean = {
                 key: value
-                for key, value in review[package_name].items()
+                for key, value in review[pkg_name].items()
                 if not key.startswith("##")
                 and not key.startswith("---")
                 and not key.startswith("-_[x]_i_agree")
             }
-            review[package_name] = review_clean
+            review[pkg_name] = review_clean
             # filtered = {}
             # for key, value in review.items():
             #     print(key)
@@ -346,7 +383,7 @@ class ProcessIssues:
             #             .replace("]", "")
             #         )
 
-            # review[package_name] = issue_meta
+            # review[pkg_name] = issue_meta
 
         return review
 
@@ -394,7 +431,7 @@ class ProcessIssues:
         Returns
         -------
             Dict
-                Containing package_name: endpoint for each review.
+                Containing pkg_name: endpoint for each review.
 
         """
 
@@ -424,7 +461,7 @@ class ProcessIssues:
 
         Returns
         -------
-            package_name : str
+            pkg_name : str
                 The name of the package
             comment : list
                 A list containing the comment elements in order
@@ -454,9 +491,9 @@ class ProcessIssues:
             None,
         )
 
-        package_name = body_data[name_index][1] if name_index else None
+        pkg_name = body_data[name_index][1] if name_index else None
 
-        return package_name, body_data
+        return pkg_name, body_data
 
     def get_gh_metrics(
         self,
@@ -559,14 +596,14 @@ class ProcessIssues:
         return date
 
     def get_categories(
-        self, issue_body_list: list[list[str]], fmt: bool = True
+        self, issue_list: list[list[str]], fmt: bool = True
     ) -> list[str]:
         """Parse through a pyOS review issue and grab categories associated
         with a package
 
         Parameters
         ----------
-        issue_body_list : list[list[str]]
+        issue_list : list[list[str]]
             The first comment from the issue split into lines and then the
             lines split as by self.parse_comment()
 
@@ -575,33 +612,27 @@ class ProcessIssues:
             required for the website.
         """
         # Find the starting index of the category section
-        start_index = None
-        for i in range(len(issue_body_list)):
-            if issue_body_list[i][0].startswith("- Please indicate which"):
-                start_index = i + 1
-                break
-        # NOTE - some issues have line after that startswith "Check out our"
-        # For those issues advance i += 1
-        if issue_body_list[start_index][0].startswith("Check out our"):
-            start_index += 1
+        try:
+            index = next(
+                i
+                for i, sublist in enumerate(issue_list)
+                if "## Scope" in sublist
+            )
+            # Iterate from scope index to first line starting with " - ["
+            # To find list of category check boxes
+            for i in range(index + 1, len(issue_list)):
+                if issue_list[i] and issue_list[i][0].startswith("- ["):
+                    cat_index = i
+                    break
+        except StopIteration:
+            print("'## Scope' not found in the list.")
 
-        if start_index is None:
-            # If we couldn't find the starting index, return an empty list
-            return []
+        # Get checked categories for package
+        cat_list = issue_list[cat_index : cat_index + 10]
+        categories = [
+            re.sub(r"- \[[xX]\] ", "", item[0])
+            for item in cat_list
+            if re.search(r"- \[[xX]\] ", item[0])
+        ]
 
-        # Iterate through lines and grab the relevant text
-        cat_matches = ["[x]", "[X]"]
-        categories: list[str] = []
-        for i in range(start_index, len(issue_body_list)):  # 30):
-            line = issue_body_list[i][0].strip()
-            checked = any([x in line for x in cat_matches])
-
-            if line.startswith("- [") and checked:
-                category = line[line.index("]") + 2]
-                categories.append(category)
-            elif not line.startswith("- ["):
-                break
-
-        if fmt:
-            categories = [c.lower().replace(" ", "-") for c in categories]
-        return categories
+        return [item.lower().replace("[^1]", "") for item in categories]

@@ -32,7 +32,11 @@ To run: update_reviewers
 # - sevivi
 import os
 
-from pyosmeta.contributors import PersonModel, ProcessContributors
+from pyosmeta.contributors import (
+    PersonModel,
+    ProcessContributors,
+    ValidationError,
+)
 from pyosmeta.file_io import clean_export_yml, load_pickle
 
 
@@ -65,9 +69,12 @@ def main():
                     gh_user = get_clean_user(a_maintainer["github_username"])
 
                     if gh_user not in contribs.keys():
-                        contribs.update(
-                            process_contribs.check_add_user(gh_user, contribs)
-                        )
+                        print("Found a new user!", gh_user)
+                        new_contrib = process_contribs.get_user_info(gh_user)
+                        try:
+                            contribs[gh_user] = PersonModel(**new_contrib)
+                        except ValidationError as ve:
+                            print(ve)
 
                     # Update user package contributions (if it's unique)
                     review_key = contrib_types[issue_role][0]
@@ -98,7 +105,10 @@ def main():
                     # If they aren't already in contribs, add them
                     print("Found a new user!", gh_user)
                     new_contrib = process_contribs.get_user_info(gh_user)
-                    contribs[gh_user] = PersonModel(**new_contrib)
+                    try:
+                        contribs[gh_user] = PersonModel(**new_contrib)
+                    except ValidationError as ve:
+                        print(ve)
 
                 # Update user package contributions (if it's unique)
                 review_key = contrib_types[issue_role][0]
@@ -119,7 +129,6 @@ def main():
                         contribs[gh_user], "name"
                     )
 
-    print("Export")
     # Export to yaml
     contribs_ls = [model.model_dump() for model in contribs.values()]
     # Getting error dumping packages
