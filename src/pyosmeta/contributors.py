@@ -13,11 +13,11 @@ from pydantic import (
     field_serializer,
     field_validator,
 )
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union
 
 
 class UrlValidatorMixin:
-    # Check fields is false because this is being inherited by two diff classes
+    # Check fields is false given mixin is used by two diff classes
     @field_validator(
         "website", "documentation", mode="before", check_fields=False
     )
@@ -69,7 +69,6 @@ class UrlValidatorMixin:
 
 
 class PersonModel(BaseModel, UrlValidatorMixin):
-    # Make sure model populates both aliases and original attr name
     model_config = ConfigDict(
         populate_by_name=True,
         str_strip_whitespace=True,
@@ -158,7 +157,6 @@ class PersonModel(BaseModel, UrlValidatorMixin):
 
         """
         if isinstance(string, str):
-            # Remove "\r\n" from the string value
             string = re.sub(r"[\r\n]", "", string)
         return string
 
@@ -219,47 +217,6 @@ class ProcessContributors:
         """
         load_dotenv()
         return os.environ["GITHUB_TOKEN"]
-
-    # TODO - This utility is used across all scripts.
-    def clean_list(self, a_list: Union[str, List[str]]) -> List[str]:
-        """Helper function that takes an input object as a list or string.
-        If it is a list containing none, it returns an empty list
-        if it is a string is returns the string as a list
-        removes 'None' if that is in the list. and returns
-            either an empty clean list of the list as is."""
-
-        if isinstance(a_list, str):
-            a_list = [a_list]
-        elif not a_list:
-            a_list = []
-        # Remove None from list
-        a_list = list(filter(lambda x: x, a_list))
-        return a_list
-
-    # TODO - There is likely a better way to do this. If it returns an
-    # empty list then we know there are no new vals... so it likely can
-    # return a single thing
-    def unique_new_vals(
-        self, a_list: List[str], a_item: List[str]
-    ) -> Tuple[bool, Optional[List[str]]]:
-        """Checks two objects either a list and string or two lists
-        and evaluates whether there are differences between them.
-
-        Returns
-        -------
-        Tuple
-            Containing a boolean representing whether there are difference
-            or not and a list containing new value if there are differences.
-
-        """
-
-        default = (False, None)
-        list_lower = [al.lower() for al in a_list]
-        item_lower = [ai.lower() for ai in a_item]
-        diff = list(set(item_lower) - set(list_lower))
-        if len(diff) > 0:
-            default = (True, diff)
-        return default
 
     def check_contrib_type(self, json_file: str):
         """
@@ -323,6 +280,7 @@ class ProcessContributors:
             print(ae)
         return json.loads(response.text)
 
+    # TODO: check is i'm using the contrib type part of this method ?
     def process_json_file(self, json_file: str) -> Tuple[str, List]:
         """Deserialize a JSON file from a URL and cleanup data
 
@@ -497,105 +455,3 @@ class ProcessContributors:
                 print("New user found. Adding: ", gh_user)
                 webDict[gh_user] = repoDict[gh_user]
         return webDict
-
-    # # TODO: i think i can remove this method
-    # def add_new_user(self, gh_user: str) -> dict:
-    #     """Add a new user to the contrib file using gh username
-
-    #     This method does a few things.
-    #     1. Adds a new template entry for the user w no values populated
-    #     2. Gets user metadata from the user's github profile
-    #     3. Updates their contrib entry with the gh data
-
-    #     Parameters
-    #     ----------
-    #     gh_user : str
-    #         String representing the GitHub username
-
-    #     Returns
-    #     -------
-    #     Dict
-    #         Username is the key and the updated github profile info is
-    #         contained in the dict.
-
-    #     """
-
-    #     new = {}
-    #     # Rather than this template i can use the person_model
-    #     new[gh_user] = self.create_contrib_template()
-    #     gh_data = self.get_gh_data([gh_user])
-    #     # Update their metadata in the dict and return
-    #     updated_data = self.update_contrib_data(new, gh_data)
-    #     return updated_data
-
-    def get_gh_data(
-        self, contribs: Union[Dict[str, str], List]
-    ) -> dict[str, str]:
-        """Parses through each GitHub username and hits the GitHub
-        API to grab user information.
-
-        Parameters
-        ----------
-        contribs : dict
-            Dict containing all current contrib info
-
-        Returns
-        -------
-            Dict
-            A dict of updated user data via a list of github usernames
-        """
-        all_user_info = {}
-        for gh_user in contribs:
-            print("Getting github data for: ", gh_user)
-            # If the user already has a name in the dict, don't update
-            # Important to allow us to update names to ensure correct spelling,
-            # etc on website
-            if isinstance(contribs, list):
-                aname = None
-            else:
-                aname = contribs[gh_user]["name"]
-
-            all_user_info[gh_user] = self.get_user_info(gh_user, aname)
-        return all_user_info
-
-    # Shouldn't need this anymore with pydantic
-    # def update_contrib_data(self, contrib_data: dict, gh_data: dict):
-    #     """Update contributor data from the GH API return.
-
-    #     Use the GitHub API to grab user profile data such as twitter handle,
-    #     mastodon, website, email and location and update contributor
-    #     information. GitHub profile data is the source of truth source for
-    #     contributor metadata.
-
-    #     Parameters
-    #     ----------
-    #     contrib_data : dict
-    #         A dict containing contributor data to be updated
-    #     gh_data : dict
-    #         Updated contributor data pulled from github API
-
-    #     Returns
-    #     -------
-    #     dict
-    #         Dictionary containing updated contributor data.
-    #     """
-
-    #     for i, gh_name in enumerate(contrib_data.keys()):
-    #         print(i, gh_name)
-    #         # Update the key:value pairs for data pulled from GitHub
-    #         for akey in self.update_keys:
-    #             if akey == "website":
-    #                 url = gh_data[gh_name][gh_name][akey]
-    #                 # Fix the url format and check to see if it works online
-    #                 url = self.format_url(url)
-    #                 # It url is valid, add to dict
-    #                 if self._check_url(url):
-    #                     contrib_data[gh_name][akey] = url
-    #                 else:
-    #                     contrib_data[gh_name][akey] = ""
-    #             else:
-    #                 contrib_data[gh_name][akey] = gh_data[gh_name][gh_name][
-    #                     akey
-    #                 ]
-
-    #     return contrib_data

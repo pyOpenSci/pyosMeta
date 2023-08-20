@@ -17,82 +17,33 @@ To run at the CLI: parse_issue_metadata
 # ideally this could be passed as a CLI argument with the label we want to
 # search for
 
-
-# import argparse
 import pickle
 
 from pydantic import ValidationError
 
 from pyosmeta import ProcessIssues, ReviewModel
 
-# from pyosmeta.file_io import load_website_yml
-
-
 # TODO: change the template to ask for date accepted format year-month-day
 
 
 def main():
-    # update_all = False
-    # parser = argparse.ArgumentParser(
-    #     description="A CLI script to update pyOpenSci reviews"
-    # )
-    # parser.add_argument(
-    #     "--update",
-    #     type=str,
-    #     help="Will force update review info from GitHub for every review",
-    # )
-    # args = parser.parse_args()
-
-    # if args:
-    #     update_all = True
-    # web_reviews_path = (
-    #     "https://raw.githubusercontent.com/pyOpenSci/"
-    #     "pyopensci.github.io/main/_data/packages.yml"
-    # )
-
     process_review = ProcessIssues(
         org="pyopensci",
         repo_name="software-submission",
         label_name="6/pyOS-approved 🚀🚀🚀",
     )
 
-    # Open web yaml & return dict with package name as key
-    # web_reviews = load_website_yml(key="package_name", url=web_reviews_path)
-
     # Get all issues for approved packages - load as dict
     issues = process_review.return_response()
     accepted_reviews = process_review.parse_issue_header(issues, 45)
 
-    # TODO: clean out extra fields from accepted reviews??
-
-    # Parse through reviews, identify new ones, fix case
-    # TODO - right now i've reverted back to always updating all reviews.
-    # Is there a use-case to only update a new package vs updating everything?
-    # if update_all:
-    # all_reviews = {}
-    # for key, meta in accepted_reviews.items():
-    #     try:
-    #         all_reviews[key.lower()] = ReviewModel(**meta)
-    #     except ValidationError as ve:
-    #         print(ve)
-
-    # else:
-    #     for key, meta in accepted_reviews.items():
-    #         if key.lower() not in all_reviews.keys():
-    #             print("Yay - pyOS has a new package:", key)
-    #             all_reviews[key.lower()] = ReviewModel(**meta)
-
     # Update gh metrics via api for all packages
-    # TODO: this is working but above i made everything a model object
-    # do i want to do that above or just do it all at once below?
     repo_endpoints = process_review.get_repo_endpoints(accepted_reviews)
     all_reviews = process_review.get_gh_metrics(
         repo_endpoints, accepted_reviews
     )
 
-    # Finally populate model objects with review data + metrics
-    # TODO: this is really close - it's erroring when populating date
-    # i suspect in the github metadata
+    # Populate model objects with review data + metrics
     final_reviews = {}
     for key, review in all_reviews.items():
         # First add gh meta to each dict

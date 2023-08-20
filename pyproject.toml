@@ -59,7 +59,7 @@ license = { text = "MIT" }
 # for a user to run directly from the package.
 [project.scripts] # Optional
 update-contributors = "pyosmeta.cli.update_contributors:main"
-process-reviews = "pyosmeta.cli.process_reviews:main"
+update-reviews = "pyosmeta.cli.process_reviews:main"
 update-review-teams = "pyosmeta.cli.update_review_teams:main"
 
 

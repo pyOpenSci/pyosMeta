@@ -50,7 +50,7 @@ def main():
     # Populate all existing contribs into model objects
     all_contribs = {}
     for a_contrib in web_contribs:
-        print(a_contrib)
+        print(a_contrib["github_username"])
         try:
             all_contribs[a_contrib["github_username"].lower()] = PersonModel(
                 **a_contrib

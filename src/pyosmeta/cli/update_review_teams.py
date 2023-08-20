@@ -19,17 +19,8 @@ To run: update_reviewers
 # TODO: package-wide feature: create no update flag for entries
 # TODO: make sure we can add a 3rd or 4th reviewer - crowsetta has this as
 # will biocypher
-# TODO: make sure to add a current editor boolean to the current editors and
-# emeritus ones.
 
 """
-
-# TODO - Case sensitivity is an issue with my validation using set
-#     - jointly
-# - Jointly
-# - devicely
-# - Devicely
-# - sevivi
 import os
 
 from pydantic import ValidationError
@@ -45,8 +36,6 @@ def get_clean_user(username: str) -> str:
 
 
 def main():
-    # TODO: move refresh contribs and contribs dict attr to
-    # processContribs and remove this module altogether
     process_contribs = ProcessContributors([])
 
     # Two pickle files are outputs of the two other scripts
@@ -129,7 +118,6 @@ def main():
 
     # Export to yaml
     contribs_ls = [model.model_dump() for model in contribs.values()]
-    # Getting error dumping packages
     pkgs_ls = [model.model_dump() for model in packages.values()]
 
     clean_export_yml(contribs_ls, os.path.join("_data", "contributors.yml"))
