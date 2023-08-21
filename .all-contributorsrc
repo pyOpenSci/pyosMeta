@@ -98,6 +98,16 @@
         "code",
         "review"
       ]
+    },
+    {
+      "login": "SultanOrazbayev",
+      "name": "Sultan Orazbayev",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20208402?v=4",
+      "profile": "http://econpoint.com",
+      "contributions": [
+        "code",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
