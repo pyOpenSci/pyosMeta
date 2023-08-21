@@ -22,6 +22,7 @@ To run: update_reviewers
 
 """
 import os
+from datetime import datetime
 
 from pydantic import ValidationError
 
@@ -58,6 +59,9 @@ def main():
                     if gh_user not in contribs.keys():
                         print("Found a new user!", gh_user)
                         new_contrib = process_contribs.get_user_info(gh_user)
+                        new_contrib["date_added"] = datetime.now().strftime(
+                            "%Y-%m-%d"
+                        )
                         try:
                             contribs[gh_user] = PersonModel(**new_contrib)
                         except ValidationError as ve:
@@ -92,6 +96,9 @@ def main():
                     # If they aren't already in contribs, add them
                     print("Found a new user!", gh_user)
                     new_contrib = process_contribs.get_user_info(gh_user)
+                    new_contrib["date_added"] = datetime.now().strftime(
+                        "%Y-%m-%d"
+                    )
                     try:
                         contribs[gh_user] = PersonModel(**new_contrib)
                     except ValidationError as ve:

@@ -76,14 +76,15 @@ class PersonModel(BaseModel, UrlValidatorMixin):
     )
 
     name: Optional[str] = None
+    github_username: str = Field(None, validation_alias=AliasChoices("login"))
+    github_image_id: int = Field(None, validation_alias=AliasChoices("id"))
     title: Optional[Union[list[str], str]] = None
     sort: Optional[int] = None
     bio: Optional[str] = None
     organization: Optional[str] = Field(
         None, validation_alias=AliasChoices("company")
     )
-    github_username: str = Field(None, validation_alias=AliasChoices("login"))
-    github_image_id: int = Field(None, validation_alias=AliasChoices("id"))
+    date_added: Optional[str] = ""
     deia_advisory: Optional[bool] = False
     editorial_board: Optional[bool] = Field(
         None, validation_alias=AliasChoices("editorial-board")
