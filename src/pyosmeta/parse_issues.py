@@ -46,7 +46,6 @@ class GhMeta(BaseModel, UrlValidatorMixin):
     created_at: str
     stargazers_count: int
     watchers_count: int
-    forks: int
     open_issues_count: int
     forks_count: int
     documentation: Optional[str]  # Jointly is missing documentation
@@ -194,7 +193,6 @@ class ProcessIssues:
         "created_at",
         "stargazers_count",
         "watchers_count",
-        "forks",
         "open_issues_count",
         "forks_count",
     ]
