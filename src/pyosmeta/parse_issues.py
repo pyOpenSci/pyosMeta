@@ -25,9 +25,6 @@ def clean_date(a_date: Optional[str]) -> str:
 
     if a_date is None or a_date == "missing":
         return "missing"
-    # elif len(a_date) < 11:
-    #     new_date = a_date.replace("/", "-").split("-")
-    #     return f"{new_date[0]}-{new_date[1]}-{new_date[2]}"
     else:
         try:
             return (
@@ -132,6 +129,23 @@ class ReviewModel(BaseModel):
         """
 
         return clean_date(a_date)
+
+    @field_validator(
+        "repository_link",
+        mode="before",
+    )
+    @classmethod
+    def clean_markdown_url(cls, repo: str) -> str:
+        """Remove markdown link remnants from gh usernames and name.
+
+        Sometimes editors and reviewers add names using github links.
+        Remove the link data.
+        """
+
+        if repo.startswith("["):
+            return repo.split("](")[0].replace("[", "")
+        else:
+            return repo
 
     @field_validator(
         "editor",
