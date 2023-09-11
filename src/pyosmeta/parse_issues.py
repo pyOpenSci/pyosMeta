@@ -640,10 +640,11 @@ class ProcessIssues:
 
         # Get checked categories for package
         cat_list = issue_list[cat_index : cat_index + 10]
-        categories = [
-            re.sub(r"- \[[xX]\] ", "", item[0])
-            for item in cat_list
-            if re.search(r"- \[[xX]\] ", item[0])
+        selected = [
+            item[0] for item in cat_list if re.search(r"- \[[xX]\] ", item[0])
         ]
-
+        cleaned = [re.sub(r"- \[[xX]\] ", "", item) for item in selected]
+        categories = [
+            re.sub(r"(\w+) (\w+)", r"\1-\2", item) for item in cleaned
+        ]
         return [item.lower().replace("[^1]", "") for item in categories]
