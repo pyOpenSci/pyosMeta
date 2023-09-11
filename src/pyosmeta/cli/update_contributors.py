@@ -1,11 +1,12 @@
 import argparse
 import pickle
+from datetime import datetime
 
 import pydantic
 from pydantic import ValidationError
 
 from pyosmeta.contributors import PersonModel, ProcessContributors
-from pyosmeta.file_io import create_paths, open_yml_file
+from pyosmeta.file_io import create_paths, load_pickle, open_yml_file
 
 print(pydantic.__version__)
 
@@ -72,6 +73,7 @@ def main():
             if gh_user not in all_contribs.keys():
                 print("Missing", gh_user, "Adding them now")
                 new_contrib = process_contribs.get_user_info(gh_user)
+                new_contrib["date_added"] = datetime.now().strftime("%Y-%m-%d")
                 all_contribs[gh_user] = PersonModel(**new_contrib)
 
             # Update contribution type list for all users
@@ -98,6 +100,15 @@ def main():
                     existing[key] = item
 
             all_contribs[user] = PersonModel(**existing)
+
+    # One time only - add contrib added date
+    history = load_pickle("contrib_dates.pickle")
+
+    for user, data in all_contribs.items():
+        try:
+            setattr(data, "date_added", history[user])
+        except KeyError:
+            print(f"Username {user} must be new, skipping")
 
     # Export to pickle which supports updates after parsing reviews
     with open("all_contribs.pickle", "wb") as f:
