@@ -58,6 +58,7 @@ license = { text = "MIT" }
 # These are entry points that allow you to surface specific functionality
 # for a user to run directly from the package.
 [project.scripts] # Optional
+parse-history = "pyosmeta.cli.parse_history:main"
 update-contributors = "pyosmeta.cli.update_contributors:main"
 update-reviews = "pyosmeta.cli.process_reviews:main"
 update-review-teams = "pyosmeta.cli.update_review_teams:main"

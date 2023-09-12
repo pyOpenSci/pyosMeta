@@ -2,13 +2,10 @@ import argparse
 import pickle
 from datetime import datetime
 
-import pydantic
 from pydantic import ValidationError
 
 from pyosmeta.contributors import PersonModel, ProcessContributors
 from pyosmeta.file_io import create_paths, load_pickle, open_yml_file
-
-print(pydantic.__version__)
 
 # TODO - https://stackoverflow.com
 # /questions/55762673/how-to-parse-list-of-models-with-pydantic
@@ -16,6 +13,7 @@ print(pydantic.__version__)
 
 
 def main():
+    update_dates = False
     update_all = False
     parser = argparse.ArgumentParser(
         description="A CLI script to update pyOpenSci contributors"
@@ -102,13 +100,14 @@ def main():
             all_contribs[user] = PersonModel(**existing)
 
     # One time only - add contrib added date
-    history = load_pickle("contrib_dates.pickle")
+    if update_dates:
+        history = load_pickle("contrib_dates.pickle")
 
-    for user, data in all_contribs.items():
-        try:
-            setattr(data, "date_added", history[user])
-        except KeyError:
-            print(f"Username {user} must be new, skipping")
+        for user, data in all_contribs.items():
+            try:
+                setattr(data, "date_added", history[user])
+            except KeyError:
+                print(f"Username {user} must be new, skipping")
 
     # Export to pickle which supports updates after parsing reviews
     with open("all_contribs.pickle", "wb") as f:
