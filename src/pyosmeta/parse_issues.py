@@ -37,6 +37,56 @@ def clean_date(a_date: Optional[str]) -> str:
             return "missing"
 
 
+def clean_name(a_str: str) -> str:
+    """Helper to strip unwanted chars from text"""
+
+    unwanted = ["(", ")", "@"]
+    for char in unwanted:
+        a_str = a_str.replace(char, "")
+
+    return a_str.strip()
+
+
+def parse_user_names(username: str) -> dict:
+    """Parses authors, contributors, editors and usernames from requested issues.
+
+    Parameters
+    ----------
+    username : str
+        The line with username (see Notes).
+
+    Returns
+    -------
+    : dict
+        ``{name: str, github_username: str}``
+
+    Notes
+    -----
+    Possible combinations:
+
+    1. Name Surname (@Github_handle)
+    2. (@Github_handle)
+    3. @Github_handle
+
+    """
+    names = username.split("@", 1)
+    names = [x for x in names if len(x) > 0]
+
+    if len(names) > 1:
+        parsed = {
+            "github_username": clean_name(names[1]),
+            "name": clean_name(names[0]),
+        }
+        
+    else:
+        parsed = {
+            "github_username": clean_name(names[0]),
+            "name": "",
+        }
+
+    return parsed
+
+
 class GhMeta(BaseModel, UrlValidatorMixin):
     name: str
     description: str
@@ -298,27 +348,12 @@ class ProcessIssues:
                 meta[a_key] = []
                 for aname in names:
                     # Add each maintainer to the dict
-                    user = aname.split("@")
-                    # Clean
-                    user = [self._clean_name(a_str) for a_str in user]
-                    a_maint = {
-                        "name": self._clean_name(user[0]),
-                        "github_username": self._clean_name(user[1]),
-                    }
+                    a_maint = parse_user_names(username=aname)
                     # filtered_list = list(filter(None, my_list))
                     meta[a_key].append(a_maint)
             else:
-                names = line_item[1].split("(", 1)
-                if len(names) > 1:
-                    meta[a_key] = {
-                        "github_username": self._clean_name(names[1]),
-                        "name": self._clean_name(names[0]),
-                    }
-                else:
-                    meta[a_key] = {
-                        "github_username": self._clean_name(names[0]),
-                        "name": "",
-                    }
+                names = parse_user_names(line_item[1])
+                meta[a_key] = names
         elif len(line_item) > 1:
             meta[a_key] = line_item[1].strip()
         else:
