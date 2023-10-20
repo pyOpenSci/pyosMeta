@@ -48,7 +48,8 @@ def clean_name(a_str: str) -> str:
 
 
 def parse_user_names(username: str) -> dict:
-    """Parses authors, contributors, editors and usernames from requested issues.
+    """Parses authors, contributors, editors and usernames from
+    the requested issues.
 
     Parameters
     ----------
@@ -77,7 +78,7 @@ def parse_user_names(username: str) -> dict:
             "github_username": clean_name(names[1]),
             "name": clean_name(names[0]),
         }
-        
+
     else:
         parsed = {
             "github_username": clean_name(names[0]),
