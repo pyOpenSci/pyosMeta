@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from pyosmeta.parse_issues import parse_user_names
 
 
