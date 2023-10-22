@@ -10,6 +10,10 @@ The scripts run as follows:
 
 ## update-contributors script
 
+To run this script, you can call the following at the command line:
+
+`update-contributors`
+
 This script parses data from all-contributors bot `.json`
 files in the following repos:
 
@@ -19,7 +23,7 @@ files in the following repos:
 - [pyopensci.github.io (website) repo](https://github.com/pyOpenSci/pyopensci.github.io)
 - [update-package-meta repo](https://github.com/pyOpenSci/update-web-metadata) _(this repo)_
 
-Running this this script:
+Running this script:
 
 1. Parses through all of the all-contributors bot `.json` files across our pyOpenSci repos to gather contributors to our organization. This allows us to [acknowledge contributors on our website](https://www.pyopensci.org/our-community/#pyopensci-community-contributors) who are not always making explicit code contributions (thus might not have commits). These contributors are reviewing guidebooks, participating in peer review, and performing other important tasks that are critical to our pyOpenSci mission. We acknowledge all contributions at pyOpenSci regardless of volume or size.
 2. Updates the existing [contributors.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml) file found in our website repo with new contributors and the contributor role (package guides, code workflows, peer review, etc).
@@ -27,13 +31,21 @@ Running this this script:
 
 ## update-reviews script
 
+To run this script, you can call the following at the command line:
+
+`update-reviews`
+
 This script parses through our (_accepted_) review issues to find packages that have been accepted. It then grabs each reviews editor, reviewers and package authors / maintainers. This information allows us to
 
 1. Update a contributor's peer review metadata in the contributors.yml file in the third script.
 1. Update the pyOpenSci website's package listing with the package's DOI, documentation URL.
 1. Update the package's stats including stars, contributors, etc. using the GitHub API
 
-## update-reviewers script
+## process_reviews.py script
+
+To run this script, you can call the following at the command line:
+
+`update-review-teams`
 
 This final script is a bridge between the first it uses pickle files outputted from the
 first two scripts to update each contributors peer review contributions including
@@ -194,7 +206,6 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/juanis2112"><img src="https://avatars.githubusercontent.com/u/18587879?v=4?s=100" width="100px;" alt="Juanita Gomez"/><br /><sub><b>Juanita Gomez</b></sub></a><br /><a href="https://github.com/pyOpenSci/update-web-metadata/commits?author=juanis2112" title="Code">💻</a> <a href="https://github.com/pyOpenSci/update-web-metadata/pulls?q=is%3Apr+reviewed-by%3Ajuanis2112" title="Reviewed Pull Requests">👀</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.sckaiser.com"><img src="https://avatars.githubusercontent.com/u/6486256?v=4?s=100" width="100px;" alt="Sarah Kaiser"/><br /><sub><b>Sarah Kaiser</b></sub></a><br /><a href="https://github.com/pyOpenSci/update-web-metadata/commits?author=crazy4pi314" title="Code">💻</a> <a href="https://github.com/pyOpenSci/update-web-metadata/pulls?q=is%3Apr+reviewed-by%3Acrazy4pi314" title="Reviewed Pull Requests">👀</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://econpoint.com"><img src="https://avatars.githubusercontent.com/u/20208402?v=4?s=100" width="100px;" alt="Sultan Orazbayev"/><br /><sub><b>Sultan Orazbayev</b></sub></a><br /><a href="https://github.com/pyOpenSci/update-web-metadata/commits?author=SultanOrazbayev" title="Code">💻</a> <a href="https://github.com/pyOpenSci/update-web-metadata/pulls?q=is%3Apr+reviewed-by%3ASultanOrazbayev" title="Reviewed Pull Requests">👀</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="http://ml-gis-service.com"><img src="https://avatars.githubusercontent.com/u/31246246?v=4?s=100" width="100px;" alt="Simon"/><br /><sub><b>Simon</b></sub></a><br /><a href="https://github.com/pyOpenSci/update-web-metadata/commits?author=SimonMolinsky" title="Code">💻</a> <a href="https://github.com/pyOpenSci/update-web-metadata/pulls?q=is%3Apr+reviewed-by%3ASimonMolinsky" title="Reviewed Pull Requests">👀</a></td>
     </tr>
   </tbody>
 </table>
