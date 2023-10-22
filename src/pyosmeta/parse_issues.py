@@ -88,6 +88,30 @@ def parse_user_names(username: str) -> dict:
     return parsed
 
 
+def clean_markdown(txt: str) -> str:
+    """
+    Remove Markdown characters from the beginning or end of a string.
+
+    Parameters
+    ----------
+    txt : str
+        The input string containing Markdown characters.
+
+    Returns
+    -------
+    str
+        The input string with Markdown characters removed from the beginning
+        and end.
+    """
+
+    pattern = r"^[`*]+|[`*]+$"
+
+    # Use re.sub to remove the matched Markdown characters
+    cleaned = re.sub(pattern, "", txt)
+
+    return cleaned
+
+
 class GhMeta(BaseModel, UrlValidatorMixin):
     name: str
     description: str
@@ -179,6 +203,28 @@ class ReviewModel(BaseModel):
         """
 
         return clean_date(a_date)
+
+    @field_validator(
+        "package_name",
+        mode="before",
+    )
+    @classmethod
+    def clean_pkg_name(cls, pkg_name: str) -> str:
+        """A small cleaning step to remove any additional markdown
+        from a package's name
+
+        Parameters
+        ----------
+        pkg_name : str
+            Name of a pyOpenSci package extracted from review issue title
+
+        Returns
+        -------
+        str
+            Cleaned string with any markdown formatting removed.
+        """
+
+        return clean_markdown(pkg_name)
 
     @field_validator(
         "repository_link",
@@ -541,7 +587,7 @@ class ProcessIssues:
 
         pkg_name = body_data[name_index][1] if name_index else None
 
-        return pkg_name, body_data
+        return clean_markdown(pkg_name), body_data
 
     def get_gh_metrics(
         self,
