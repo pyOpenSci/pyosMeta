@@ -67,10 +67,14 @@ contributor search and filter functionality that you can see here.](https://www.
 To begin:
 
 1. Create a local environment and activate it.
-2. Install the required dependencies via the `requirement.txt` file by running the following command;
-   `pip install -r requirements.txt`
-3. Install the pyosmeta package in development/editable mode:
-   `pip install -e . `
+If you are using conda:
+
+```bash
+mamba create -n pyos-meta python=3.10
+mamba activate pyos-meta
+````
+2. Install the package in editable model and associated development dependencies:
+   `pip install -e ".[dev]"`
 
 ### Setup token to authenticate with the GitHub API
 

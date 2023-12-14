@@ -2,6 +2,7 @@ import pickle
 import urllib.request
 
 import ruamel.yaml
+from ruamel.yaml import YAML
 from typing import Dict, List, Union
 
 
@@ -73,7 +74,8 @@ def open_yml_file(file_path: str) -> dict:
     # the contrib class
     try:
         with urllib.request.urlopen(file_path) as f:
-            return ruamel.yaml.safe_load(f)
+            yaml = YAML(typ="safe", pure=True)
+            return yaml.load(f)
     except urllib.error.URLError as url_error:
         print("Oops - can find the url", file_path, url_error)
 
