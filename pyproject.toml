@@ -1,10 +1,10 @@
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "pyosmeta"
-dynamic = ["version"]
+version = "0.1"
 description = "Tools that update the pyOpenSci contributor and review metadata that is posted on our website"
 authors = [{ name = "Leah Wasser", email = "leah@pyopensci.org" }]
 maintainers = [
@@ -37,13 +37,21 @@ dependencies = [
     "requests",
     "python-dotenv",
     "pydantic>=2.0",
+    "requests",
+    "python-dotenv"
 ]
+
 
 # This is the metadata that pip reads to understand what versions your package supports
 requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "MIT" }
 
+
+[project.optional-dependencies]
+dev = [
+  "pre-commit"
+]
 # Examples listed include a pattern for specifying where the package tracks
 # issues, where the source is hosted, where to say thanks to the package
 # maintainers, and where to support the project financially. The key is
@@ -80,20 +88,3 @@ py_version = 27
 # but why did it ignore it?
 [tool.flake8]
 extend-ignore = ["E203", "W503"]
-
-
-[tool.pdm.build]
-excludes = ["./**/.git"]
-# This config is important for telling pdm that the package should live in
-# a src directory
-package-dir = "src"
-
-# Versioning is a backend feature - instructions are in pdm-backend docs
-# https://pdm-backend.fming.dev/metadata/
-
-[tool.pdm.version]
-# Note that you need to create the tag after all commits are created - otherwise
-# pdm adds dev info after the tag number which won't publish to pypi
-source = "scm"
-write_to = "pyosmeta/_version_generated.py"
-write_template = "__version__ = 'v{}'"

@@ -43,3 +43,12 @@ token.txt
 src/test-model.py
 src/pyosmeta/_version_generated.py
 .pdm-build/*
+
+# local files
+all-submissions.csv
+issue-stats.ipynb
+plot.py
+presubmissions.csv
+reviews_all.csv
+reviews_presubmissions.csv
+src/pyosmeta/cli/test.ipynb
