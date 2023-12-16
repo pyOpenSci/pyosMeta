@@ -9,10 +9,10 @@
 **pyosmeta** provides the tools and scripts used to manage [pyOpenSci](https://pyopensci.org)'s contributor and peer
 review metadata.
 This repo contains a small module and several CLI scripts, including:
-- `parse-history`
-- `update-contributors`
-- `update-reviews`
-- `update-review-teams`
+  - `parse-history`
+  - `update-contributors`
+  - `update-reviews`
+  - `update-review-teams`
 
 *Since pyOpenSci uses this tool for its website, we expect this package to have infrequent releases.*
 
