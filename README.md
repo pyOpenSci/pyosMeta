@@ -30,6 +30,9 @@ conda install pyosmeta
 
 ## Usage
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+*Note: this section will be rewritten to be more user focused.*
 
 ## Contributors ✨
 
@@ -76,7 +79,7 @@ Contributions of any kind welcome!
 ## Code of Conduct
 
 Everyone interacting in the pyOpenSci project's codebases, issue trackers, chat rooms, and communication venues is
-expected to follow the [pyOpenSci Code of Conduct]() **TODO: Add link**.
+expected to follow the [pyOpenSci Code of Conduct](https://www.pyopensci.org/governance/CODE_OF_CONDUCT.html).
 
 ## License
 
