@@ -51,7 +51,7 @@ license = { text = "MIT" }
 [project.optional-dependencies]
 dev = [
   "pre-commit",
-  "build"
+  "hatch"
 ]
 # Examples listed include a pattern for specifying where the package tracks
 # issues, where the source is hosted, where to say thanks to the package
