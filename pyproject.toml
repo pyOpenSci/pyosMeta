@@ -74,8 +74,6 @@ update-review-teams = "pyosmeta.cli.update_review_teams:main"
 [tool.hatch]
 version.source = "vcs"
 build.hooks.vcs.version-file = "src/pyosmeta/_version.py"
-# If you're using a v in the version you have to create a template
-#hbuild.hooks.vcs.template = '__version__ = "v{version}"'
 
 [tool.black]
 line-length = 79

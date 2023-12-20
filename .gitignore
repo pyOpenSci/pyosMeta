@@ -15,13 +15,9 @@ __pycache__
 .Python
 build/
 dist/
-sdist/
-MANIFEST
-
 
 # pyenv
 .python-version
-
 
 # Environments
 .env
@@ -32,17 +28,13 @@ ENV/
 env.bak/
 venv.bak/
 
-
-
 # mypy
 .mypy_cache/
 .dmypy.json
 dmypy.json
 
 token.txt
-src/test-model.py
-src/pyosmeta/_version_generated.py
-.pdm-build/*
+src/pyosmeta/_version.py
 
 # local files
 all-submissions.csv
