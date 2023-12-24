@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "pyosmeta"
-version = "0.1"
+dynamic = ["version"]
 description = "Tools that update the pyOpenSci contributor and review metadata that is posted on our website"
 authors = [{ name = "Leah Wasser", email = "leah@pyopensci.org" }]
 maintainers = [
@@ -50,31 +50,31 @@ license = { text = "MIT" }
 
 [project.optional-dependencies]
 dev = [
-  "pre-commit"
+  "pre-commit",
+  "hatch"
 ]
 # Examples listed include a pattern for specifying where the package tracks
 # issues, where the source is hosted, where to say thanks to the package
 # maintainers, and where to support the project financially. The key is
 # what's used to render the link text on PyPI.
-[project.urls] # Optional
+[project.urls]
 "Homepage" = "https://www.pyopensci.org"
 "Bug Reports" = "https://github.com/pyopensci/pyosmeta/issues"
-#"Funding" = ""
 "Source" = "https://github.com/pyopensci/pyosmeta/issues"
 
 
 # These are entry points that allow you to surface specific functionality
 # for a user to run directly from the package.
-[project.scripts] # Optional
+[project.scripts]
 parse-history = "pyosmeta.cli.parse_history:main"
 update-contributors = "pyosmeta.cli.update_contributors:main"
 update-reviews = "pyosmeta.cli.process_reviews:main"
 update-review-teams = "pyosmeta.cli.update_review_teams:main"
 
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/pyosmeta/_version.py"
 
-# Right now i'm not using pdm to add dependencies.
-# Will explore that later
-# Below using dynamic versioning / which is setuptools scm like
 [tool.black]
 line-length = 79
 target-version = ['py310']

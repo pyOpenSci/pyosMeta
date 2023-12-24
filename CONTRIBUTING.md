@@ -149,7 +149,7 @@ each packages including stars, last commit date and more repo metadata.
 
 This returns a `packages.pickle` file that will be used in the final script which bridges data between the first two scripts.
 
-## update\_reviewers script\`
+## update_reviewers script`
 
 This script is a bridge between `update-contributors` and `update-reviews`. It parses each review in the output
 `update-reviews.pickle` file and
@@ -188,8 +188,59 @@ actions located here](https://github.com/pyOpenSci/pyopensci.github.io/tree/main
 TODO: right now this isn't an issue but it will be in the future I suspect....
 Rate limiting - how to handle this...
 
-## Using this
+## Environment setup using conda
 
 Create environment:
 
 `mamba env create -f environment.yml`
+
+## pyosmeta build and release guide
+
+Currently releases to PyPI are handled using a manual build
+and push of our `sdist` and `wheel` distributions locally.
+
+Versioning is handled using `hatch_vcs` which runs `setuptools_scm` under the hood. `hatch_vcs` uses the most current released tag in the repository
+to determine what version of the package is being built.
+
+`hatch_vcs` is setup to create `_version.py` file upon build using the most
+currently released tag.
+
+```{warning}
+The `src/pyosmeta/_version.py` file should NEVER
+be committed to version control. It should be ignored via our `.gitignore` file
+```
+
+If you wish to build `pyosmeta` locally to check out the .whl and source distribution (SDist):
+
+```
+# Install the package and dev dependencies
+pip install -e ".[dev]"
+# Build the package distribution files
+hatch build
+```
+
+When you install dependencies above, `hatch` will be
+installed. To see what version of the package is being
+built run:
+
+```
+hatch version
+```
+
+When you run `hatch build`, it will do a few things
+
+1. It will create a `dist` directory with the wheel and the package SDist tarball. You can see the version of `pyosmeta` in the name of those files:
+
+```bash
+dist/
+   pyosmeta-0.16.dev1+g9190512.d20231220.tar.gz
+   pyosmeta-0.16.dev1+g9190512.d20231220-py3-none-any.whl
+```
+
+2. `hatch build` also invokes `setuptools_scm` to create a `_version.py` file in the pyosmeta package directory:
+
+```bash
+src/
+    pyosmeta/
+        _version.py
+```

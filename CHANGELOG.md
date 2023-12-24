@@ -4,4 +4,7 @@
 
 ## Unreleased
 
+* Enh: Use `hatch_vcs` for dynamic versioning (@lwasser, #82)
+
+
 ## v.0.2
