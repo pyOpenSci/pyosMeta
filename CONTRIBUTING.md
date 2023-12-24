@@ -43,7 +43,7 @@ reviews editor, reviewers and package authors / maintainers. This information al
 2. Update the pyOpenSci website's package listing with the package's DOI, documentation URL.
 3. Update the package's stats including stars, contributors, etc. using the GitHub API
 
-## process\_reviews.py script
+## process_reviews.py script
 
 To run this script, you can call the following at the command line:
 
