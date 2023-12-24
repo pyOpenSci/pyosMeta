@@ -221,7 +221,7 @@ hatch build
 
 When you install dependencies above, `hatch` will be
 installed. To see what version of the package is being
-build run:
+built run:
 
 ```
 hatch version
