@@ -12,13 +12,7 @@ maintainers = [
 ]
 
 classifiers = [
-    # How mature is this project? Common values are
-    #   3 - Alpha
-    #   4 - Beta
-    #   5 - Production/Stable
     "Development Status :: 4 - Beta",
-
-    # Indicate who your project is intended for
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
 
@@ -50,15 +44,11 @@ license = { text = "MIT" }
 
 [project.optional-dependencies]
 dev = [
-  "pre-commit",
-  "hatch"
+  "pre-commit"
 ]
-# Examples listed include a pattern for specifying where the package tracks
-# issues, where the source is hosted, where to say thanks to the package
-# maintainers, and where to support the project financially. The key is
-# what's used to render the link text on PyPI.
+
 [project.urls]
-"Homepage" = "https://www.pyopensci.org"
+"Homepage" = "https://github.com/pyopensci/pyosmeta/"
 "Bug Reports" = "https://github.com/pyopensci/pyosmeta/issues"
 "Source" = "https://github.com/pyopensci/pyosmeta/issues"
 
@@ -71,9 +61,22 @@ update-contributors = "pyosmeta.cli.update_contributors:main"
 update-reviews = "pyosmeta.cli.process_reviews:main"
 update-review-teams = "pyosmeta.cli.update_review_teams:main"
 
+### Hatch config ###
+
 [tool.hatch]
 version.source = "vcs"
 build.hooks.vcs.version-file = "src/pyosmeta/_version.py"
+
+[tool.hatch.envs.test]
+dependencies = [
+  "pytest",
+  "pytest-cov",
+]
+
+[tool.hatch.envs.test.scripts]
+#run-coverage = "pytest --cov-config=pyproject.toml --cov=pkg --cov=tests"
+#run = "run-coverage --no-cov"
+run-tests = "pytest"
 
 [tool.black]
 line-length = 79
