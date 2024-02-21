@@ -61,11 +61,11 @@ update-contributors = "pyosmeta.cli.update_contributors:main"
 update-reviews = "pyosmeta.cli.process_reviews:main"
 update-review-teams = "pyosmeta.cli.update_review_teams:main"
 
+### Hatch config ###
+
 [tool.hatch]
 version.source = "vcs"
 build.hooks.vcs.version-file = "src/pyosmeta/_version.py"
-
-### Hatch config ###
 
 [tool.hatch.envs.test]
 dependencies = [
@@ -78,8 +78,6 @@ dependencies = [
 #run = "run-coverage --no-cov"
 run-tests = "pytest"
 
-
-[tool.hatch.version]
 [tool.black]
 line-length = 79
 target-version = ['py310']
