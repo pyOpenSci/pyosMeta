@@ -75,6 +75,10 @@ Contributions of any kind welcome!
 
 [CONTRIBUTING.md](./CONTRIBUTING.md)
 
+## Development
+
+[Development guide](./development.md)
+
 ## Change log
 
 [CHANGELOG.md](./CHANGELOG.md)
