@@ -1,12 +1,13 @@
 """
-Script that parses metadata from na issue and adds it to a yml file for the
+Script that parses metadata from and issue and adds it to a .yml file for the
 website. It also grabs some of the package metadata such as stars,
 last commit, etc.
 
-Output: packages.yml file containing a list of
+Output: packages.yml file containing a list of:
  1. all packages with accepted reviews
  2. information related to the review including reviewers, editors
  3. basic package stats including stars, etc.
+ 4. partner information
 
 To run at the CLI: parse_issue_metadata
 """
@@ -23,8 +24,6 @@ from pydantic import ValidationError
 
 from pyosmeta import ProcessIssues, ReviewModel
 
-# TODO: change the template to ask for date accepted format year-month-day
-
 
 def main():
     process_review = ProcessIssues(
@@ -35,6 +34,10 @@ def main():
 
     # Get all issues for approved packages - load as dict
     issues = process_review.return_response()
+    # TODO: this method parse_issue_header is working but the parsing code is
+    # really hard to follow
+    # It is worth another pr that cleans up the workflow around grabbing
+    # metadata so it's clearer to follow.
     accepted_reviews = process_review.parse_issue_header(issues, 45)
 
     # Update gh metrics via api for all packages
@@ -44,6 +47,7 @@ def main():
     )
 
     # Populate model objects with review data + metrics
+    # TODO: all_reviews contains a bunch of extra mess that it doesn't need
     final_reviews = {}
     for key, review in all_reviews.items():
         # First add gh meta to each dict
