@@ -167,6 +167,7 @@ class ReviewModel(BaseModel):
     closed_at: Optional[str] = None
     issue_link: str = None
     joss: Optional[str] = None
+    partners: Optional[list[str]] = None
     gh_meta: Optional[GhMeta] = None
 
     @field_validator(
@@ -458,26 +459,6 @@ class ProcessIssues:
                 and not key.startswith("-_[x]_i_agree")
             }
             review[pkg_name] = review_clean
-            # filtered = {}
-            # for key, value in review.items():
-            #     print(key)
-            #     if not key.startswith("##") and not key.startswith("-"):
-            #         filtered[key] = value
-
-            # # Clean markdown url's from editor, and reviewer lines
-            # TODO - this could be a reviewer name cleanup validaotr
-            # types = ["editor", "reviewer_1", "reviewer_2"]
-            # user_values = ["github_username", "name"]
-            # for a_type in types:
-            #     for user_value in user_values:
-            #         issue_meta[a_type][user_value] = (
-            #             issue_meta[a_type][user_value]
-            #             .replace("https://github.com/", "")
-            #             .replace("[", "")
-            #             .replace("]", "")
-            #         )
-
-            # review[pkg_name] = issue_meta
 
         return review
 
