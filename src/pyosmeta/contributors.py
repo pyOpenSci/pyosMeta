@@ -444,11 +444,11 @@ class ProcessContributors:
             if gh_user in webDict.keys():
                 # Return a list of updated contributor type keys and use it to
                 # update the web dict
-                webDict[gh_user][
-                    "contributor_type"
-                ] = self._update_contrib_type(
-                    webDict[gh_user]["contributor_type"],
-                    repoDict[gh_user]["contributor_type"],
+                webDict[gh_user]["contributor_type"] = (
+                    self._update_contrib_type(
+                        webDict[gh_user]["contributor_type"],
+                        repoDict[gh_user]["contributor_type"],
+                    )
                 )
 
             # If the user is not in the web dict, add them
