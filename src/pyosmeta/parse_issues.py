@@ -537,9 +537,9 @@ class ProcessIssues:
             pattern = r"[\(\)\[\]?]"
             owner = re.sub(pattern, "", owner)
             repo = re.sub(pattern, "", repo)
-            all_repos[
-                a_package
-            ] = f"https://api.github.com/repos/{owner}/{repo}"
+            all_repos[a_package] = (
+                f"https://api.github.com/repos/{owner}/{repo}"
+            )
         return all_repos
 
     def parse_comment(self, issue: dict[str, str]) -> tuple[str, list[str]]:
