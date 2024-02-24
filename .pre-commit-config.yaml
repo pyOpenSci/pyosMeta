@@ -1,37 +1,35 @@
-# pre-commit is a tool that you run locally
-# to perform a predefined set of tasks manually and/or
-# automatically before git commits are made.
-# Here we are using pre-commit with the precommit.ci bot to implement
-# code fixes automagically in pr's. You will still want to install pre-commit
-# to run locally
-# Config reference: https://pre-commit.com/#pre-commit-configyaml---top-level
-# To run on a pr, add a comment with the text "pre-commit.ci run"
-# Common tasks
-#
-# - Run on all files:   pre-commit run --all-files
-# - Register git hooks: pre-commit install --install-hooks
+# pre-commit (https://pre-commit.com/) is a tool that runs source code checks
+# such as linting, formatting, and code style.
+
+# CI
+# pyosMeta uses pre-commit with the precommit.ci bot to check pull requests.
+# Configuration reference doc: https://pre-commit.com/#pre-commit-configyaml---top-level
+
+# Developers
+# You may want to install pre-commit to run locally on each minimum_pre_commit_version
+# See https://pre-commit.com/#install
+# To set up pre-commit hooks: pre-commit install
+# To run on all files: pre-commit run --all-files
 
 ci:
+  # pyosMeta disables autofixing of PRs to simplify new contributor experience and cleaner git history
   autofix_prs: false
-  #skip: [flake8, end-of-file-fixer]
-  autofix_commit_msg: |
-    '[pre-commit.ci 🤖] Apply code format tools to PR'
-  # Update hook versions every quarter (so we don't get hit with weekly update pr's)
+  # Frequency of hook updates
   autoupdate_schedule: weekly
 
 repos:
-  # Misc commit checks
+  # Out of the box hooks for pre-commit https://github.com/pre-commit/pre-commit-hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
-    # ref: https://github.com/pre-commit/pre-commit-hooks#hooks-available
     hooks:
-      # Autoformat: Makes sure files end in a newline and only a newline.
+      # Makes sure files end in a newline and only a newline.
       - id: end-of-file-fixer
-      # Lint: Check for files with names that would conflict on a
-      # case-insensitive filesystem like MacOS HFS+ or Windows FAT.
+      # Check for files with names that would conflict on a case-insensitive filesystem like MacOS HFS+ or Windows FAT.
       - id: check-case-conflict
+      # Remove trailing whitespace on code lines
       - id: trailing-whitespace
 
+  # Spelling hook
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6
     hooks:
@@ -39,17 +37,19 @@ repos:
         additional_dependencies:
           - tomli
 
-  # Linting: Python code (see the file .flake8)
+  # Linting hook for Python code (see the file .flake8)
   - repo: https://github.com/PyCQA/flake8
     rev: "7.0.0"
     hooks:
       - id: flake8
 
+  # Code formatting hook
   - repo: https://github.com/psf/black
     rev: 24.2.0
     hooks:
       - id: black
 
+  # Best practice style for module imports
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
