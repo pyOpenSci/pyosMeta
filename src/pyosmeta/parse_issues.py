@@ -411,9 +411,11 @@ class ProcessIssues:
     def parse_issue_header(
         self, issues: list[str], total_lines: int = 20
     ) -> dict[str, str]:
-        """
-        A function that parses through the header of an issue.
-        It returns
+        """Parses through all headers comments of selected reviews and returns
+        metadata
+
+        This will go through all reviews and return:
+        GitHub Issue meta: "created_at", "updated_at", "closed_at"
 
         Parameters
         ----------
@@ -435,32 +437,72 @@ class ProcessIssues:
         meta_dates = ["created_at", "updated_at", "closed_at"]
 
         review = {}
+        review_final = {}
         for issue in issues:
             pkg_name, body_data = self.parse_comment(issue)
             if not pkg_name:
                 continue
-            # Index of 15 should include date accepted in the review meta
+
             review[pkg_name] = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta from GH response
             # Date cleaning happens via pydantic validator not here
             for a_date in meta_dates:
                 review[pkg_name][a_date] = issue[a_date]
-            # Get categories and issue review link
-            review[pkg_name]["categories"] = self.get_categories(body_data)
+
             review[pkg_name]["issue_link"] = issue["url"].replace(
                 "https://api.github.com/repos/", "https://github.com/"
             )
 
-            review_clean = {
-                key: value
-                for key, value in review[pkg_name].items()
-                if not key.startswith("##")
-                and not key.startswith("---")
-                and not key.startswith("-_[x]_i_agree")
-            }
-            review[pkg_name] = review_clean
+            # Get categories and issue review link
+            review[pkg_name]["categories"] = self.get_categories(
+                body_data, "## Scope", 10
+            )
+            # NOTE: right now the numeric value is hard coded based on the
+            # number of partners listed in the issue. so it assumes there is
+            # 3 partners. but that might not always be the case so we should
+            # add a check in case there are fewer or more partners (if someone
+            # modifies the template which they tend to do OR if it's an older
+            # template)
+            # TODO: rather than exact match have the line start_with the string
+            review[pkg_name]["partners"] = self.get_categories(
+                body_data, "## Community Partnerships", 3
+            )
+            # review[pkg_name]["domains"] = self.get_categories(body_data,
+            #                                                    '## Domains',
+            #                                                    3)
 
-        return review
+            # Only return keys for metadata that we need
+            final_keys = [
+                "submitting_author",
+                "all_current_maintainers",
+                "package_name",
+                "one-line_description_of_package",
+                "repository_link",
+                "version_submitted",
+                "editor",
+                "reviewer_1",
+                "reviewer_2",
+                "archive",
+                "version_accepted",
+                "joss_doi",
+                "date_accepted",
+                "categories",
+                "partners",
+                "domain",
+                "created_at",
+                "updated_at",
+                "closed_at",
+                "issue_link",
+                "categories",
+            ]
+
+            review_final[pkg_name] = {
+                key: review[pkg_name][key]
+                for key in final_keys
+                if key in review[pkg_name].keys()
+            }
+
+        return review_final
 
     def get_issue_meta(
         self,
@@ -669,8 +711,10 @@ class ProcessIssues:
 
         return date
 
+    # This works - i could just make it more generic and remove fmt since it's
+    # not used and replace it with a number of values and a test string
     def get_categories(
-        self, issue_list: list[list[str]], fmt: bool = True
+        self, issue_list: list[list[str]], section_str: str, num_vals: int
     ) -> list[str]:
         """Parse through a pyOS review issue and grab categories associated
         with a package
@@ -686,11 +730,12 @@ class ProcessIssues:
             required for the website.
         """
         # Find the starting index of the category section
+        # This will be more robust if we use starts_with rather than in i think
         try:
             index = next(
                 i
                 for i, sublist in enumerate(issue_list)
-                if "## Scope" in sublist
+                if section_str in sublist
             )
             # Iterate from scope index to first line starting with " - ["
             # To find list of category check boxes
@@ -699,10 +744,11 @@ class ProcessIssues:
                     cat_index = i
                     break
         except StopIteration:
-            print("'## Scope' not found in the list.")
+            print(section_str, " not found in the list.")
+            return None
 
         # Get checked categories for package
-        cat_list = issue_list[cat_index : cat_index + 10]
+        cat_list = issue_list[cat_index : cat_index + num_vals]
         selected = [
             item[0] for item in cat_list if re.search(r"- \[[xX]\] ", item[0])
         ]
