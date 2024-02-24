@@ -725,9 +725,14 @@ class ProcessIssues:
             The first comment from the issue split into lines and then the
             lines split as by self.parse_comment()
 
-        fmt : bool
-            Applies some formatting changes to the categories to match what is
-            required for the website.
+        section_str : str
+            The section string to find where the categories live in the review
+            metadata. Example ## Scope contains the package categories such as
+            data viz, etc
+
+        num_vals : int
+            Number of categories expected in the list. for instance
+            3 partner options.
         """
         # Find the starting index of the category section
         # This will be more robust if we use starts_with rather than in i think
@@ -737,8 +742,9 @@ class ProcessIssues:
                 for i, sublist in enumerate(issue_list)
                 if section_str in sublist
             )
-            # Iterate from scope index to first line starting with " - ["
-            # To find list of category check boxes
+            # Iterate starting at the specified section location index
+            # find the first line starting with " - ["
+            # This represents the first category in a list of categories
             for i in range(index + 1, len(issue_list)):
                 if issue_list[i] and issue_list[i][0].startswith("- ["):
                     cat_index = i
@@ -748,10 +754,14 @@ class ProcessIssues:
             return None
 
         # Get checked categories for package
+        # TODO: it would be nice to figure out where the end of the list is
+        # rather than hard coding it
         cat_list = issue_list[cat_index : cat_index + num_vals]
         selected = [
             item[0] for item in cat_list if re.search(r"- \[[xX]\] ", item[0])
         ]
+        # Above returns a list of list elements that are checked
+        # Now, clean the extra markdown and only return the category text
         cleaned = [re.sub(r"- \[[xX]\] ", "", item) for item in selected]
         categories = [
             re.sub(r"(\w+) (\w+)", r"\1-\2", item) for item in cleaned
