@@ -10,7 +10,6 @@ authors = [{ name = "Leah Wasser", email = "leah@pyopensci.org" }]
 maintainers = [
   { name = "pyOpenSci", email = "admin@pyopensci.org" }, # Optional
 ]
-
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -24,32 +23,30 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
 ]
-
-
 dependencies = [
-  "ruamel-yaml>=0.17.21",
-  "requests",
-  "python-dotenv",
-  "pydantic>=2.0",
-  "requests",
-  "python-dotenv",
+    "pydantic>=2.0",
+    "python-dotenv",
+    "requests",
+    "ruamel-yaml>=0.17.21",
 ]
-
-
-# This is the metadata that pip reads to understand what versions your package supports
+# This is metadata that pip reads to understand what Python versions your package supports
 requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "MIT" }
 
-
 [project.optional-dependencies]
-dev = ["pre-commit"]
+dev = [
+    "black",
+    "flake8",
+    "pre-commit",
+    "pytest",
+    "pytest-cov"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/pyopensci/pyosmeta/"
 "Bug Reports" = "https://github.com/pyopensci/pyosmeta/issues"
 "Source" = "https://github.com/pyopensci/pyosmeta/issues"
-
 
 # These are entry points that allow you to surface specific functionality
 # for a user to run directly from the package.
@@ -78,6 +75,9 @@ dependencies = ["pytest", "pytest-cov", "coverage[toml]"]
 run-coverage = "pytest --cov-config=pyproject.toml --cov=pyosmeta --cov=tests/*"
 run-no-cov = "run-coverage --no-cov"
 run-report = "run-coverage --cov-report=xml:coverage.xml"
+
+
+### Tool configuration ###
 
 [tool.black]
 line-length = 79

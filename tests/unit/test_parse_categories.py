@@ -1,6 +1,6 @@
 import pytest
 
-from pyosmeta.parse_issues import ProcessIssues
+from pyosmeta.parse_issues import ProcessIssues, ReviewModel
 
 checked = [
     ["Submitting Author", "Nabil Freij (@nabobalis)"],
@@ -65,3 +65,37 @@ def test_get_categories(
 
     # Assert the result matches the expected categories
     assert categories == expected_categories
+
+
+@pytest.mark.parametrize(
+    "input_categories,expected_return",
+    [
+        (
+            ["data-processing"],
+            ["data-processing-munging"],
+        ),
+        (
+            ["data-processing/munging"],
+            ["data-processing-munging"],
+        ),
+        (
+            ["scientific-software and friends"],
+            ["scientific-software-wrapper"],
+        ),
+        (
+            ["data-validation and things -testing"],
+            ["data-validation-testing"],
+        ),
+        (
+            ["data-processing", "data-extraction"],
+            ["data-processing-munging", "data-extraction"],
+        ),
+    ],
+)
+def test_clean_categories(
+    input_categories: list[str], expected_return: list[str]
+):
+    """Test that ensures our pydantic model cleans categories as expected"""
+
+    review = ReviewModel(categories=input_categories)
+    assert review.categories == expected_return
