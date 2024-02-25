@@ -62,6 +62,8 @@ update-review-teams = "pyosmeta.cli.update_review_teams:main"
 [tool.coverage.run]
 branch = true
 include = ["src/pyosmeta/*"]
+# Don't run coverage on tests directory or version file created by scm
+omit = ["tests/*", "src/pyosmeta/_version.py"]
 
 ### Hatch config ###
 
