@@ -16,7 +16,3 @@
 ## [v.0.2](https://pypi.org/project/pyosmeta/0.2)
 
 2023-08-17 - Initial release to PyPI.
-
-## v.0.2
-
-lots of stuff here... :) none of it documented
