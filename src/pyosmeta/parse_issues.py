@@ -458,15 +458,15 @@ class ProcessIssues:
                 body_data, "## Scope", 10
             )
             # NOTE: right now the numeric value is hard coded based on the
-            # number of partners listed in the issue. so it assumes there is
-            # 3 partners. but that might not always be the case so we should
-            # add a check in case there are fewer or more partners (if someone
-            # modifies the template which they tend to do OR if it's an older
-            # template)
-            # TODO: rather than exact match have the line start_with the string
+            # number of categories listed in the issue template.
+            # this could be made more flexible if it just runs until it runs
+            # out of categories to parse
             review[pkg_name]["partners"] = self.get_categories(
                 body_data, "## Community Partnerships", 3
             )
+            # TODO: the current workflow will not parse domains
+            # add a separate workflow to parse domains and add them to the
+            # categories list
             # review[pkg_name]["domains"] = self.get_categories(body_data,
             #                                                    '## Domains',
             #                                                    3)
