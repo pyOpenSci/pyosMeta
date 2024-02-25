@@ -25,4 +25,5 @@ jobs:
         uses: codecov/codecov-action@v4.0.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: pyOpenSci/pyosMeta
+          verbose: true
+          files: ./coverage.xml
