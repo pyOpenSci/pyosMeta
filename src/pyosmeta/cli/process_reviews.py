@@ -14,9 +14,7 @@ To run at the CLI: parse_issue_metadata
 
 # TODO: if we export files we might want packages.yml and then under_review.yml
 # thus we'd want to add a second input parameters which was file_name
-# TODO: feature - Would be cool to create an "under review now" list as well -
-# ideally this could be passed as a CLI argument with the label we want to
-# search for
+# TODO: feature - Create an "under review now" list as well
 
 import pickle
 
@@ -35,9 +33,7 @@ def main():
     # Get all issues for approved packages - load as dict
     issues = process_review.return_response()
     # TODO: this method parse_issue_header is working but the parsing code is
-    # really hard to follow
-    # It is worth another pr that cleans up the workflow around grabbing
-    # metadata so it's clearer to follow.
+    # hard to follow
     accepted_reviews = process_review.parse_issue_header(issues, 45)
 
     # Update gh metrics via api for all packages
@@ -47,7 +43,6 @@ def main():
     )
 
     # Populate model objects with review data + metrics
-    # TODO: all_reviews contains a bunch of extra mess that it doesn't need
     final_reviews = {}
     for key, review in all_reviews.items():
         # First add gh meta to each dict
