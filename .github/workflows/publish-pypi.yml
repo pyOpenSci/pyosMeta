@@ -4,7 +4,7 @@ on:
     types: [published]
   push:
     branches:
-      - master
+      - main
 jobs:
   build-publish:
     runs-on: ubuntu-latest
@@ -26,16 +26,15 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
-
-      - name: Install requirements
+          python-version: "3.10"
+      - name: Install Hatch
         run: |
-          python -m pip install -r requirements-build.txt
+          pipx install hatch
           pip list
 
-      - name: Build package using PDM
+      - name: Build package using Hatch
         run: |
-          pdm build
+          hatch build
           echo ""
           echo "Generated files:"
           ls -lh dist/
@@ -45,6 +44,7 @@ jobs:
         if: github.event_name == 'push'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          # Haven't setup trusted workflow on test pypi yet
           password: ${{ secrets.TEST_PYPI_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
           # Allow existing releases on test PyPI without errors.
@@ -55,5 +55,3 @@ jobs:
         # Only publish to real PyPI on release
         if: github.event_name == 'release'
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
