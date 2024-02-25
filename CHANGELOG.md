@@ -8,6 +8,7 @@
 - Fix: migrate to pytest for tests and setup hatch scripts (#89, @lwasser)
 - Add: Partner support to package (#92, @lwasser)
 - Fix: Add validation step to categories attr in pydantic model (#105, @lwasser)
+- Fix: update pypi publish to use hatch (#82, @lwasser)
 
 ## [v0.15](https://github.com/pyOpenSci/pyosMeta/releases/tag/v0.15)
 
