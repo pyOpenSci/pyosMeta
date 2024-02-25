@@ -9,6 +9,7 @@
 - Add: Partner support to package (#92, @lwasser)
 - Add: Code coverage setup (#97, @lwasser)
 - Fix: Add validation step to categories attr in pydantic model (#105, @lwasser)
+- Fix: update pypi publish to use hatch (#82, @lwasser)
 
 ## [v0.15](https://github.com/pyOpenSci/pyosMeta/releases/tag/v0.15)
 
