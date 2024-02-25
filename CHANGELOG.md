@@ -4,9 +4,10 @@
 
 ## Unreleased
 
-* Enh: Use `hatch_vcs` for dynamic versioning (@lwasser, #82)
-* Fix: migrate to pytest for tests and setup hatch scripts (#89, @lwasser)
-* Add: Partner support to package (#92, @lwasser)
+- Enh: Use `hatch_vcs` for dynamic versioning (@lwasser, #82)
+- Fix: migrate to pytest for tests and setup hatch scripts (#89, @lwasser)
+- Add: Partner support to package (#92, @lwasser)
+- Add: Code coverage setup (#97, @lwasser)
 
 ## [v0.15](https://github.com/pyOpenSci/pyosMeta/releases/tag/v0.15)
 
