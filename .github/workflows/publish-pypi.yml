@@ -46,10 +46,10 @@ jobs:
         with:
           # Haven't setup trusted workflow on test pypi yet
           password: ${{ secrets.TEST_PYPI_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+          repository-url: https://test.pypi.org/legacy/
           # Allow existing releases on test PyPI without errors.
           # NOT TO BE USED in PyPI!
-          skip_existing: true
+          skip-existing: true
 
       - name: Publish package to PyPI
         # Only publish to real PyPI on release
