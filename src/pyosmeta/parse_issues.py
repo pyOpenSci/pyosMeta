@@ -265,6 +265,49 @@ class ReviewModel(BaseModel):
 
         return user
 
+    @field_validator(
+        "categories",
+        mode="before",
+    )
+    @classmethod
+    def clean_categories(cls, categories: list[str]) -> list[str]:
+        """Make sure each category in the list is a valid value.
+
+        Valid pyos software categories are:
+            citation-management-bibliometrics, data-retrieval,
+            data-extraction, data-processing-munging, data-deposition",
+            data-validation-testing, data-visualization-analysis,
+            workflow-automation-versioning, database-interoperability,
+            scientific-software-wrappers, geospatial, education
+
+        Parameters
+        ----------
+        categories : list[str]
+            List of categories to clean.
+
+        Returns
+        -------
+        list[str]
+            List of cleaned categories.
+        """
+
+        valid_categories = {
+            "data-processing": "data-processing-munging",
+            "scientific-software": "scientific-software-wrapper",
+            "data-validation": "data-validation-testing",
+        }
+
+        cleaned_cats = []
+        for category in categories:
+            for valid_prefix, valid_cat in valid_categories.items():
+                if category.startswith(valid_prefix):
+                    cleaned_cats.append(valid_cat)
+                    break
+            else:
+                # No match found, keep the original category
+                cleaned_cats.append(category)
+        return cleaned_cats
+
 
 @dataclass
 class ProcessIssues:
