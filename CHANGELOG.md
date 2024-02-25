@@ -4,9 +4,10 @@
 
 ## Unreleased
 
-* Enh: Use `hatch_vcs` for dynamic versioning (@lwasser, #82)
-* Fix: migrate to pytest for tests and setup hatch scripts (#89, @lwasser)
-* Add: Partner support to package (#92, @lwasser)
+- Enh: Use `hatch_vcs` for dynamic versioning (@lwasser, #82)
+- Fix: migrate to pytest for tests and setup hatch scripts (#89, @lwasser)
+- Add: Partner support to package (#92, @lwasser)
+- Fix: Add validation step to categories attr in pydantic model (#105, @lwasser)
 
 ## [v0.15](https://github.com/pyOpenSci/pyosMeta/releases/tag/v0.15)
 
@@ -15,3 +16,7 @@
 ## [v.0.2](https://pypi.org/project/pyosmeta/0.2)
 
 2023-08-17 - Initial release to PyPI.
+
+## v.0.2
+
+lots of stuff here... :) none of it documented
