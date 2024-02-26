@@ -25,7 +25,7 @@ script options that you can chose to run.
 
 ### Modify test scripts
 
-To modify how scripts ar run, you can look at this section in our
+To modify how scripts are run, you can look at this section in our
 pyproject.toml file:
 
 ```toml
