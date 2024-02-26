@@ -44,8 +44,6 @@ jobs:
         if: github.event_name == 'push'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          # Haven't setup trusted workflow on test pypi yet
-          password: ${{ secrets.TEST_PYPI_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
           # Allow existing releases on test PyPI without errors.
           # NOT TO BE USED in PyPI!
