@@ -167,6 +167,7 @@ class ReviewModel(BaseModel):
     closed_at: Optional[str] = None
     issue_link: str = None
     joss: Optional[str] = None
+    partners: Optional[list[str]] = None
     gh_meta: Optional[GhMeta] = None
 
     @field_validator(
@@ -263,6 +264,51 @@ class ReviewModel(BaseModel):
         user["name"] = re.sub(r"\[|\]", "", user["name"])
 
         return user
+
+    @field_validator(
+        "categories",
+        mode="before",
+    )
+    @classmethod
+    def clean_categories(cls, categories: list[str]) -> list[str]:
+        """Make sure each category in the list is a valid value.
+
+        Valid pyos software categories are:
+            citation-management-bibliometrics, data-deposition,
+            data-extraction, data-processing-munging, data-retrieval,
+            data-validation-testing, data-visualization-analysis,
+            database-interoperability, education,
+            geospatial, scientific-software-wrappers,
+            workflow-automation-versioning
+
+
+        Parameters
+        ----------
+        categories : list[str]
+            List of categories to clean.
+
+        Returns
+        -------
+        list[str]
+            List of cleaned categories.
+        """
+
+        valid_categories = {
+            "data-processing": "data-processing-munging",
+            "data-validation": "data-validation-testing",
+            "scientific-software": "scientific-software-wrapper",
+        }
+
+        cleaned_cats = []
+        for category in categories:
+            for valid_prefix, valid_cat in valid_categories.items():
+                if category.startswith(valid_prefix):
+                    cleaned_cats.append(valid_cat)
+                    break
+            else:
+                # No match found, keep the original category
+                cleaned_cats.append(category)
+        return cleaned_cats
 
 
 @dataclass
@@ -410,9 +456,11 @@ class ProcessIssues:
     def parse_issue_header(
         self, issues: list[str], total_lines: int = 20
     ) -> dict[str, str]:
-        """
-        A function that parses through the header of an issue.
-        It returns
+        """Parses through all headers comments of selected reviews and returns
+        metadata
+
+        This will go through all reviews and return:
+        GitHub Issue meta: "created_at", "updated_at", "closed_at"
 
         Parameters
         ----------
@@ -434,52 +482,72 @@ class ProcessIssues:
         meta_dates = ["created_at", "updated_at", "closed_at"]
 
         review = {}
+        review_final = {}
         for issue in issues:
             pkg_name, body_data = self.parse_comment(issue)
             if not pkg_name:
                 continue
-            # Index of 15 should include date accepted in the review meta
+
             review[pkg_name] = self.get_issue_meta(body_data, total_lines)
             # Add issue open and close date to package meta from GH response
             # Date cleaning happens via pydantic validator not here
             for a_date in meta_dates:
                 review[pkg_name][a_date] = issue[a_date]
-            # Get categories and issue review link
-            review[pkg_name]["categories"] = self.get_categories(body_data)
+
             review[pkg_name]["issue_link"] = issue["url"].replace(
                 "https://api.github.com/repos/", "https://github.com/"
             )
 
-            review_clean = {
-                key: value
-                for key, value in review[pkg_name].items()
-                if not key.startswith("##")
-                and not key.startswith("---")
-                and not key.startswith("-_[x]_i_agree")
+            # Get categories and issue review link
+            review[pkg_name]["categories"] = self.get_categories(
+                body_data, "## Scope", 10
+            )
+            # NOTE: right now the numeric value is hard coded based on the
+            # number of categories listed in the issue template.
+            # this could be made more flexible if it just runs until it runs
+            # out of categories to parse
+            review[pkg_name]["partners"] = self.get_categories(
+                body_data, "## Community Partnerships", 3
+            )
+            # TODO: the current workflow will not parse domains
+            # add a separate workflow to parse domains and add them to the
+            # categories list
+            # review[pkg_name]["domains"] = self.get_categories(body_data,
+            #                                                    '## Domains',
+            #                                                    3)
+
+            # Only return keys for metadata that we need
+            final_keys = [
+                "submitting_author",
+                "all_current_maintainers",
+                "package_name",
+                "one-line_description_of_package",
+                "repository_link",
+                "version_submitted",
+                "editor",
+                "reviewer_1",
+                "reviewer_2",
+                "archive",
+                "version_accepted",
+                "joss_doi",
+                "date_accepted",
+                "categories",
+                "partners",
+                "domain",
+                "created_at",
+                "updated_at",
+                "closed_at",
+                "issue_link",
+                "categories",
+            ]
+
+            review_final[pkg_name] = {
+                key: review[pkg_name][key]
+                for key in final_keys
+                if key in review[pkg_name].keys()
             }
-            review[pkg_name] = review_clean
-            # filtered = {}
-            # for key, value in review.items():
-            #     print(key)
-            #     if not key.startswith("##") and not key.startswith("-"):
-            #         filtered[key] = value
 
-            # # Clean markdown url's from editor, and reviewer lines
-            # TODO - this could be a reviewer name cleanup validaotr
-            # types = ["editor", "reviewer_1", "reviewer_2"]
-            # user_values = ["github_username", "name"]
-            # for a_type in types:
-            #     for user_value in user_values:
-            #         issue_meta[a_type][user_value] = (
-            #             issue_meta[a_type][user_value]
-            #             .replace("https://github.com/", "")
-            #             .replace("[", "")
-            #             .replace("]", "")
-            #         )
-
-            # review[pkg_name] = issue_meta
-
-        return review
+        return review_final
 
     def get_issue_meta(
         self,
@@ -688,8 +756,10 @@ class ProcessIssues:
 
         return date
 
+    # This works - i could just make it more generic and remove fmt since it's
+    # not used and replace it with a number of values and a test string
     def get_categories(
-        self, issue_list: list[list[str]], fmt: bool = True
+        self, issue_list: list[list[str]], section_str: str, num_vals: int
     ) -> list[str]:
         """Parse through a pyOS review issue and grab categories associated
         with a package
@@ -700,31 +770,43 @@ class ProcessIssues:
             The first comment from the issue split into lines and then the
             lines split as by self.parse_comment()
 
-        fmt : bool
-            Applies some formatting changes to the categories to match what is
-            required for the website.
+        section_str : str
+            The section string to find where the categories live in the review
+            metadata. Example ## Scope contains the package categories such as
+            data viz, etc
+
+        num_vals : int
+            Number of categories expected in the list. for instance
+            3 partner options.
         """
         # Find the starting index of the category section
+        # This will be more robust if we use starts_with rather than in i think
         try:
             index = next(
                 i
                 for i, sublist in enumerate(issue_list)
-                if "## Scope" in sublist
+                if section_str in sublist
             )
-            # Iterate from scope index to first line starting with " - ["
-            # To find list of category check boxes
+            # Iterate starting at the specified section location index
+            # find the first line starting with " - ["
+            # This represents the first category in a list of categories
             for i in range(index + 1, len(issue_list)):
                 if issue_list[i] and issue_list[i][0].startswith("- ["):
                     cat_index = i
                     break
         except StopIteration:
-            print("'## Scope' not found in the list.")
+            print(section_str, " not found in the list.")
+            return None
 
         # Get checked categories for package
-        cat_list = issue_list[cat_index : cat_index + 10]
+        # TODO: it would be nice to figure out where the end of the list is
+        # rather than hard coding it
+        cat_list = issue_list[cat_index : cat_index + num_vals]
         selected = [
             item[0] for item in cat_list if re.search(r"- \[[xX]\] ", item[0])
         ]
+        # Above returns a list of list elements that are checked
+        # Now, clean the extra markdown and only return the category text
         cleaned = [re.sub(r"- \[[xX]\] ", "", item) for item in selected]
         categories = [
             re.sub(r"(\w+) (\w+)", r"\1-\2", item) for item in cleaned
