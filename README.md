@@ -1,29 +1,33 @@
-# pyosmeta (was: update-web-metadata)
+# pyosmeta
 
 [![PyPI](https://img.shields.io/pypi/v/pyosmeta.svg)](https://pypi.org/project/pyosmeta/)
 [![.github/workflows/test-run-script.yml](https://github.com/pyOpenSci/update-web-metadata/actions/workflows/test-run-script.yml/badge.svg)](https://github.com/pyOpenSci/update-web-metadata/actions/workflows/test-run-script.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pyopensci/update-web-metadata/blob/master/LICENSE)
+[![codecov](https://codecov.io/gh/pyOpenSci/pyosMeta/graph/badge.svg?token=GOXKA8Z44X)](https://codecov.io/gh/pyOpenSci/pyosMeta)
 
 ## Description
 
 **pyosmeta** provides the tools and scripts used to manage [pyOpenSci](https://pyopensci.org)'s contributor and peer
 review metadata.
 This repo contains a small module and several CLI scripts, including:
-  - `parse-history`
-  - `update-contributors`
-  - `update-reviews`
-  - `update-review-teams`
 
-*Since pyOpenSci uses this tool for its website, we expect this package to have infrequent releases.*
+- `parse-history`
+- `update-contributors`
+- `update-reviews`
+- `update-review-teams`
+
+_Since pyOpenSci uses this tool for its website, we expect this package to have infrequent releases._
 
 ## Installation
 
 Using pip:
+
 ```
 pip install pyosmeta
 ```
 
 Using conda:
+
 ```
 conda install pyosmeta
 ```
@@ -32,7 +36,7 @@ conda install pyosmeta
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-*Note: this section will be rewritten to be more user focused.*
+_Note: this section will be rewritten to be more user focused._
 
 ## Contributors ✨
 

@@ -8,20 +8,20 @@ dynamic = ["version"]
 description = "Tools that update the pyOpenSci contributor and review metadata that is posted on our website"
 authors = [{ name = "Leah Wasser", email = "leah@pyopensci.org" }]
 maintainers = [
-    { name = "pyOpenSci", email = "admin@pyopensci.org" }, # Optional
+  { name = "pyOpenSci", email = "admin@pyopensci.org" }, # Optional
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Topic :: Software Development :: Build Tools",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Build Tools",
 
-    # Pick your license  - we suggest MIT, BSD3 or Apache if you are corporate
-    "License :: OSI Approved :: MIT License",
-    # Specify the Python versions ensuring that you indicate you support Python 3.
-    # this is only for pypi and other metadata associated with your package - for your users to see
-    "Programming Language :: Python :: 3 :: Only", # BE sure to specify that you use python 3.x
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+  # Pick your license  - we suggest MIT, BSD3 or Apache if you are corporate
+  "License :: OSI Approved :: MIT License",
+  # Specify the Python versions ensuring that you indicate you support Python 3.
+  # this is only for pypi and other metadata associated with your package - for your users to see
+  "Programming Language :: Python :: 3 :: Only", # BE sure to specify that you use python 3.x
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
     "pydantic>=2.0",
@@ -56,6 +56,11 @@ update-contributors = "pyosmeta.cli.update_contributors:main"
 update-reviews = "pyosmeta.cli.process_reviews:main"
 update-review-teams = "pyosmeta.cli.update_review_teams:main"
 
+[tool.coverage.run]
+branch = true
+include = ["src/pyosmeta/*"]
+# Don't run coverage on tests directory or version file created by scm
+omit = ["tests/*", "src/pyosmeta/_version.py"]
 
 ### Hatch config ###
 
@@ -64,15 +69,12 @@ version.source = "vcs"
 build.hooks.vcs.version-file = "src/pyosmeta/_version.py"
 
 [tool.hatch.envs.test]
-dependencies = [
-  "pytest",
-  "pytest-cov",
-]
+dependencies = ["pytest", "pytest-cov", "coverage[toml]"]
 
 [tool.hatch.envs.test.scripts]
-#run-coverage = "pytest --cov-config=pyproject.toml --cov=pkg --cov=tests"
-#run = "run-coverage --no-cov"
-run-tests = "pytest"
+run-coverage = "pytest --cov-config=pyproject.toml --cov=pyosmeta --cov=tests/*"
+run-no-cov = "run-coverage --no-cov"
+run-report = "run-coverage --cov-report=xml:coverage.xml"
 
 
 ### Tool configuration ###

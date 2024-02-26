@@ -9,6 +9,8 @@ all_contribs_dict.pickle
 .idea/
 .token
 __pycache__
+.coverage
+coverage.xml
 
 
 # Distribution / packaging
