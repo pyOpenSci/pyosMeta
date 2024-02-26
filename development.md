@@ -1,8 +1,29 @@
 # Development Guide
 
-## Packaging
+Developers can use hatch to simplify set up of a pyosMeta development
+environment and executing development tasks.
 
-pyosMeta uses hatch and hatchling as it's build back end.
+## Setting up a development environment
+
+### Install hatch
+
+1. Follow the [hatch installation instructions](https://hatch.pypa.io/latest/install/#installation).
+2. Open a new terminal and run `hatch --version` to verify that `hatch` is available.
+
+### Open a local dev environment using hatch
+
+In a terminal, enter:
+
+`hatch shell`
+
+You will now have an activated virtual environment.
+
+[To learn more about working with Hatch environments, check out this tutorial.](https://hatch.pypa.io/dev/tutorials/environment/basic-usage/) explains
+how hatch uses environments.
+
+To deactivate an environment, enter:
+
+`deactivate`
 
 ## Running tests
 
@@ -34,3 +55,13 @@ run-coverage = "pytest --cov-config=pyproject.toml --cov=pyosmeta --cov=tests/*"
 run-no-cov = "run-coverage --no-cov"
 run-report = "run-coverage --cov-report=xml:coverage.xml"
 ```
+
+## Packaging
+
+pyosMeta uses [hatch](https://hatch.pypa.io) and hatchling as its build back end.
+
+### Build a local package
+
+To create a local sdist and wheel, run:
+
+`hatch build`
