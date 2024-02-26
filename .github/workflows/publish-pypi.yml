@@ -11,6 +11,8 @@ jobs:
     # This ensures that the publish action only runs in the main repository
     # rather than forks
     if: github.repository_owner == 'pyopensci'
+    permissions:
+      id-token: write  # this permission is mandatory for pypi publishing
     steps:
       - name: Checkout
         uses: actions/checkout@v3
