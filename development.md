@@ -18,7 +18,7 @@ In a terminal, enter:
 
 You will now have an activated virtual environment.
 
-[Hatch Environments](https://hatch.pypa.io/latest/environment/#entering-environments) explains
+[To learn more about working with Hatch environments, check out this tutorial.](https://hatch.pypa.io/dev/tutorials/environment/basic-usage/) explains
 how hatch uses environments.
 
 To deactivate an environment, enter:
