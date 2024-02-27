@@ -166,19 +166,7 @@ cython_debug/
 .vscode/
 
 # pyosMeta specific
-all_contribs.pickle
-all_contribs_dict.pickle
-all-submissions.csv
-issue-stats.ipynb
-plot.py
-presubmissions.csv
-reviews_all.csv
-reviews_presubmissions.csv
 src/pyosmeta/_version.py
-src/pyosmeta/cli/test.ipynb
-
-contrib*.yml
-pack*.yml
 *.pickle
 
 .token
