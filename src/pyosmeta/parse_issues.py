@@ -147,24 +147,25 @@ class ReviewModel(BaseModel):
         validate_assignment=True,
     )
 
-    package_name: Optional[str] = ""
+    package_name: str | None = ""
     package_description: str = Field(
         "", validation_alias=AliasChoices("one-line_description_of_package")
     )
-    submitting_author: dict[str, Optional[str]] = {}
+    submitting_author: dict[str, str | None] = {}
     all_current_maintainers: list[dict[str, str | None]] = {}
-    repository_link: Optional[str] = None
+    repository_link: str | None = None
     version_submitted: Optional[str] = None
     categories: Optional[list[str]] = None
     editor: dict[str, str | None] = {}
     reviewer_1: dict[str, str | None] = {}
     reviewer_2: dict[str, str | None] = {}
-    archive: Optional[str] = None
-    version_accepted: Optional[str] = None
-    date_accepted: Optional[str] = Field(
+    archive: str | None = None
+    version_accepted: str | None = None
+    date_accepted: str | None = Field(
+        default=None,
         validation_alias=AliasChoices(
             "date_accepted_(month/day/year)", "Date accepted"
-        )
+        ),
     )
     created_at: str = None
     updated_at: str = None
