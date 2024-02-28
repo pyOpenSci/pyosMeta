@@ -161,7 +161,11 @@ class ReviewModel(BaseModel):
     reviewer_2: dict[str, str | None] = {}
     archive: Optional[str] = None
     version_accepted: Optional[str] = None
-    date_accepted: Optional[str] = None
+    date_accepted: Optional[str] = Field(
+        validation_alias=AliasChoices(
+            "date_accepted_(month/day/year)", "Date accepted"
+        )
+    )
     created_at: str = None
     updated_at: str = None
     closed_at: Optional[str] = None
@@ -484,6 +488,7 @@ class ProcessIssues:
         review = {}
         review_final = {}
         for issue in issues:
+            # Return issue comment as a cleaned list + package name
             pkg_name, body_data = self.parse_comment(issue)
             if not pkg_name:
                 continue
@@ -530,7 +535,7 @@ class ProcessIssues:
                 "archive",
                 "version_accepted",
                 "joss_doi",
-                "date_accepted",
+                "date_accepted_(month/day/year)",
                 "categories",
                 "partners",
                 "domain",
@@ -555,7 +560,9 @@ class ProcessIssues:
         end_range: int,
     ) -> dict[str, str]:
         """
-        Parse through the top of an issue and grab the metadata for the review.
+        Parse through a list of strings, each of which represents a line in the
+        first comment of a review.
+        grab the metadata for the review.
 
         Parameters
         ----------
@@ -572,9 +579,6 @@ class ProcessIssues:
         """
         issue_meta = {}
         for item in body_data[0:end_range]:
-            # Clean date accepted element
-            if "Date accepted".lower() in item[0].lower():
-                item[0] = "Date accepted"
             issue_meta.update(self._get_line_meta(item))
 
         return issue_meta
@@ -612,14 +616,15 @@ class ProcessIssues:
 
     def parse_comment(self, issue: dict[str, str]) -> tuple[str, list[str]]:
         """
-        Parses an issue comment for pyOpenSci review. Returns the package name
+        Parses the first comment in an issue comment for pyOpenSci review.
+        This is where the review metadata are stored.
+        Returns the package name
         and the body of the comment parsed into a list of elements.
 
         Parameters
         ----------
         issue : dict
             A dictionary containing the json response for an issue comment.
-
 
         Returns
         -------

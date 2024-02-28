@@ -10,6 +10,7 @@
 - Add: Code coverage setup (#97, @lwasser)
 - Fix: Add validation step to categories attr in pydantic model (#105, @lwasser)
 - Fix: update pypi publish to use hatch (#82, @lwasser)
+- Fix: move data accepted cleanup to pydantic field alias / validation step (@lwasser)
 
 ## [v0.15](https://github.com/pyOpenSci/pyosMeta/releases/tag/v0.15)
 

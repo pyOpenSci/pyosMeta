@@ -29,7 +29,7 @@ def main():
         repo_name="software-submission",
         label_name="6/pyOS-approved 🚀🚀🚀",
     )
-
+    # date_accepted_(month/day/year)
     # Get all issues for approved packages - load as dict
     issues = process_review.return_response()
     # TODO: this method parse_issue_header is working but the parsing code is
