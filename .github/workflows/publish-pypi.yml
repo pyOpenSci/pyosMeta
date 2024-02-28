@@ -42,7 +42,7 @@ jobs:
           echo ""
           echo "Generated files:"
           ls -lh dist/
-          
+
       - name: Publish package on test PyPI on merge in main branch
         # Test push to test pypi on merge to main
         if: github.event_name == 'push'
