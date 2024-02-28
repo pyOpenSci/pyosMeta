@@ -431,8 +431,9 @@ class ProcessIssues:
 
         Returns
         -------
-            Dict containing the metadata for a submitting author, reviewer or
-            maintainer(s)
+            Dict
+                Containing the metadata for a submitting author, reviewer or
+                maintainer(s)
         """
 
         meta = {}
