@@ -58,7 +58,7 @@ def parse_user_names(username: str) -> dict:
 
     Returns
     -------
-    : dict
+    dict
         ``{name: str, github_username: str}``
 
     Notes
@@ -404,7 +404,7 @@ class ProcessIssues:
         response = self._get_response()
         return response.json()
 
-    def _contains_keyword(self, string: str) -> bool:
+    def _is_review_role(self, string: str) -> bool:
         """
         Returns true if starts with any of the 3 items below.
         """
@@ -412,8 +412,8 @@ class ProcessIssues:
             ("Submitting", "Editor", "Reviewer", "All current maintainers")
         )
 
-    def _clean_name(self, a_str: str) -> str:
-        """Helper to strip unwanted chars from text"""
+    def _remove_extra_chars(self, a_str: str) -> str:
+        """Helper to strip unwanted characters from text"""
 
         unwanted = ["(", ")", "@"]
         for char in unwanted:
@@ -421,51 +421,59 @@ class ProcessIssues:
 
         return a_str.strip()
 
-    def _get_line_meta(self, line_item: list[str]) -> dict[str, object]:
-        """
-        Parameters
-        ----------
-        line_item : list
-            A single list item representing a single line in the issue
-            containing metadata for the review.
-            This comment is metadata for the review that the author fills out.
+    # def _get_line_meta(self, line_item: list[str]) -> dict[str, object]:
+    #     """Parse through a single line of a review and return cleaned metadata.
 
-        Returns
-        -------
-            Dict
-                Containing the metadata for a submitting author, reviewer or
-                maintainer(s)
-        """
+    #     This helper method processes each line of a review and cleans the data.
+    #     If the line represents a review role (editor, maintainer, reviewer),
+    #     then it's processed differently to return the github username and
+    #     (optionally) the gh user's name. If the line represents another part
+    #     of the review such as the package description it is more easily parsed.
 
-        meta = {}
-        a_key = line_item[0].lower().replace(" ", "_")
-        if self._contains_keyword(line_item[0]):
-            if line_item[0].startswith("All current maintainers"):
-                names = line_item[1].split(",")
-                # There are at least 2 maintainers if there is a comma
-                # if len(names) > 1:
-                meta[a_key] = []
-                for aname in names:
-                    # Add each maintainer to the dict
-                    a_maint = parse_user_names(username=aname)
-                    # filtered_list = list(filter(None, my_list))
-                    meta[a_key].append(a_maint)
-            else:
-                names = parse_user_names(line_item[1])
-                meta[a_key] = names
-        elif len(line_item) > 1:
-            meta[a_key] = line_item[1].strip()
-        else:
-            meta[a_key] = self._clean_name(line_item[0])
-        return meta
+    #     Parameters
+    #     ----------
+    #     line_item : list
+    #         A single list item representing a single line in the issue
+    #         containing metadata for the review.
+    #         This comment is metadata for the review that the author fills out.
+
+    #     Returns
+    #     -------
+    #         Dict
+    #             Containing the metadata for a submitting author, reviewer or
+    #             maintainer(s)
+    #     """
+    #     # TODO: would it be easier to read if this code was in the loop and
+    #     # broken out into helpers there?
+    #     meta = {}
+    #     a_key = line_item[0].lower().replace(" ", "_")
+    #     # If the line is for a review role - editor, maintainer, reviewer
+    #     if self._is_review_role(line_item[0]):
+    #         # Parse comma separated names for maintainer list
+    #         if line_item[0].startswith("All current maintainers"):
+    #             names = line_item[1].split(",")
+    #             meta[a_key] = []
+    #             for name in names:
+    #                 # Add each maintainer to the dict
+    #                 a_maint = parse_user_names(username=name)
+    #                 meta[a_key].append(a_maint)
+    #         # Parse other review roles; these have one name per line
+    #         else:
+    #             names = parse_user_names(line_item[1])
+    #             meta[a_key] = names
+    #     elif len(line_item) > 1:
+    #         meta[a_key] = line_item[1].strip()
+    #     else:
+    #         meta[a_key] = self._remove_extra_chars(line_item[0])
+    #     return meta
 
     def parse_issue_header(
         self, issues: list[str], total_lines: int = 20
     ) -> dict[str, str]:
-        """Parses through all headers comments of selected reviews and returns
-        metadata
+        """Parses through each header comment for selected reviews and returns
+        review metadata.
 
-        This will go through all reviews and return:
+        Returns:
         GitHub Issue meta: "created_at", "updated_at", "closed_at"
 
         Parameters
@@ -490,8 +498,8 @@ class ProcessIssues:
         review = {}
         review_final = {}
         for issue in issues:
-            # Return issue comment as a cleaned list + package name
-            pkg_name, body_data = self.parse_comment(issue)
+            # Return issue comment as cleaned list + package name
+            pkg_name, body_data = self.comment_to_list(issue)
             if not pkg_name:
                 continue
 
@@ -556,15 +564,47 @@ class ProcessIssues:
 
         return review_final
 
+    def get_contributor_data(self, line: list[str]) -> dict[str, str | int]:
+        """Parse names for various review roles from issue metadata.
+
+        Parameters
+        ----------
+        line : list of str
+            A single list item representing a single line in the issue
+            containing metadata for the review.
+
+        Returns
+        -------
+        dict
+            Containing the metadata for a submitting author, reviewer, or
+            maintainer(s).
+        """
+
+        meta = {}
+        a_key = line[0].lower().replace(" ", "_")
+
+        if line[0].startswith("All current maintainers"):
+            names = line[1].split(",")
+            meta[a_key] = []
+            for name in names:
+                # Add each maintainer to the dict
+                a_maint = parse_user_names(username=name)
+                meta[a_key].append(a_maint)
+        else:
+            names = parse_user_names(line[1])
+            meta[a_key] = names
+
+        return meta
+
     def get_issue_meta(
         self,
         body_data: list[str],
         end_range: int,
     ) -> dict[str, str]:
-        """
+        """Process a single review returning metadata for that review.
+
         Parse through a list of strings, each of which represents a line in the
-        first comment of a review.
-        grab the metadata for the review.
+        first comment of a review. Return the cleaned review metadata.
 
         Parameters
         ----------
@@ -580,8 +620,36 @@ class ProcessIssues:
             dict
         """
         issue_meta = {}
-        for item in body_data[0:end_range]:
-            issue_meta.update(self._get_line_meta(item))
+        # TODO: change to for line in review_comment
+        for single_line in body_data[0:end_range]:
+            # TODO - i think this will be easier to read if the code to parse
+            # each line is here rather than another redirect.
+            # Fix: this method self.get_line_meta is what i'm  removing
+            # issue_meta.update(self._get_line_meta(item))
+
+            meta = {}
+            a_key = single_line[0].lower().replace(" ", "_")
+            # If the line is for a review role - editor, maintainer, reviewer
+            if self._is_review_role(single_line[0]):
+                meta = self.get_contributor_data(single_line)
+                # # Parse comma separated names for maintainer list
+                # if single_line[0].startswith("All current maintainers"):
+                #     names = single_line[1].split(",")
+                #     meta[a_key] = []
+                #     for name in names:
+                #         # Add each maintainer to the dict
+                #         a_maint = parse_user_names(username=name)
+                #         meta[a_key].append(a_maint)
+                # # Parse other review roles; these have one name per line
+                # else:
+                #     names = parse_user_names(single_line[1])
+                #     meta[a_key] = names
+            elif len(single_line) > 1:
+                meta[a_key] = single_line[1].strip()
+            else:
+                meta[a_key] = self._remove_extra_chars(single_line[0])
+
+            issue_meta.update(meta)
 
         return issue_meta
 
@@ -616,10 +684,9 @@ class ProcessIssues:
             )
         return all_repos
 
-    def parse_comment(self, issue: dict[str, str]) -> tuple[str, list[str]]:
-        """
-        Parses the first comment in an issue comment for pyOpenSci review.
-        This is where the review metadata are stored.
+    def comment_to_list(self, issue: dict[str, str]) -> tuple[str, list[str]]:
+        """Parses the first comment in a pyOpenSci review issue.
+
         Returns the package name
         and the body of the comment parsed into a list of elements.
 
@@ -775,7 +842,7 @@ class ProcessIssues:
         ----------
         issue_list : list[list[str]]
             The first comment from the issue split into lines and then the
-            lines split as by self.parse_comment()
+            lines split as by self.comment_to_list()
 
         section_str : str
             The section string to find where the categories live in the review
@@ -802,7 +869,7 @@ class ProcessIssues:
                     cat_index = i
                     break
         except StopIteration:
-            print(section_str, " not found in the list.")
+            print(section_str, "not found in the list.")
             return None
 
         # Get checked categories for package
