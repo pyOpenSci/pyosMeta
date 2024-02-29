@@ -421,52 +421,6 @@ class ProcessIssues:
 
         return a_str.strip()
 
-    # def _get_line_meta(self, line_item: list[str]) -> dict[str, object]:
-    #     """Parse through a single line of a review and return cleaned metadata.
-
-    #     This helper method processes each line of a review and cleans the data.
-    #     If the line represents a review role (editor, maintainer, reviewer),
-    #     then it's processed differently to return the github username and
-    #     (optionally) the gh user's name. If the line represents another part
-    #     of the review such as the package description it is more easily parsed.
-
-    #     Parameters
-    #     ----------
-    #     line_item : list
-    #         A single list item representing a single line in the issue
-    #         containing metadata for the review.
-    #         This comment is metadata for the review that the author fills out.
-
-    #     Returns
-    #     -------
-    #         Dict
-    #             Containing the metadata for a submitting author, reviewer or
-    #             maintainer(s)
-    #     """
-    #     # TODO: would it be easier to read if this code was in the loop and
-    #     # broken out into helpers there?
-    #     meta = {}
-    #     a_key = line_item[0].lower().replace(" ", "_")
-    #     # If the line is for a review role - editor, maintainer, reviewer
-    #     if self._is_review_role(line_item[0]):
-    #         # Parse comma separated names for maintainer list
-    #         if line_item[0].startswith("All current maintainers"):
-    #             names = line_item[1].split(",")
-    #             meta[a_key] = []
-    #             for name in names:
-    #                 # Add each maintainer to the dict
-    #                 a_maint = parse_user_names(username=name)
-    #                 meta[a_key].append(a_maint)
-    #         # Parse other review roles; these have one name per line
-    #         else:
-    #             names = parse_user_names(line_item[1])
-    #             meta[a_key] = names
-    #     elif len(line_item) > 1:
-    #         meta[a_key] = line_item[1].strip()
-    #     else:
-    #         meta[a_key] = self._remove_extra_chars(line_item[0])
-    #     return meta
-
     def parse_issue_header(
         self, issues: list[str], total_lines: int = 20
     ) -> dict[str, str]:
@@ -622,28 +576,12 @@ class ProcessIssues:
         issue_meta = {}
         # TODO: change to for line in review_comment
         for single_line in body_data[0:end_range]:
-            # TODO - i think this will be easier to read if the code to parse
-            # each line is here rather than another redirect.
-            # Fix: this method self.get_line_meta is what i'm  removing
-            # issue_meta.update(self._get_line_meta(item))
-
             meta = {}
             a_key = single_line[0].lower().replace(" ", "_")
             # If the line is for a review role - editor, maintainer, reviewer
             if self._is_review_role(single_line[0]):
+                # Collect metadata for each review role
                 meta = self.get_contributor_data(single_line)
-                # # Parse comma separated names for maintainer list
-                # if single_line[0].startswith("All current maintainers"):
-                #     names = single_line[1].split(",")
-                #     meta[a_key] = []
-                #     for name in names:
-                #         # Add each maintainer to the dict
-                #         a_maint = parse_user_names(username=name)
-                #         meta[a_key].append(a_maint)
-                # # Parse other review roles; these have one name per line
-                # else:
-                #     names = parse_user_names(single_line[1])
-                #     meta[a_key] = names
             elif len(single_line) > 1:
                 meta[a_key] = single_line[1].strip()
             else:
@@ -789,9 +727,6 @@ class ProcessIssues:
             for astat in stats_list:
                 stats_dict[astat] = data[astat]
             stats_dict["documentation"] = stats_dict.pop("homepage")
-            # stats_dict["created_at"] = self._clean_date(
-            #     stats_dict["created_at"]
-            # )
 
         return stats_dict
 
