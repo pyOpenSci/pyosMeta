@@ -26,8 +26,9 @@ from datetime import datetime
 
 from pydantic import ValidationError
 
-from pyosmeta.contributors import PersonModel, ProcessContributors
+from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
+from pyosmeta.models import PersonModel
 
 
 def get_clean_user(username: str) -> str:
@@ -57,7 +58,7 @@ def main():
                     gh_user = get_clean_user(a_maintainer["github_username"])
 
                     if gh_user not in contribs.keys():
-                        print("Found a new user!", gh_user)
+                        print("Found a new contributor!", gh_user)
                         new_contrib = process_contribs.get_user_info(gh_user)
                         new_contrib["date_added"] = datetime.now().strftime(
                             "%Y-%m-%d"
@@ -94,7 +95,7 @@ def main():
 
                 if gh_user not in contribs.keys():
                     # If they aren't already in contribs, add them
-                    print("Found a new user!", gh_user)
+                    print("Found a new contributor!", gh_user)
                     new_contrib = process_contribs.get_user_info(gh_user)
                     new_contrib["date_added"] = datetime.now().strftime(
                         "%Y-%m-%d"
