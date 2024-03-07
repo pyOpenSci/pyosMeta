@@ -3,7 +3,8 @@
 [![PyPI](https://img.shields.io/pypi/v/pyosmeta.svg)](https://pypi.org/project/pyosmeta/)
 
 ## [Unreleased]
-- Parse up to 100 issues in a request (@lwasser, #94)
+- Fix: Parse up to 100 issues in a request (@lwasser, #94)
+- Fix: refactor parse issue header (@lwasser, #91)
 
 
 ## [v0.2.3] - 2024-02-29
