@@ -364,7 +364,7 @@ class ProcessIssues:
     def api_endpoint(self):
         url = (
             f"https://api.github.com/repos/{self.org}/{self.repo_name}/"
-            f"issues?labels={self.label_name}&state=all"
+            f"issues?labels={self.label_name}&state=all&per_page=100"
         )
         return url
 
