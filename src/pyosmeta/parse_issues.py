@@ -1,4 +1,5 @@
 import re
+import warnings
 from datetime import datetime
 
 import requests
@@ -665,7 +666,13 @@ class ProcessIssues:
             None,
         )
 
-        pkg_name = body_data[name_index][1] if name_index else None
+        if name_index is None:
+            warnings.warn(
+                "Package Name not found in the issue comment.", UserWarning
+            )
+            pkg_name = "missing_name"
+        else:
+            pkg_name = body_data[name_index][1]
 
         return clean_markdown(pkg_name), body_data
 
