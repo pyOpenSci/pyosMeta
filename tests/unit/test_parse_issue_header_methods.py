@@ -22,12 +22,12 @@ def test_comment_to_list(process_issues, issue_list):
         ("`Code`", "Code"),
         ("**Bold**", "Bold"),
         ("***Strong***", "Strong"),
-        ("`*Code*`", "*Code*"),
-        ("`**Code**`", "**Code**"),
-        ("`***Code***`", "***Code***"),
-        ("`Code***`", "Code***"),
-        ("***Code`", "***Code"),
-        ("***Code*`", "***Code*"),
+        ("`*Code*`", "Code"),
+        ("`**Code**`", "Code"),
+        ("`***Code***`", "Code"),
+        ("`Code***`", "Code"),
+        ("***Code`", "Code"),
+        ("***Code*`", "Code"),
     ],
 )
 def test_clean_markdown(input_string, expected_output):

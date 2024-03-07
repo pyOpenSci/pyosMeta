@@ -1,4 +1,4 @@
-from pyosmeta.parse_issues import ProcessIssues
+import pytest
 
 sample_response = {
     "url": "https://api.github.com/repos/pyOpenSci/software-submission/issues/147",
@@ -26,28 +26,33 @@ sample_response_no_name = {
     "timeline_url": "https://api.github.com/repos/pyOpenSci/software-submission/issues/147/timeline",
 }
 
-# Create a generic object to use in all tests
-p_issues = ProcessIssues(
-    repo_name="pyostest", org="pyopensci", label_name="test"
-)
 
-
-def test_comment_to_list_returns_list():
+def test_comment_to_list_returns_list(process_issues):
     """Test that comment_to_list returns a list"""
 
-    name, body = p_issues.comment_to_list(sample_response)
+    name, body = process_issues.comment_to_list(sample_response)
 
     assert isinstance(body, list)
 
 
-def test_comment_no_name():
+def test_comment_no_name(process_issues):
+    """Test what happens if the package name key is missing in the review
+    this means that a user has likely modified the template.
 
-    name, body = p_issues.comment_to_list(sample_response_no_name)
+    In that case we just insert a placeholder name and keep processing issues.
+    This is a template issue not a code issue.
+    """
+
+    with pytest.warns(
+        UserWarning, match="Package Name not found in the issue comment."
+    ):
+        name, body = process_issues.comment_to_list(sample_response_no_name)
+        assert name == "missing_name"
 
 
-def test_comment_to_list_package_name():
+def test_comment_to_list_package_name(process_issues):
     """Test that comment_to_list returns a proper package name"""
 
-    name, body = p_issues.comment_to_list(sample_response)
+    name, body = process_issues.comment_to_list(sample_response)
 
     assert name == "sunpy"
