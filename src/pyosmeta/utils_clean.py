@@ -10,8 +10,8 @@ from datetime import datetime
 def clean_date(source_date: str | None) -> datetime | str:
     """Cleans up a date string to a consistent datetime format.
 
-    The source date string may have been manually entered as month-day-year format
-    retrieved from GitHub as timestamp, could be missing, or contain random text.
+    The source date string may have been manually entered as month-day-year format,
+    retrieved from GitHub as a timestamp, could be missing, or contain random text.
     This utility validates the input and returns a consistent format.
     """
 
