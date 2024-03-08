@@ -1,4 +1,4 @@
-from pyosmeta.parse_issues import ReviewModel
+from pyosmeta.models import ReviewModel
 
 # We could setup some example data using fixtures and a conf.py
 # Once we have a better view of the test suite.

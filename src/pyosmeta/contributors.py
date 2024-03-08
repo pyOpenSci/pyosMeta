@@ -1,165 +1,10 @@
 import json
 import os
-import re
 
 import requests
 from dataclasses import dataclass
 from dotenv import load_dotenv
-from pydantic import (
-    AliasChoices,
-    BaseModel,
-    ConfigDict,
-    Field,
-    field_serializer,
-    field_validator,
-)
-from typing import List, Optional, Set, Tuple, Union
-
-
-class UrlValidatorMixin:
-    # Check fields is false given mixin is used by two diff classes
-    @field_validator(
-        "website", "documentation", mode="before", check_fields=False
-    )
-    @classmethod
-    def format_url(cls, url: str) -> str:
-        """Append https to the beginning of URL if it doesn't exist & cleanup
-        If the url doesn't have https add it
-        If the url starts with http change it to https
-        Else do nothing
-
-        Parameters
-        ----------
-        url : str
-            String representing the url grabbed from the GH api
-
-        """
-
-        if not url:
-            return url  # Returns empty string if url is empty
-        else:
-            if url.startswith("http://"):
-                print(f"{url} 'http://' replacing w 'https://'")
-                url = url.replace("http://", "https://")
-            elif not url.startswith("http"):
-                print("Oops, missing http")
-                url = "https://" + url
-        if cls._check_url(url=url):
-            return url
-        else:
-            return None
-
-    @staticmethod
-    def _check_url(url: str) -> bool:
-        """Test url. Return true if there's a valid response, False if not
-
-        Parameters
-        ----------
-        url : str
-            String for a url to a website to test.
-
-        """
-
-        try:
-            response = requests.get(url, timeout=6)
-            return response.status_code == 200
-        except Exception:
-            print("Oops, url", url, "is not valid, removing it")
-            return False
-
-
-class PersonModel(BaseModel, UrlValidatorMixin):
-    model_config = ConfigDict(
-        populate_by_name=True,
-        str_strip_whitespace=True,
-        validate_assignment=True,
-    )
-
-    name: Optional[str] = None
-    github_username: str = Field(None, validation_alias=AliasChoices("login"))
-    github_image_id: int = Field(None, validation_alias=AliasChoices("id"))
-    title: Optional[Union[list[str], str]] = None
-    sort: Optional[int] = None
-    bio: Optional[str] = None
-    organization: Optional[str] = Field(
-        None, validation_alias=AliasChoices("company")
-    )
-    date_added: Optional[str] = ""
-    deia_advisory: Optional[bool] = False
-    editorial_board: Optional[bool] = Field(
-        None, validation_alias=AliasChoices("editorial-board")
-    )
-    advisory: Optional[bool] = False
-    twitter: Optional[str] = Field(
-        None, validation_alias=AliasChoices("twitter_username")
-    )
-    mastodon: Optional[str] = Field(
-        None, validation_alias=AliasChoices("mastodon_username", "mastodon")
-    )
-    orcidid: Optional[str] = None
-    website: Optional[str] = Field(
-        None, validation_alias=AliasChoices("blog", "website")
-    )
-    board: Optional[bool] = False
-    contributor_type: Set[str] = set()
-    packages_editor: Set[str] = set()
-    packages_submitted: Set[str] = set()
-    packages_reviewed: Set[str] = set()
-    location: Optional[str] = None
-    email: Optional[str] = None
-
-    @field_validator(
-        "packages_reviewed",
-        "packages_submitted",
-        "packages_editor",
-        "contributor_type",
-        mode="before",
-    )
-    @classmethod
-    def convert_to_set(cls, value: list[str]):
-        if isinstance(value, list):
-            if not value:
-                return set()
-            elif value[0] is None:
-                return set()
-            else:
-                value = [a_val.lower() for a_val in value]
-                return set(value)
-        elif value is None:
-            return set()
-        return set(value.lower())
-
-    def add_unique_value(self, attr_name: str, values: Union[str, list[str]]):
-        """A helper that will add only unique values to an existing list"""
-        if isinstance(values, str):
-            values = [values]
-        attribute = getattr(self, attr_name)
-        if isinstance(attribute, set):
-            attribute.update(values)
-        else:
-            raise ValueError(f"{attr_name} is not a set attribute")
-
-    @field_serializer(
-        "packages_reviewed",
-        "packages_submitted",
-        "packages_editor",
-        "contributor_type",
-    )
-    def serialize_set(self, items: Set[str]):
-        """This is a serializer that runs on export. It ensures sets are
-        converted to lists"""
-        return sorted(list(items))
-
-    @field_validator("bio", mode="before")
-    @classmethod
-    def clean_strings(cls, string: str) -> str:
-        """This is a cleaning step that will remove spurious
-        characters from string fields.
-
-        """
-        if isinstance(string, str):
-            string = re.sub(r"[\r\n]", "", string)
-        return string
+from typing import List, Optional, Tuple
 
 
 @dataclass
@@ -249,27 +94,6 @@ class ProcessContributors:
             contrib_type = "community"
         return contrib_type
 
-    # TODO possibly could repurpose this as a check in the code
-    # but it should return get_user_info
-    # def check_add_user(self, gh_user: str, contribs: Dict[str, str]) -> None:
-    #     """Check to make sure user exists in the existing contrib data. If
-    #     they
-    #     don't' exist, add them
-
-    #     Parameters
-    #     ----------
-    #     gh_user : str
-    #         github username
-    #     contribs: dict
-    #         A dictionary containing contributors with gh user being the key
-
-    #     This returns the updated dictionary with a new user at the end.
-
-    #     """
-    #     if gh_user not in contribs.keys():
-    #         print("Missing user", gh_user, "adding them now.")
-    #         return self.get_user_info(gh_user)
-
     def load_json(self, json_path: str) -> dict:
         """
         Helper function that deserializes a json file to a dict.
@@ -281,7 +105,6 @@ class ProcessContributors:
             print(ae)
         return json.loads(response.text)
 
-    # TODO: check is i'm using the contrib type part of this method ?
     def process_json_file(self, json_file: str) -> Tuple[str, List]:
         """Deserialize a JSON file from a URL and cleanup data
 
@@ -321,8 +144,6 @@ class ProcessContributors:
         # Create an empty dictionary to hold the combined data
         combined_data = {}
 
-        # TODO: to make this faster, it might be better to return a dict
-        # with username : [contrib1, contrib2]
         for json_file in self.json_files:
             # Process the JSON file and add the data to the combined dictionary
             try:

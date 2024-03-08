@@ -1,6 +1,7 @@
 import pytest
 
-from pyosmeta.parse_issues import ProcessIssues, ReviewModel
+from pyosmeta.models import ReviewModel
+from pyosmeta.parse_issues import ProcessIssues
 
 checked = [
     ["Submitting Author", "Nabil Freij (@nabobalis)"],

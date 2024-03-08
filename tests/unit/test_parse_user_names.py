@@ -1,6 +1,6 @@
 import pytest
 
-from pyosmeta.parse_issues import parse_user_names
+from pyosmeta.clean import parse_user_names
 
 
 @pytest.mark.parametrize(

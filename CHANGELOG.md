@@ -5,6 +5,7 @@
 ## [Unreleased]
 - Fix: Parse up to 100 issues in a request (@lwasser, #94)
 - Fix: refactor parse issue header (@lwasser, #91)
+- Fix: Refactor and organize modules (@lwasser, #76)
 
 
 ## [v0.2.3] - 2024-02-29
