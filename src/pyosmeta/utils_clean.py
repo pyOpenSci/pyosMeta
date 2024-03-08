@@ -1,8 +1,6 @@
 """General cleaning utilities for markdown text.
 
 We use these helpers to clean various markdown elements found in issue review text.
-
-TODO: make sure these are all being used
 """
 
 import re
