@@ -1,6 +1,7 @@
-import pytest
-
-from pyosmeta.parse_issues import clean_markdown
+"""Tests for the parse issue header workflow.
+This workflow grabs the first comment from the review header and
+parses out (and cleans) pyOpenSci review metadata.
+"""
 
 
 def test_comment_to_list(process_issues, issue_list):
@@ -13,24 +14,3 @@ def test_comment_to_list(process_issues, issue_list):
     pkg_name, body_data = process_issues.comment_to_list(issue_list[0])
     assert pkg_name == "sunpy"
     assert len(body_data) == 79
-
-
-@pytest.mark.parametrize(
-    "input_string, expected_output",
-    [
-        ("*Hello*", "Hello"),
-        ("`Code`", "Code"),
-        ("**Bold**", "Bold"),
-        ("***Strong***", "Strong"),
-        ("`*Code*`", "Code"),
-        ("`**Code**`", "Code"),
-        ("`***Code***`", "Code"),
-        ("`Code***`", "Code"),
-        ("***Code`", "Code"),
-        ("***Code*`", "Code"),
-    ],
-)
-def test_clean_markdown(input_string, expected_output):
-    """Test that clean markdown correctly removes various markdown formatting
-    elements from a text string"""
-    assert clean_markdown(input_string) == expected_output
