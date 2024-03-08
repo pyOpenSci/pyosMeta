@@ -39,13 +39,13 @@ def clean_name(source_name: str) -> str:
     return source_name.strip()
 
 
-def clean_markdown(txt: str) -> str:
+def clean_markdown(source_text: str) -> str:
     """
-    Remove Markdown characters from the beginning or end of a string.
+    Cleans unwanted Markdown characters from text and returns cleaned text.
 
     Parameters
     ----------
-    txt : str
+    source_text : str
         The input string containing Markdown characters.
 
     Returns
@@ -58,6 +58,6 @@ def clean_markdown(txt: str) -> str:
     pattern = r"^[`*]+|[`*]+$"
 
     # Use re.sub to remove the matched Markdown characters
-    cleaned = re.sub(pattern, "", txt)
+    cleaned = re.sub(pattern, "", source_text)
 
     return cleaned
