@@ -1,4 +1,7 @@
-""""""
+"""Data models for Contributors, Reviews, and GitHub metadata.
+
+This module also includes a convenience class for URL validation.
+"""
 
 import re
 
