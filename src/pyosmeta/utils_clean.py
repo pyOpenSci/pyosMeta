@@ -7,20 +7,20 @@ import re
 from datetime import datetime
 
 
-def clean_date(a_date: str | None) -> datetime | str:
-    """Cleans up a datetime from github and returns a date string
+def clean_date(source_date: str | None) -> datetime | str:
+    """Cleans up a date string to a consistent datetime format.
 
-    In some cases the string is manually entered month-day-year and in
-    others it's a gh time stamp. finally sometimes it could be missing
-    or text. handle all of those cases with this validator.
+    The source date string may have been manually entered as month-day-year format
+    retrieved from GitHub as timestamp, could be missing, or contain random text.
+    This utility validates the input and returns a consistent format.
     """
 
-    if a_date is None or a_date == "missing":
+    if source_date is None or source_date == "missing":
         return "missing"
     else:
         try:
             return (
-                datetime.strptime(a_date, "%Y-%m-%dT%H:%M:%SZ")
+                datetime.strptime(source_date, "%Y-%m-%dT%H:%M:%SZ")
                 .date()
                 .strftime("%Y-%m-%d")
             )
@@ -29,14 +29,14 @@ def clean_date(a_date: str | None) -> datetime | str:
             return "missing"
 
 
-def clean_name(a_str: str) -> str:
-    """Helper to strip unwanted chars from text"""
+def clean_name(source_name: str) -> str:
+    """Remove unwanted characters from a name."""
 
     unwanted = ["(", ")", "@"]
     for char in unwanted:
-        a_str = a_str.replace(char, "")
+        source_name = source_name.replace(char, "")
 
-    return a_str.strip()
+    return source_name.strip()
 
 
 def clean_markdown(txt: str) -> str:
