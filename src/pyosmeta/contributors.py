@@ -94,27 +94,6 @@ class ProcessContributors:
             contrib_type = "community"
         return contrib_type
 
-    # TODO possibly could repurpose this as a check in the code
-    # but it should return get_user_info
-    # def check_add_user(self, gh_user: str, contribs: Dict[str, str]) -> None:
-    #     """Check to make sure user exists in the existing contrib data. If
-    #     they
-    #     don't' exist, add them
-
-    #     Parameters
-    #     ----------
-    #     gh_user : str
-    #         github username
-    #     contribs: dict
-    #         A dictionary containing contributors with gh user being the key
-
-    #     This returns the updated dictionary with a new user at the end.
-
-    #     """
-    #     if gh_user not in contribs.keys():
-    #         print("Missing user", gh_user, "adding them now.")
-    #         return self.get_user_info(gh_user)
-
     def load_json(self, json_path: str) -> dict:
         """
         Helper function that deserializes a json file to a dict.
@@ -126,7 +105,6 @@ class ProcessContributors:
             print(ae)
         return json.loads(response.text)
 
-    # TODO: check is i'm using the contrib type part of this method ?
     def process_json_file(self, json_file: str) -> Tuple[str, List]:
         """Deserialize a JSON file from a URL and cleanup data
 
@@ -166,8 +144,6 @@ class ProcessContributors:
         # Create an empty dictionary to hold the combined data
         combined_data = {}
 
-        # TODO: to make this faster, it might be better to return a dict
-        # with username : [contrib1, contrib2]
         for json_file in self.json_files:
             # Process the JSON file and add the data to the combined dictionary
             try:
