@@ -1,13 +1,8 @@
-"""
-Tests for the clean and parse helper functions located in
-the utils_clean and utils_parse modules.
-
-"""
+"""Tests for the clean helper functions located in the utils_clean module."""
 
 import pytest
 
 from pyosmeta.utils_clean import clean_date, clean_markdown, clean_name
-from pyosmeta.utils_parse import parse_user_names
 
 
 @pytest.mark.parametrize(
@@ -60,22 +55,3 @@ def test_clean_markdown(input_string, expected_output):
 )
 def test_clean_name(input_name, expected_output):
     assert clean_name(input_name) == expected_output
-
-
-@pytest.mark.parametrize(
-    "name, expected_result",
-    [
-        (
-            "Test User (@test1user)",
-            {"name": "Test User", "github_username": "test1user"},
-        ),
-        ("(@test2user)", {"name": "", "github_username": "test2user"}),
-        (
-            "Test (user) 3 (@test3user)",
-            {"name": "Test user 3", "github_username": "test3user"},
-        ),
-        ("@test4user", {"name": "", "github_username": "test4user"}),
-    ],
-)
-def test_parse_user_names(name, expected_result):
-    assert parse_user_names(name) == expected_result
