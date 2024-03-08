@@ -16,7 +16,7 @@ from pydantic import (
 )
 from typing import Optional, Set, Union
 
-from pyosmeta.clean import clean_date, clean_markdown
+from pyosmeta.utils_clean import clean_date, clean_markdown
 
 
 class UrlValidatorMixin:

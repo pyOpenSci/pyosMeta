@@ -5,8 +5,9 @@ import requests
 from dataclasses import dataclass
 from typing import Any
 
-from .clean import clean_markdown, parse_user_names
 from .contributors import ProcessContributors
+from .utils_clean import clean_markdown
+from .utils_parse import parse_user_names
 
 
 @dataclass
