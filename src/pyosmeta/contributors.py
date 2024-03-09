@@ -1,9 +1,7 @@
 import json
-import os
 
 import requests
 from dataclasses import dataclass
-from dotenv import load_dotenv
 from typing import List, Optional, Tuple
 
 
@@ -52,17 +50,17 @@ class ProcessContributors:
             ],
         }
 
-    def get_token(self) -> str:
-        """Fetches the GitHub API key from the users environment. If running
-        local from an .env file.
+    # def get_token(self) -> str:
+    #     """Fetches the GitHub API key from the users environment. If running
+    #     local from an .env file.
 
-        Returns
-        -------
-        str
-            The provided API key in the .env file.
-        """
-        load_dotenv()
-        return os.environ["GITHUB_TOKEN"]
+    #     Returns
+    #     -------
+    #     str
+    #         The provided API key in the .env file.
+    #     """
+    #     load_dotenv()
+    #     return os.environ["GITHUB_TOKEN"]
 
     def check_contrib_type(self, json_file: str):
         """

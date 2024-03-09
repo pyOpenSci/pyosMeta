@@ -1,11 +1,10 @@
 import re
 import warnings
 
-import requests
 from dataclasses import dataclass
 from typing import Any
 
-from .contributors import ProcessContributors
+from .github_api import GitHubAPI
 from .utils_clean import clean_date_accepted_key, clean_markdown
 from .utils_parse import parse_user_names
 
@@ -17,29 +16,24 @@ class ProcessIssues:
     metadata about each package.
     """
 
-    def __init__(self, org: str, repo_name: str, label_name: str):
+    def __init__(self, github_api: GitHubAPI):
         """
-        More here...
+        Initialize a process issues instance.
 
         Parameters
         ----------
-        org : str
-            Organization name where the issues exist
-        repo_name : str
-            Repo name where the software review issues live
-        label_name : str
-            Label of issues to grab - e.g. pyos approved
-        GITHUB_TOKEN : str
-            API token needed to authenticate with GitHub
-            Inherited from super() class
+        github_api : str
+            Instantiated instance of a GitHubAPI object
         """
-        self.org: str = org
-        self.repo_name: str = repo_name
-        self.label_name: str = label_name
-        self.contrib_instance = ProcessContributors([])
+        # self.org: str = org
+        # self.repo_name: str = repo_name
+        # self.label_name: str = label_name
+        # self.contrib_instance = ProcessContributors([])
+        self.github_api = github_api
+        # self.GITHUB_TOKEN = self.contrib_instance.get_token()
 
-        self.GITHUB_TOKEN = self.contrib_instance.get_token()
-
+    # These are the github metrics to return on a package
+    # It could be simpler to implement this using graphQL
     gh_stats = [
         "name",
         "description",
@@ -51,50 +45,47 @@ class ProcessIssues:
         "forks_count",
     ]
 
-    @property
-    def api_endpoint(self):
-        url = (
-            f"https://api.github.com/repos/{self.org}/{self.repo_name}/"
-            f"issues?labels={self.label_name}&state=all&per_page=100"
-        )
-        return url
+    # @property
+    # def api_endpoint(self):
+    #     url = (
+    #         f"https://api.github.com/repos/{self.org}/{self.repo_name}/"
+    #         f"issues?labels={self.label_name}&state=all&per_page=100"
+    #     )
+    #     return url
 
-    # Set up the API endpoint
-    def _get_response(self):
-        """
-        # Make a GET request to the API endpoint
-        """
+    # # Set up the API endpoint
+    # def _get_response(self):
+    #     """
+    #     # Make a GET request to the API endpoint
+    #     """
 
-        print(self.api_endpoint)
+    #     print(self.api_endpoint)
 
-        try:
-            response = requests.get(
-                self.api_endpoint,
-                headers={"Authorization": f"token {self.GITHUB_TOKEN}"},
-            )
-            response.raise_for_status()
+    #     try:
+    #         response = requests.get(
+    #             self.api_endpoint,
+    #             headers={"Authorization": f"token {self.GITHUB_TOKEN}"},
+    #         )
+    #         response.raise_for_status()
 
-        except requests.HTTPError as exception:
-            raise exception
+    #     except requests.HTTPError as exception:
+    #         raise exception
 
-        return response
+    #     return response
 
     def return_response(self) -> list[dict[str, object]]:
         """
-        Deserialize json response to list of dicts.
+        Call return response in github api object.
 
-        Parameters
-        ----------
-        username : str
-            GitHub username of person authenticating to hit the GitHub API
+        Returns a list of dictionaries representing issues.
 
         Returns
         -------
         list
             List of dict items each containing a review issue
         """
-        response = self._get_response()
-        return response.json()
+
+        return self.github_api.return_response()
 
     def _is_review_role(self, string: str) -> bool:
         """
@@ -287,6 +278,7 @@ class ProcessIssues:
 
         return issue_meta
 
+    # TODO: decide if this belongs here or in the github obj?
     def get_repo_endpoints(
         self, review_issues: dict[str, str]
     ) -> dict[str, str]:
@@ -371,6 +363,7 @@ class ProcessIssues:
 
         return clean_markdown(pkg_name), body_data
 
+    # TODO: This is also github related rename get_repo_metrics
     def get_gh_metrics(
         self,
         endpoints: dict[str, str],
@@ -392,80 +385,65 @@ class ProcessIssues:
             Updated review data with GitHub metrics.
         """
         pkg_meta = {}
+        # url is the api endpoint for a specific pyos-reviewed package repo
         for pkg_name, url in endpoints.items():
-            pkg_meta[pkg_name] = self.get_repo_meta(url, self.gh_stats)
+            pkg_meta[pkg_name] = self.process_repo_meta(url)
 
-            pkg_meta[pkg_name]["contrib_count"] = self.get_repo_contribs(url)
-            pkg_meta[pkg_name]["last_commit"] = self.get_last_commit(url)
+            # These 2 lines both hit the API directly
+            pkg_meta[pkg_name]["contrib_count"] = (
+                self.github_api.get_repo_contribs(url)
+            )
+            pkg_meta[pkg_name]["last_commit"] = (
+                self.github_api.get_last_commit(url)
+            )
             # Add github meta to review metadata
             reviews[pkg_name]["gh_meta"] = pkg_meta[pkg_name]
 
         return reviews
 
-    def get_repo_meta(self, url: str, stats_list: list) -> dict:
+    # This is also github related
+    def process_repo_meta(self, url: str) -> dict:
         """
-        Returns a set of GH stats from each repo of our reviewed packages.
+        Make a get call which returns metadata from the GitHub API about
+        a single repository. Create a dictionary containing all of the
+        specified github metrics for that repository that we want to use.
+
 
         """
-        stats_dict = {}
-        # Get the url (normally the docs) and description of a repo!
-        response = requests.get(
-            url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
-        )
-
-        # TODO: should this be some sort of try/except how do i catch these
-        # Response errors in the best way possible?
-        if response.status_code == 404:
-            print("Can't find: ", url, ". Did the repo url change?")
-        elif response.status_code == 403:
-            print("Oops you may have hit an API limit. Exiting")
-            print(f"API Response Text: {response.text}")
-            print(f"API Response Headers: {response.headers}")
-            exit()
-
         # Extract the description and homepage URL from the response JSON
-        else:
-            data = response.json()
-            for astat in stats_list:
-                stats_dict[astat] = data[astat]
-            stats_dict["documentation"] = stats_dict.pop("homepage")
+
+        stats_dict = {}
+        # Returns the raw top-level github API response for the repo
+        gh_repo_response = self.github_api.get_repo_meta(url)
+
+        # Retrieve the metrics that we want to track
+
+        for astat in self.gh_stats:
+            stats_dict[astat] = gh_repo_response[astat]
+
+        stats_dict["documentation"] = stats_dict.pop("homepage")
 
         return stats_dict
 
-    def get_repo_contribs(self, url: str) -> dict:
-        """
-        Returns a list of contributors to a specific repo.
+    # def return_repo_contribs(self, url: str) -> int:
+    #     """
+    #     Returns the number of contributors to a specific repo.
 
-        """
-        repo_contribs = url + "/contributors"
-        # Small script to get the url (normally the docs) and repo description
-        response = requests.get(
-            repo_contribs,
-            headers={"Authorization": f"token {self.GITHUB_TOKEN}"},
-        )
+    #     """
 
-        if response.status_code == 404:
-            print("Can't find: ", repo_contribs, ". Did the repo url change?")
-        # Extract the description and homepage URL from the JSON response
-        else:
-            return len(response.json())
+    #     return self.github_api.get_repo_contribs(url)
 
-    def get_last_commit(self, repo: str) -> str:
-        """Returns the last commit to the repository.
+    # def get_last_commit(self, repo: str) -> str:
+    #     """Returns the last commit to the repository.
 
-        Parameters
-        ----------
-        str : string
-            A string containing a datetime object representing the datetime of
-            the last commit to the repo
-        """
-        url = repo + "/commits"
-        response = requests.get(
-            url, headers={"Authorization": f"token {self.GITHUB_TOKEN}"}
-        ).json()
-        date = response[0]["commit"]["author"]["date"]
+    #     Parameters
+    #     ----------
+    #     str : string
+    #         A string containing a datetime object representing the datetime of
+    #         the last commit to the repo
+    #     """
 
-        return date
+    #     return self.github_api.get_last_commit(repo)
 
     # This works - i could just make it more generic and remove fmt since it's
     # not used and replace it with a number of values and a test string
