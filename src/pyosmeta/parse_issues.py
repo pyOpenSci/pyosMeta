@@ -197,10 +197,7 @@ class ProcessIssues:
                 "archive",
                 "version_accepted",
                 "joss_doi",
-                # To support older reviews without month/day/year
                 "date_accepted",
-                "date_accepted_(month/day/year)",
-                "date_accepted_(month-day-year)",
                 "categories",
                 "partners",
                 "domain",
