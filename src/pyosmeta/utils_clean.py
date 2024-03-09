@@ -70,7 +70,7 @@ def clean_date_accepted_key(review_dict: dict[str, Any]) -> dict[str, str]:
     Normalize date_accepted keys in our review dictionary.
 
     In our reviews we have various templates that have evolved over the past
-    5 years (since 2019). Dome used date accepted, some have date accepted
+    5 years (since 2019). Some used date accepted, some have date accepted
     (month/day/year) and some have month-day-year. Rather than try to
     account for all of these this is a helper that simply updates the key
     to be date_accepted regardless of what is found after that text.
