@@ -8,6 +8,7 @@
 - Fix: Refactor and organize modules (@lwasser, #76)
 - Fix: Rename and organize `clean.py` module into `utils_parse` and `utils_clean` (@lwasser, @willingc, #121)
 - Fix: Add tests for all utils functions (@lwasser, #122)
+- Fix: Bug where date_accepted is removed (@lwasser, #129)
 
 
 ## [v0.2.3] - 2024-02-29

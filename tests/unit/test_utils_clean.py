@@ -2,7 +2,12 @@
 
 import pytest
 
-from pyosmeta.utils_clean import clean_date, clean_markdown, clean_name
+from pyosmeta.utils_clean import (
+    clean_date,
+    clean_date_accepted_key,
+    clean_markdown,
+    clean_name,
+)
 
 
 @pytest.mark.parametrize(
@@ -55,3 +60,23 @@ def test_clean_markdown(input_string, expected_output):
 )
 def test_clean_name(input_name, expected_output):
     assert clean_name(input_name) == expected_output
+
+
+@pytest.mark.parametrize(
+    "input_dict, expected_output",
+    [
+        # Test case where key starts with "date_accepted"
+        (
+            {"date_accepted_(month/day/year)": "2024/03/07"},
+            {"date_accepted": "2024/03/07"},
+        ),
+        # Test where key does not start with "date_accepted"
+        ({"other_key": "value"}, {"other_key": "value"}),
+        (
+            {"date_accepted": "2024-03-07"},
+            {"date_accepted": "2024-03-07"},
+        ),
+    ],
+)
+def test_clean_date_accepted_key(input_dict, expected_output):
+    assert clean_date_accepted_key(input_dict) == expected_output

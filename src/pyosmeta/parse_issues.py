@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .contributors import ProcessContributors
-from .utils_clean import clean_markdown
+from .utils_clean import clean_date_accepted_key, clean_markdown
 from .utils_parse import parse_user_names
 
 
@@ -146,10 +146,16 @@ class ProcessIssues:
         for issue in issues:
             # Return issue comment as cleaned list + package name
             pkg_name, body_data = self.comment_to_list(issue)
+            if pkg_name.lower() == "pynteny":
+                print("halt")
             if not pkg_name:
                 continue
 
             review[pkg_name] = self.get_issue_meta(body_data, total_lines)
+
+            # Normalize date accepted key to be the same in each review
+            review[pkg_name] = clean_date_accepted_key(review[pkg_name])
+
             # Add issue open and close date to package meta from GH response
             # Date cleaning happens via pydantic validator not here
             for a_date in meta_dates:
@@ -191,7 +197,10 @@ class ProcessIssues:
                 "archive",
                 "version_accepted",
                 "joss_doi",
+                # To support older reviews without month/day/year
+                "date_accepted",
                 "date_accepted_(month/day/year)",
+                "date_accepted_(month-day-year)",
                 "categories",
                 "partners",
                 "domain",
