@@ -21,15 +21,19 @@ import pickle
 from pydantic import ValidationError
 
 from pyosmeta import ProcessIssues, ReviewModel
+from pyosmeta.github_api import GitHubAPI
 
 
 def main():
-    process_review = ProcessIssues(
+
+    github_api = GitHubAPI(
         org="pyopensci",
-        repo_name="software-submission",
-        label_name="6/pyOS-approved 🚀🚀🚀",
+        repo="software-submission",
+        labels=["6/pyOS-approved 🚀🚀🚀"],
     )
-    # date_accepted_(month/day/year)
+
+    process_review = ProcessIssues(github_api)
+
     # Get all issues for approved packages - load as dict
     issues = process_review.return_response()
     accepted_reviews = process_review.parse_issue_header(issues, 45)
