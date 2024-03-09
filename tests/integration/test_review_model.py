@@ -18,7 +18,7 @@ example = {
     "archive": "[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8384174.svg)](https://doi.org/10.5281/zenodo.8384174)",
     "version_accepted": "5.1.1",
     "joss_doi": "[![DOI](https://joss.theoj.org/papers/10.21105/joss.01832/status.svg)](https://joss.theoj.org/papers/10.21105/joss.01832)",
-    "date_accepted_(month/day/year)": "01/18/2024",
+    "date_accepted": "01/18/2024",
     "categories": [
         "data-retrieval",
         "data-extraction",
