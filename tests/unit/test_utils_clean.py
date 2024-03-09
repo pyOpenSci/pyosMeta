@@ -67,6 +67,10 @@ def test_clean_name(input_name, expected_output):
     [
         # Test case where key starts with "date_accepted"
         (
+            {"date_accepted_(month-day-year)": "2024-03-07"},
+            {"date_accepted": "2024-03-07"},
+        ),
+        (
             {"date_accepted_(month/day/year)": "2024/03/07"},
             {"date_accepted": "2024/03/07"},
         ),

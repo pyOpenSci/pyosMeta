@@ -146,8 +146,6 @@ class ProcessIssues:
         for issue in issues:
             # Return issue comment as cleaned list + package name
             pkg_name, body_data = self.comment_to_list(issue)
-            if pkg_name.lower() == "pynteny":
-                print("halt")
             if not pkg_name:
                 continue
 
