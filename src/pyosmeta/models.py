@@ -220,9 +220,7 @@ class ReviewModel(BaseModel):
     version_accepted: str | None = None
     date_accepted: str | None = Field(
         default=None,
-        validation_alias=AliasChoices(
-            "date_accepted_(month/day/year)", "Date accepted", "date_accepted"
-        ),
+        validation_alias=AliasChoices("Date accepted", "date_accepted"),
     )
     created_at: str = None
     updated_at: str = None
