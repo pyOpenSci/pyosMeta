@@ -32,8 +32,6 @@ def main():
     # date_accepted_(month/day/year)
     # Get all issues for approved packages - load as dict
     issues = process_review.return_response()
-    # TODO: this method parse_issue_header is working but the parsing code is
-    # hard to follow
     accepted_reviews = process_review.parse_issue_header(issues, 45)
 
     # Update gh metrics via api for all packages
@@ -48,6 +46,7 @@ def main():
         # First add gh meta to each dict
         print("Parsing & validating", key)
         try:
+
             final_reviews[key] = ReviewModel(**review)
         except ValidationError as ve:
             print(key, ":", ve)
