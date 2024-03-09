@@ -35,6 +35,8 @@ def main():
     process_review = ProcessIssues(github_api)
 
     # Get all issues for approved packages - load as dict
+    # TODO: this doesn't have to be in process issues at all. it could fully
+    # Call the github module
     issues = process_review.return_response()
     accepted_reviews = process_review.parse_issue_header(issues, 45)
 
