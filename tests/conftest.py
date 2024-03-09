@@ -1,14 +1,14 @@
 import pytest
 
+from pyosmeta.github_api import GitHubAPI
 from pyosmeta.parse_issues import ProcessIssues
 
 
 @pytest.fixture
 def process_issues():
     """A fixture that returns an instance of the ProcessIssues class"""
-    process_issues = ProcessIssues(
-        repo_name="pyostest", org="pyopensci", label_name="test"
-    )
+    gh_client = GitHubAPI()
+    process_issues = ProcessIssues(gh_client)
     return process_issues
 
 

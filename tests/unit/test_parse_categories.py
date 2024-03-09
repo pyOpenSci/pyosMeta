@@ -1,7 +1,6 @@
 import pytest
 
 from pyosmeta.models import ReviewModel
-from pyosmeta.parse_issues import ProcessIssues
 
 checked = [
     ["Submitting Author", "Nabil Freij (@nabobalis)"],
@@ -52,17 +51,13 @@ no_categories = [
     ],
 )
 def test_get_categories(
-    issue_list: list[list[str]], expected_categories: list[str | None]
+    issue_list: list[list[str]],
+    expected_categories: list[str | None],
+    process_issues,
 ):
-    # Initialize your class or use an existing instance
-    issues = ProcessIssues(
-        org="pyopensci",
-        repo_name="software-submission",
-        label_name="presubmission",
-    )
 
     # Call the get_categories method
-    categories = issues.get_categories(issue_list, "## Scope", 3)
+    categories = process_issues.get_categories(issue_list, "## Scope", 3)
 
     # Assert the result matches the expected categories
     assert categories == expected_categories
