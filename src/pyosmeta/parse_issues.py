@@ -25,12 +25,8 @@ class ProcessIssues:
         github_api : str
             Instantiated instance of a GitHubAPI object
         """
-        # self.org: str = org
-        # self.repo_name: str = repo_name
-        # self.label_name: str = label_name
-        # self.contrib_instance = ProcessContributors([])
+
         self.github_api = github_api
-        # self.GITHUB_TOKEN = self.contrib_instance.get_token()
 
     # These are the github metrics to return on a package
     # It could be simpler to implement this using graphQL
@@ -44,34 +40,6 @@ class ProcessIssues:
         "open_issues_count",
         "forks_count",
     ]
-
-    # @property
-    # def api_endpoint(self):
-    #     url = (
-    #         f"https://api.github.com/repos/{self.org}/{self.repo_name}/"
-    #         f"issues?labels={self.label_name}&state=all&per_page=100"
-    #     )
-    #     return url
-
-    # # Set up the API endpoint
-    # def _get_response(self):
-    #     """
-    #     # Make a GET request to the API endpoint
-    #     """
-
-    #     print(self.api_endpoint)
-
-    #     try:
-    #         response = requests.get(
-    #             self.api_endpoint,
-    #             headers={"Authorization": f"token {self.GITHUB_TOKEN}"},
-    #         )
-    #         response.raise_for_status()
-
-    #     except requests.HTTPError as exception:
-    #         raise exception
-
-    #     return response
 
     def return_response(self) -> list[dict[str, object]]:
         """
@@ -110,9 +78,6 @@ class ProcessIssues:
         """Parses through each header comment for selected reviews and returns
         review metadata.
 
-        Returns:
-        GitHub Issue meta: "created_at", "updated_at", "closed_at"
-
         Parameters
         ----------
         issues : list
@@ -127,7 +92,7 @@ class ProcessIssues:
         Dict
             A dictionary containing metadata for the issue including the
             package name, description, review team, version submitted etc.
-            See key_order below for the full list of keys.
+            See meta_dates below for the full list of keys.
         """
 
         meta_dates = ["created_at", "updated_at", "closed_at"]
@@ -363,7 +328,7 @@ class ProcessIssues:
 
         return clean_markdown(pkg_name), body_data
 
-    # TODO: This is also github related rename get_repo_metrics
+    # Rename to process_gh_metrics?
     def get_gh_metrics(
         self,
         endpoints: dict[str, str],
@@ -402,48 +367,43 @@ class ProcessIssues:
         return reviews
 
     # This is also github related
-    def process_repo_meta(self, url: str) -> dict:
+    def process_repo_meta(self, url: str) -> dict[str, Any]:
         """
-        Make a get call which returns metadata from the GitHub API about
-        a single repository. Create a dictionary containing all of the
-        specified github metrics for that repository that we want to use.
+        Process metadata from the GitHub API about a single repository.
 
+        Parameters
+        ----------
+        url : str
+            The URL of the repository.
+
+        Returns
+        -------
+        dict[str, Any]
+            A dictionary containing the specified GitHub metrics for the repo.
+
+        Notes
+        -----
+        This method uses our github module to process returned data from a
+        GET call to the GitHub API to retrieve metadata about a package
+        repository. It then extracts the desired metrics from the API response
+        and constructs a dictionary with these metrics.
+
+        The `homepage` metric is renamed to `documentation` in the returned
+        dictionary.
 
         """
-        # Extract the description and homepage URL from the response JSON
 
         stats_dict = {}
         # Returns the raw top-level github API response for the repo
         gh_repo_response = self.github_api.get_repo_meta(url)
 
         # Retrieve the metrics that we want to track
-
         for astat in self.gh_stats:
             stats_dict[astat] = gh_repo_response[astat]
 
         stats_dict["documentation"] = stats_dict.pop("homepage")
 
         return stats_dict
-
-    # def return_repo_contribs(self, url: str) -> int:
-    #     """
-    #     Returns the number of contributors to a specific repo.
-
-    #     """
-
-    #     return self.github_api.get_repo_contribs(url)
-
-    # def get_last_commit(self, repo: str) -> str:
-    #     """Returns the last commit to the repository.
-
-    #     Parameters
-    #     ----------
-    #     str : string
-    #         A string containing a datetime object representing the datetime of
-    #         the last commit to the repo
-    #     """
-
-    #     return self.github_api.get_last_commit(repo)
 
     # This works - i could just make it more generic and remove fmt since it's
     # not used and replace it with a number of values and a test string
