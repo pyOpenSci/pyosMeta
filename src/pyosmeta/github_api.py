@@ -9,6 +9,7 @@ available
 numbers, stars and more "health & stability" related metrics
 """
 
+import logging
 import os
 
 import requests
@@ -74,17 +75,11 @@ class GitHubAPI:
         Make a GET request to the Github API endpoint
         Deserialize json response to list of dicts.
 
-        Parameters
-        ----------
-        username : str
-            GitHub username of person authenticating to hit the GitHub API
-
         Returns
         -------
         list
             List of dict items each containing a review issue
         """
-        print(self.api_endpoint)
 
         try:
             response = requests.get(
@@ -98,46 +93,103 @@ class GitHubAPI:
 
         return response.json()
 
-    # This is also github related
-    def get_repo_meta(self, url: str) -> dict[str, Any]:
+    def get_repo_meta(self, url: str) -> dict[str, Any] | None:
         """
-        Returns a set of GH stats from each repo of our reviewed packages.
+        Get GitHub metrics from the GitHub API for a single repository.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the repository.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            A dictionary containing the specified GitHub metrics for the repository.
+            Returns None if the repository is not found or access is forbidden.
+
+        Notes
+        -----
+        This method makes a GET call to the GitHub API to retrieve metadata
+        about a pyos reviewed package repository.
+
+        If the repository is not found (status code 404) or access is forbidden
+        (status code 403), this method returns None.
 
         """
-        # stats_dict = {}
+
         # Get the url (normally the docs) and description of a repo
         response = requests.get(
             url, headers={"Authorization": f"token {self.get_token()}"}
         )
 
-        # TODO: should this be some sort of try/except how do i catch these
-        # Response errors in the best way possible?
-        if response.status_code == 404:
-            print("Can't find: ", url, ". Did the repo url change?")
-        elif response.status_code == 403:
-            print("Oops you may have hit an API limit. Exiting")
-            print(f"API Response Text: {response.text}")
-            print(f"API Response Headers: {response.headers}")
-            exit()
-
-        else:
+        # Check if the request was successful (status code 2xx)
+        if response.ok:
             return response.json()
 
-    def get_repo_contribs(self, url: str) -> dict:
+        # Handle specific HTTP errors
+        elif response.status_code == 404:
+            logging.warning(
+                f"Repository not found: {url}. Did the repo URL change?"
+            )
+            return None
+        elif response.status_code == 403:
+            # Construct a single warning message with formatted strings
+            warning_message = (
+                "Oops! You may have hit an API limit for URL: {url}.\n"
+                f"API Response Text: {response.text}\n"
+                f"API Response Headers: {response.headers}"
+            )
+            logging.warning(warning_message)
+            return None
+
+        else:
+            # Log other HTTP errors
+            logging.warning(
+                f"Unexpected HTTP error: {response.status_code} URL: {url}"
+            )
+            return None
+
+    def get_repo_contribs(self, url: str) -> int | None:
         """
-        Returns a count for total contribs to a repo.
-        I definitely think graphQL would be better suited for these calls
+        Returns the count of total contributors to a repository.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the repository.
+
+        Returns
+        -------
+        int
+            The count of total contributors to the repository.
+
+        Notes
+        -----
+        This method makes a GET call to the GitHub API to retrieve
+        total contributors for the specified repository. It then returns the
+        count of contributors.
+
+        If the repository is not found (status code 404), a warning message is
+        logged, and the method returns None.
         """
-        repo_contribs = url + "/contributors"
+
+        repo_contribs_url = url + "/contributors"
+
         # Get the url (normally the docs) and repository description
         response = requests.get(
-            repo_contribs,
+            repo_contribs_url,
             headers={"Authorization": f"token {self.get_token()}"},
         )
 
+        # Handle 404 error (Repository not found)
         if response.status_code == 404:
-            print("Can't find: ", repo_contribs, ". Did the repo url change?")
-        # Extract the description and homepage URL from the JSON response
+            logging.warning(
+                f"Repository not found: {repo_contribs_url}. "
+                "Did the repo URL change?"
+            )
+            return None
+        # Return total contributors
         else:
             return len(response.json())
 
@@ -149,6 +201,11 @@ class GitHubAPI:
         str : string
             A string containing a datetime object representing the datetime of
             the last commit to the repo
+
+        Returns
+        -------
+        str
+            String representing the timestamp for the last commit to the repo.
         """
         url = repo + "/commits"
         response = requests.get(
