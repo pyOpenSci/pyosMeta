@@ -33,13 +33,10 @@ def test_get_token(mock_github_token):
     assert token == os.environ["GITHUB_TOKEN"]
 
 
-# This test should work but it keeps finding my local envt var
-# Even tho i'm removing it in the monkey patch and using a temp
-# Directory
-# def test_missing_token(mock_missing_github_token, tmpdir):
-#     """Test that a keyerror is raised when the token is missing."""
-#     os.chdir(tmpdir)
-#     github_api = GitHubAPI()
+def test_missing_token(mock_missing_github_token, tmpdir):
+    """Test that a keyerror is raised when the token is missing."""
+    os.chdir(tmpdir)
+    github_api = GitHubAPI()
 
-#     with pytest.raises(KeyError, match="Oops! A GITHUB_TOKEN environment"):
-#         github_api.get_token()
+    with pytest.raises(KeyError, match="Oops! A GITHUB_TOKEN environment"):
+        github_api.get_token()
