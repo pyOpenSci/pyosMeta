@@ -36,8 +36,8 @@ script options that you can chose to run.
 
    `hatch run test:run-coverage`
 
-2. To run tests without code coverage report outs use :
-   `hatch run test:run-coverage`
+2. To run tests without code coverage report outs use:
+   `hatch run test:run-no-cov`
 
 3. To run tests with an xml report generated use:
    `hatch run test:run-report`
