@@ -57,9 +57,19 @@ class GitHubAPI:
         -------
         str
             The provided API key in the .env file.
+
+        Raises
+        ------
+        KeyError
+            If the GITHUB_TOKEN environment variable is not found.
         """
         load_dotenv()
-        return os.environ["GITHUB_TOKEN"]
+        try:
+            return os.environ["GITHUB_TOKEN"]
+        except KeyError:
+            raise KeyError(
+                "Oops! A GITHUB_TOKEN environment variable wasn't found."
+            )
 
     @property
     def api_endpoint(self):
