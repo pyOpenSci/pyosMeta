@@ -96,6 +96,9 @@ class PersonModel(BaseModel, UrlValidatorMixin):
     editorial_board: Optional[bool] = Field(
         None, validation_alias=AliasChoices("editorial-board")
     )
+    emeritus_editor: Optional[bool] = Field(
+        None, validation_alias=AliasChoices("emeritus_editor")
+    )
     advisory: Optional[bool] = False
     twitter: Optional[str] = Field(
         None, validation_alias=AliasChoices("twitter_username")
@@ -104,6 +107,7 @@ class PersonModel(BaseModel, UrlValidatorMixin):
         None, validation_alias=AliasChoices("mastodon_username", "mastodon")
     )
     orcidid: Optional[str] = None
+    partners: Optional[list[str]] = None
     website: Optional[str] = Field(
         None, validation_alias=AliasChoices("blog", "website")
     )
@@ -124,6 +128,8 @@ class PersonModel(BaseModel, UrlValidatorMixin):
     )
     @classmethod
     def convert_to_set(cls, value: list[str]):
+        """This method converts any list of things ingested into the
+        model into a set object for cleaner parsing"""
         if isinstance(value, list):
             if not value:
                 return set()

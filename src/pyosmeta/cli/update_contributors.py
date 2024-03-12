@@ -35,7 +35,7 @@ def main():
         "software-peer-review",
         "pyopensci.github.io",
         "software-review",
-        "update-web-metadata",
+        "pyosmeta",
     ]
     json_files = create_paths(repos)
 
@@ -51,6 +51,8 @@ def main():
     all_contribs = {}
     for a_contrib in web_contribs:
         print(a_contrib["github_username"])
+        if a_contrib["github_username"] == "hamogu":
+            print("moritz")
         try:
             all_contribs[a_contrib["github_username"].lower()] = PersonModel(
                 **a_contrib
