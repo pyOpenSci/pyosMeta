@@ -40,3 +40,14 @@ def test_missing_token(mock_missing_github_token, tmpdir):
 
     with pytest.raises(KeyError, match="Oops! A GITHUB_TOKEN environment"):
         github_api.get_token()
+
+
+def test_api_endpoint(github_api):
+    """Test that the generated api url created in the property
+    is as expected
+    """
+    expected_endpoint = (
+        "https://api.github.com/repos/pyopensci/pyosmeta/"
+        "issues?labels=label1,label2&state=all&per_page=100"
+    )
+    assert github_api.api_endpoint == expected_endpoint
