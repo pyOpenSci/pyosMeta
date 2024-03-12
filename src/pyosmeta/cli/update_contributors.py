@@ -35,7 +35,7 @@ def main():
         "software-peer-review",
         "pyopensci.github.io",
         "software-review",
-        "update-web-metadata",
+        "pyosmeta",
     ]
     json_files = create_paths(repos)
 
