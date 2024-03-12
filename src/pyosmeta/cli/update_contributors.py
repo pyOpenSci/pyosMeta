@@ -51,8 +51,6 @@ def main():
     all_contribs = {}
     for a_contrib in web_contribs:
         print(a_contrib["github_username"])
-        if a_contrib["github_username"] == "hamogu":
-            print("moritz")
         try:
             all_contribs[a_contrib["github_username"].lower()] = PersonModel(
                 **a_contrib
