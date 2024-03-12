@@ -5,6 +5,13 @@ from pyosmeta.parse_issues import ProcessIssues
 
 
 @pytest.fixture
+def github_api():
+    return GitHubAPI(
+        org="pyopensci", repo="pyosmeta", labels=["label1", "label2"]
+    )
+
+
+@pytest.fixture
 def process_issues():
     """A fixture that returns an instance of the ProcessIssues class"""
     gh_client = GitHubAPI()
