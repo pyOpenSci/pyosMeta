@@ -1,10 +1,10 @@
 import json
-import os
 
 import requests
 from dataclasses import dataclass
-from dotenv import load_dotenv
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
+
+from .github_api import GitHubAPI
 
 
 @dataclass
@@ -12,18 +12,18 @@ class ProcessContributors:
     """A class that contains some basic methods to support populating and
     updating contributor data."""
 
-    def __init__(self, json_files: List) -> None:
+    def __init__(self, github_api: GitHubAPI, json_files: List) -> None:
         """
         Parameters
         ----------
-
+        github_api : str
+            Instantiated instance of a GitHubAPI object
         json_files : list
             A list of string objects each of which represents a URL to a JSON
             file to be parsed
-        GITHUB_TOKEN : str
-            A string containing your API token needed to access the github API
         """
 
+        self.github_api = github_api
         self.json_files = json_files
         # self.GITHUB_TOKEN = GITHUB_TOKEN
         self.update_keys = [
@@ -52,17 +52,18 @@ class ProcessContributors:
             ],
         }
 
-    def get_token(self) -> str:
-        """Fetches the GitHub API key from the users environment. If running
-        local from an .env file.
+    # This is already in the github api module
+    # def get_token(self) -> str:
+    #     """Fetches the GitHub API key from the users environment. If running
+    #     local from an .env file.
 
-        Returns
-        -------
-        str
-            The provided API key in the .env file.
-        """
-        load_dotenv()
-        return os.environ["GITHUB_TOKEN"]
+    #     Returns
+    #     -------
+    #     str
+    #         The provided API key in the .env file.
+    #     """
+    #     load_dotenv()
+    #     return os.environ["GITHUB_TOKEN"]
 
     def check_contrib_type(self, json_file: str):
         """
@@ -94,6 +95,7 @@ class ProcessContributors:
             contrib_type = "community"
         return contrib_type
 
+    # Possibly github it is a get request but it says json path
     def load_json(self, json_path: str) -> dict:
         """
         Helper function that deserializes a json file to a dict.
@@ -153,9 +155,9 @@ class ProcessContributors:
                 print("Oops - can't process", json_file, e)
         return combined_data
 
-    def get_user_info(
-        self, username: str, aname: Optional[str] = None
-    ) -> dict:
+    def return_user_info(
+        self, gh_handle: str, name: Optional[str] = None
+    ) -> dict[str, Any]:
         """
         Get a single user's information from their GitHub username using the
         GitHub API
@@ -163,9 +165,9 @@ class ProcessContributors:
 
         Parameters
         ----------
-        username : string
+        gh_handle : string
             Github username to retrieve data for
-        aname : str default=None
+        name : str default=None
             A user's name from the contributors.yml file.
             https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
 
@@ -174,12 +176,13 @@ class ProcessContributors:
             Dict with updated user data grabbed from the GH API
         """
 
-        url = f"https://api.github.com/users/{username}"
-        headers = {"Authorization": f"Bearer {self.get_token()}"}
-        response = requests.get(url, headers=headers)
-        # TODO: add check here for if credentials are bad
-        # if message = Bad credentials
-        response_json = response.json()
+        response_json = self.github_api.get_user_info(gh_handle, name)
+        # url = f"https://api.github.com/users/{username}"
+        # headers = {"Authorization": f"Bearer {self.get_token()}"}
+        # response = requests.get(url, headers=headers)
+        # # TODO: add check here for if credentials are bad
+        # # if message = Bad credentials
+        # response_json = response.json()
 
         # TODO: make an attribute and call it here?
         update_keys = {

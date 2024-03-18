@@ -15,7 +15,7 @@ import os
 import requests
 from dataclasses import dataclass
 from dotenv import load_dotenv
-from typing import Any
+from typing import Any, Optional, Union
 
 
 @dataclass
@@ -224,3 +224,34 @@ class GitHubAPI:
         date = response[0]["commit"]["author"]["date"]
 
         return date
+
+    def get_user_info(
+        self, gh_handle: str, name: Optional[str] = None
+    ) -> dict[str, Union[str, Any]]:
+        """
+        Get a single user's information from their GitHub username using the
+        GitHub API
+        # https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
+
+        Parameters
+        ----------
+        gh_handle : string
+            Github username to retrieve data for
+        name : str default=None
+            A user's name from the contributors.yml file.
+            https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
+
+        Returns
+        -------
+            Dict with updated user data grabbed from the GH API
+        """
+
+        url = f"https://api.github.com/users/{gh_handle}"
+        headers = {"Authorization": f"Bearer {self.get_token()}"}
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 401:
+            raise ValueError(
+                "Bad credentials. Please check your authentication token."
+            )
+        return response.json()
