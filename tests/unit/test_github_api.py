@@ -7,6 +7,21 @@ from pyosmeta.github_api import GitHubAPI
 
 
 @pytest.fixture
+def expected_ghuser_response():
+    """I took a valid response and changed the username to create this object"""
+    expected_response = {
+        "login": "chayadecacao",
+        "id": 578543,
+        "node_id": "MDQ6VXNlcjU3ODU0Mw==",
+        "avatar_url": "https://avatars.githubusercontent.com/u/578543?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/webknjaz",
+        "html_url": "https://github.com/webknjaz",
+    }
+    return expected_response
+
+
+@pytest.fixture
 def mock_github_token(monkeypatch):
     """Fixture to create a mock token - i don't believe this
     is working as expected either."""
@@ -51,3 +66,31 @@ def test_api_endpoint(github_api):
         "issues?labels=label1,label2&state=all&per_page=100"
     )
     assert github_api.api_endpoint == expected_endpoint
+
+
+def test_get_user_info_successful(mocker, expected_ghuser_response):
+    """Test that an expected response returns properly"""
+
+    expected_response = expected_ghuser_response
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = expected_response
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api_instance = GitHubAPI()
+    user_info = github_api_instance.get_user_info("example_user")
+
+    assert user_info == expected_response
+
+
+def test_get_user_info_bad_credentials(mocker):
+    """Test that a value error is raised when the GH token is not
+    valid."""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 401
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api = GitHubAPI()
+
+    with pytest.raises(ValueError, match="Oops, I couldn't authenticate"):
+        github_api.get_user_info("example_user")

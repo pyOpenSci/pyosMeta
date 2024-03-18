@@ -252,6 +252,6 @@ class GitHubAPI:
 
         if response.status_code == 401:
             raise ValueError(
-                "Bad credentials. Please check your authentication token."
+                "Oops, I couldn't authenticate. Please check your token."
             )
         return response.json()
