@@ -52,19 +52,6 @@ class ProcessContributors:
             ],
         }
 
-    # This is already in the github api module
-    # def get_token(self) -> str:
-    #     """Fetches the GitHub API key from the users environment. If running
-    #     local from an .env file.
-
-    #     Returns
-    #     -------
-    #     str
-    #         The provided API key in the .env file.
-    #     """
-    #     load_dotenv()
-    #     return os.environ["GITHUB_TOKEN"]
-
     def check_contrib_type(self, json_file: str):
         """
         Determine the type of contribution the person
@@ -177,14 +164,7 @@ class ProcessContributors:
         """
 
         response_json = self.github_api.get_user_info(gh_handle, name)
-        # url = f"https://api.github.com/users/{username}"
-        # headers = {"Authorization": f"Bearer {self.get_token()}"}
-        # response = requests.get(url, headers=headers)
-        # # TODO: add check here for if credentials are bad
-        # # if message = Bad credentials
-        # response_json = response.json()
 
-        # TODO: make an attribute and call it here?
         update_keys = {
             "name": "name",
             "location": "location",
