@@ -138,13 +138,23 @@
         "code",
         "review"
       ]
+    },
+    {
+      "login": "webknjaz",
+      "name": "Sviatoslav Sydorenko (Святослав Сидоренко)",
+      "avatar_url": "https://avatars.githubusercontent.com/u/578543?v=4",
+      "profile": "https://webknjaz.me",
+      "contributions": [
+        "code",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
   "skipCi": true,
   "repoType": "github",
   "repoHost": "https://github.com",
-  "projectName": "update-web-metadata",
+  "projectName": "pyosMeta",
   "projectOwner": "pyOpenSci",
   "commitType": "docs"
 }
