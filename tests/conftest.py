@@ -1,11 +1,42 @@
 import pytest
 
+from pyosmeta.contributors import ProcessContributors
 from pyosmeta.github_api import GitHubAPI
 from pyosmeta.parse_issues import ProcessIssues
 
 
 @pytest.fixture
+def ghuser_response():
+    """This is the initial github response. I changed the username to
+    create this object"""
+    expected_response = {
+        "login": "chayadecacao",
+        "id": 123456,
+        "node_id": "MDQ6VXNlcjU3ODU0Mw==",
+        "avatar_url": "https://avatars.githubusercontent.com/u/123456?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/cacao",
+        "html_url": "https://github.com/cacao",
+    }
+    return expected_response
+
+
+@pytest.fixture
+def mock_github_api(mocker, ghuser_response):
+    mock_api = mocker.Mock(spec=GitHubAPI)
+    mock_api.get_user_info.return_value = ghuser_response
+    return mock_api
+
+
+@pytest.fixture
+def process_contribs(contrib_github_api):
+    """A fixture that creates a"""
+    return ProcessContributors(contrib_github_api)
+
+
+@pytest.fixture
 def github_api():
+    """A fixture that instantiates an instance of the GitHubAPI object"""
     return GitHubAPI(
         org="pyopensci", repo="pyosmeta", labels=["label1", "label2"]
     )

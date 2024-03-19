@@ -25,7 +25,7 @@ class ProcessContributors:
 
         self.github_api = github_api
         self.json_files = json_files
-        # self.GITHUB_TOKEN = GITHUB_TOKEN
+
         self.update_keys = [
             "twitter",
             "website",
