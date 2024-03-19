@@ -12,6 +12,7 @@
 - Fix: Refactor all issue related GitHub methods to gh_client module (@lwasser, #125)
 - Add: support for partners and emeritus_editor in contributor model (@lwasser, #133)
 - Fix: Refactor all contributor GitHub related methods into gh_client module from contributors module (@lwasser, #125)
+- Fix: Add support for pagination in github issue requests  (@lwasser, #139)
 
 
 ## [v0.2.3] - 2024-02-29
