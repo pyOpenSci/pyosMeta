@@ -51,3 +51,31 @@ def test_api_endpoint(github_api):
         "issues?labels=label1,label2&state=all&per_page=100"
     )
     assert github_api.api_endpoint == expected_endpoint
+
+
+def test_get_user_info_successful(mocker, ghuser_response):
+    """Test that an expected response returns properly"""
+
+    expected_response = ghuser_response
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = expected_response
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api_instance = GitHubAPI()
+    user_info = github_api_instance.get_user_info("example_user")
+
+    assert user_info == expected_response
+
+
+def test_get_user_info_bad_credentials(mocker):
+    """Test that a value error is raised when the GH token is not
+    valid."""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 401
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api = GitHubAPI()
+
+    with pytest.raises(ValueError, match="Oops, I couldn't authenticate"):
+        github_api.get_user_info("example_user")

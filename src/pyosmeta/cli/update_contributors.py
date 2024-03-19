@@ -6,6 +6,7 @@ from pydantic import ValidationError
 
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import create_paths, load_pickle, open_yml_file
+from pyosmeta.github_api import GitHubAPI
 from pyosmeta.models import PersonModel
 
 # TODO - https://stackoverflow.com
@@ -62,7 +63,8 @@ def main():
     print("Done processing all-contribs")
 
     # Create a list of all contributors across repositories
-    process_contribs = ProcessContributors(json_files)
+    github_api = GitHubAPI()
+    process_contribs = ProcessContributors(github_api, json_files)
     bot_all_contribs = process_contribs.combine_json_data()
 
     print("Updating contrib types and searching for new users now")
@@ -71,7 +73,7 @@ def main():
             # Find and populate data for any new contributors
             if gh_user not in all_contribs.keys():
                 print("Missing", gh_user, "Adding them now")
-                new_contrib = process_contribs.get_user_info(gh_user)
+                new_contrib = process_contribs.return_user_info(gh_user)
                 new_contrib["date_added"] = datetime.now().strftime("%Y-%m-%d")
                 all_contribs[gh_user] = PersonModel(**new_contrib)
 
@@ -81,7 +83,7 @@ def main():
     if update_all:
         for user in all_contribs.keys():
             print("Updating all user info from github", user)
-            new_gh_data = process_contribs.get_user_info(user)
+            new_gh_data = process_contribs.return_user_info(user)
 
             # TODO: turn this into a small update method
             existing = all_contribs[user].model_dump()

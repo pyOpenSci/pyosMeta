@@ -29,16 +29,24 @@ def _list_to_dict(a_list: List, a_key: str) -> Dict:
 
 
 def create_paths(repos: Union[list[str], str]) -> Union[list[str], str]:
-    """ """
+    """Construct URLs for .all-contributorsrc file on GitHub for pyos repos.
+
+    We add new contributors to each repo using the all contributors bot. This
+    generates urls for all of the files across all of our repos where people
+    contribute to our content and processes.
+
+    Parameters:
+    ----------
+    repos : Union[List[str], str]
+        A list of GitHub repository names or a single repository name.
+
+    Returns:
+    -------
+    Union[List[str], str]
+        A list of URLs if `repos` is a list, or a single URL if `repos` is a string.
+    """
     base_url = "https://raw.githubusercontent.com/pyOpenSci/"
     end_url = "/main/.all-contributorsrc"
-    repos = [
-        "python-package-guide",
-        "software-peer-review",
-        "pyopensci.github.io",
-        "software-review",
-        "update-web-metadata",
-    ]
     if isinstance(repos, list):
         all_paths = [base_url + repo + end_url for repo in repos]
     else:
