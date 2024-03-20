@@ -28,6 +28,7 @@ from pydantic import ValidationError
 
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
+from pyosmeta.github_api import GitHubAPI
 from pyosmeta.models import PersonModel
 
 
@@ -38,7 +39,8 @@ def get_clean_user(username: str) -> str:
 
 
 def main():
-    process_contribs = ProcessContributors([])
+    github_api = GitHubAPI()
+    process_contribs = ProcessContributors(github_api, [])
 
     # Two pickle files are outputs of the two other scripts
     # use that data to limit web calls
@@ -96,7 +98,7 @@ def main():
                 if gh_user not in contribs.keys():
                     # If they aren't already in contribs, add them
                     print("Found a new contributor!", gh_user)
-                    new_contrib = process_contribs.get_user_info(gh_user)
+                    new_contrib = process_contribs.return_user_info(gh_user)
                     new_contrib["date_added"] = datetime.now().strftime(
                         "%Y-%m-%d"
                     )
