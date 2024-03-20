@@ -11,6 +11,7 @@ numbers, stars and more "health & stability" related metrics
 
 import logging
 import os
+import time
 
 import requests
 from dataclasses import dataclass
@@ -80,10 +81,35 @@ class GitHubAPI:
         )
         return url
 
+    def handle_rate_limit(self, response):
+        """
+        Handle rate limiting by waiting until the rate limit resets.
+
+        Parameters
+        ----------
+        response : requests.Response
+            The response object from the API request.
+
+        Notes
+        -----
+        This method checks the remaining rate limit in the response headers.
+        If the remaining requests are exhausted, it calculates the time
+        until the rate limit resets and sleeps accordingly.
+        """
+
+        if "X-RateLimit-Remaining" in response.headers:
+            remaining_requests = int(response.headers["X-RateLimit-Remaining"])
+            if remaining_requests <= 0:
+                reset_time = int(response.headers["X-RateLimit-Reset"])
+                sleep_time = max(reset_time - time.time(), 0) + 1
+                time.sleep(sleep_time)
+
     def return_response(self) -> list[dict[str, object]]:
         """
         Make a GET request to the Github API endpoint
         Deserialize json response to list of dicts.
+
+        Handles pagination as github has a REST api 100 request max.
 
         Returns
         -------
@@ -91,17 +117,33 @@ class GitHubAPI:
             List of dict items each containing a review issue
         """
 
+        results = []
+        # This is computed as a property. Reassign here to support pagination
+        # and new urls for each page
+        api_endpoint_url = self.api_endpoint
         try:
-            response = requests.get(
-                self.api_endpoint,
-                headers={"Authorization": f"token {self.get_token()}"},
-            )
-            response.raise_for_status()
+            while True:
+                response = requests.get(
+                    api_endpoint_url,
+                    headers={"Authorization": f"token {self.get_token()}"},
+                )
+                response.raise_for_status()
+                results.extend(response.json())
+
+                # Check if there are more pages to fetch
+                if "next" in response.links:
+                    next_url = response.links["next"]["url"]
+                    api_endpoint_url = next_url
+                else:
+                    break
+
+                # Handle rate limiting
+                self.handle_rate_limit(response)
 
         except requests.HTTPError as exception:
             raise exception
 
-        return response.json()
+        return results
 
     def get_repo_meta(self, url: str) -> dict[str, Any] | None:
         """
