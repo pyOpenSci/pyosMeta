@@ -6,15 +6,14 @@ on:
     branches:
       - main
 jobs:
-  build-publish:
+  # setup build separate from publish
+  # See https://github.com/pypa/gh-action-pypi-publish/issues/217#issuecomment-1965727093
+  build:
     runs-on: ubuntu-latest
     # This ensures that the publish action only runs in the main repository
     # rather than forks
     # Environment is encouraged so adding
-    environment: release
-    if: github.repository_owner == 'pyopensci'
-    permissions:
-      id-token: write  # this permission is mandatory for pypi publishing
+    environment: build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,17 +41,31 @@ jobs:
           echo ""
           echo "Generated files:"
           ls -lh dist/
-
-      - name: Publish package on test PyPI on merge in main branch
-        # Test push to test pypi on merge to main
-        if: github.event_name == 'push'
-        uses: pypa/gh-action-pypi-publish@release/v1
+      # Store an artifact of the build to use in the publish step below
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v3
         with:
-          repository-url: https://test.pypi.org/legacy/
-          # Allow existing releases on test PyPI without errors.
-          # NOT TO BE USED in PyPI!
-          skip-existing: true
-
+          name: python-package-distributions
+          path: dist/
+  publish:
+    name: >-
+      Publish Python 🐍 distribution 📦 to PyPI
+    if: github.repository_owner == 'pyopensci'
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pyosmeta
+    permissions:
+      id-token: write  # this permission is mandatory for pypi publishing
+    steps:
+      # Version 4 doesn't support github enterprise yet
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
       - name: Publish package to PyPI
         # Only publish to real PyPI on release
         if: github.event_name == 'release'
