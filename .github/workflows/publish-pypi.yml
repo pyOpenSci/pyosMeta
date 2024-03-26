@@ -43,7 +43,7 @@ jobs:
           ls -lh dist/
       # Store an artifact of the build to use in the publish step below
       - name: Store the distribution packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
