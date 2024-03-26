@@ -13,6 +13,8 @@
 - Add: support for partners and emeritus_editor in contributor model (@lwasser, #133)
 - Fix: Refactor all contributor GitHub related methods into gh_client module from contributors module (@lwasser, #125)
 - Fix: Add support for pagination in github issue requests  (@lwasser, #139)
+- Fix: update ci workflow versions (@willingc, #113)
+- Fix: separate build from publish steps for added security in pypi publish workflow (@lwasser, #113)
 
 
 ## [v0.2.3] - 2024-02-29
