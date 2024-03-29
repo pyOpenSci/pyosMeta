@@ -3,19 +3,34 @@
 [![PyPI](https://img.shields.io/pypi/v/pyosmeta.svg)](https://pypi.org/project/pyosmeta/)
 
 ## [Unreleased]
+
+## [v0.2.4] - 2024-03-29
+
+### Added
+
+- Add support for partners and emeritus_editor in contributor model (@lwasser, #133)
+- Add support for pagination in github issue requests  (@lwasser, #139)
+- Add tests for all utils functions (@lwasser, #122)
+
+### Changed
+
+#### Bug Fixes
+
+- Fix: Bug where date_accepted is removed (@lwasser, #129)
+
+#### Refactor
+
 - Fix: Parse up to 100 issues in a request (@lwasser, #94)
 - Fix: refactor parse issue header (@lwasser, #91)
 - Fix: Refactor and organize modules (@lwasser, #76)
 - Fix: Rename and organize `clean.py` module into `utils_parse` and `utils_clean` (@lwasser, @willingc, #121)
-- Fix: Add tests for all utils functions (@lwasser, #122)
-- Fix: Bug where date_accepted is removed (@lwasser, #129)
 - Fix: Refactor all issue related GitHub methods to gh_client module (@lwasser, #125)
-- Add: support for partners and emeritus_editor in contributor model (@lwasser, #133)
 - Fix: Refactor all contributor GitHub related methods into gh_client module from contributors module (@lwasser, #125)
-- Fix: Add support for pagination in github issue requests  (@lwasser, #139)
-- Fix: update ci workflow versions (@willingc, #113)
-- Fix: separate build from publish steps for added security in pypi publish workflow (@lwasser, #113)
 
+#### CI
+
+- Update ci workflow versions (@willingc, #113)
+- Separate build from publish steps for added security in pypi publish workflow (@lwasser, #113)
 
 ## [v0.2.3] - 2024-02-29
 
@@ -53,7 +68,8 @@ This release was tagged in git and GitHub but not released to PyPI.
 
 Initial release to PyPI.
 
-[Unreleased]: https://github.com/pyopensci/pyosmeta/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/pyopensci/pyosmeta/compare/v0.2.4...HEAD
+[v0.2.4]: https://github.com/pyopensci/pyosmeta/compare/v0.2.3...v0.2.4
 [v0.2.3]: https://github.com/pyopensci/pyosmeta/compare/v0.15...v0.2.3
 [v0.2.2]: https://github.com/pyopensci/pyosmeta/compare/v0.15...v0.2.2
 [v0.15]: https://github.com/pyOpenSci/pyosMeta/releases/tag/v0.15
