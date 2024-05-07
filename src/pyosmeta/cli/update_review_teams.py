@@ -30,17 +30,7 @@ from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
 from pyosmeta.github_api import GitHubAPI
 from pyosmeta.models import PersonModel
-
-
-def get_clean_user(username: str) -> str:
-    """A small helper that removes whitespace and ensures username is
-    lower case"""
-    # If the github username has spaces there is an error which might be
-    # that someone added a name after the username. Only return the github
-    # username
-    if len(username.split()) > 1:
-        username = username.split()[0]
-    return username.lower().strip()
+from pyosmeta.utils_clean import get_clean_user
 
 
 def main():

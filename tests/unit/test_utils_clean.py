@@ -7,6 +7,7 @@ from pyosmeta.utils_clean import (
     clean_date_accepted_key,
     clean_markdown,
     clean_name,
+    get_clean_user,
 )
 
 
@@ -84,3 +85,19 @@ def test_clean_name(input_name, expected_output):
 )
 def test_clean_date_accepted_key(input_dict, expected_output):
     assert clean_date_accepted_key(input_dict) == expected_output
+
+
+@pytest.mark.parametrize(
+    "input_username, expected_output",
+    [
+        ("githubusername", "githubusername"),
+        ("githubusername name after text", "githubusername"),
+        ("username (full name here)", "username"),
+        ("githubusername", "githubusername"),
+        ("githubusername extra text", "githubusername"),
+        ("username (just the username)", "username"),
+    ],
+)
+def test_get_clean_user(input_username, expected_output):
+    print(input_username)
+    assert get_clean_user(input_username) == expected_output

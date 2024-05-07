@@ -9,6 +9,39 @@ from datetime import datetime
 from typing import Any
 
 
+def get_clean_user(username: str) -> str:
+    """Cleans a GitHub username provided in a review issue by removing any
+    additional text after a space and converting to lowercase.
+
+    This function assumes that a valid username should not contain spaces. If a
+    space is detected, only the part before the first space is considered the
+    username. The resulting string is then trimmed of whitespace and converted
+    to lowercase.
+
+    Parameters
+    ----------
+    username : str
+        The input username string which may contain extra text or spaces.
+
+    Returns
+    -------
+    str
+        The cleaned username in lowercase without any extra text or spaces.
+
+    Examples
+    --------
+    >>> get_clean_user("@githubusername")
+    'githubusername'
+
+    >>> get_clean_user("@githubusername name after text")
+    'githubusername'
+    """
+
+    if len(username.split()) > 1:
+        username = username.split()[0]
+    return username.lower().strip()
+
+
 def clean_date(source_date: str | None) -> datetime | str:
     """Cleans up a date string to a consistent datetime format.
 
