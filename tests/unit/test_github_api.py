@@ -34,7 +34,9 @@ def test_get_token(mock_github_token):
 
 
 def test_missing_token(mock_missing_github_token, tmpdir):
-    """Test that a keyerror is raised when the token is missing."""
+    """Test that a keyerror is raised when the token is missing.
+    If you have a token in your temporary environment, this will
+    fail and not return a keyerror."""
     os.chdir(tmpdir)
     github_api = GitHubAPI()
 
