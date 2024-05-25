@@ -56,3 +56,9 @@ repos:
       - id: isort
         files: \.py$
         args: ["--profile", "black", --line-length=79]
+
+  # Ensure GitHub workflows match the expected schema.
+  - repo: https://github.com/sirosen/check-jsonschema
+    rev: 0.28.3
+    hooks:
+      - id: check-github-workflows
