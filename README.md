@@ -66,6 +66,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://ofek.dev"><img src="https://avatars.githubusercontent.com/u/9677399?v=4?s=100" width="100px;" alt="Ofek Lev"/><br /><sub><b>Ofek Lev</b></sub></a><br /><a href="https://github.com/pyOpenSci/pyosMeta/commits?author=ofek" title="Code">💻</a> <a href="https://github.com/pyOpenSci/pyosMeta/pulls?q=is%3Apr+reviewed-by%3Aofek" title="Reviewed Pull Requests">👀</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://webknjaz.me"><img src="https://avatars.githubusercontent.com/u/578543?v=4?s=100" width="100px;" alt="Sviatoslav Sydorenko (Святослав Сидоренко)"/><br /><sub><b>Sviatoslav Sydorenko (Святослав Сидоренко)</b></sub></a><br /><a href="https://github.com/pyOpenSci/pyosMeta/commits?author=webknjaz" title="Code">💻</a> <a href="https://github.com/pyOpenSci/pyosMeta/pulls?q=is%3Apr+reviewed-by%3Awebknjaz" title="Reviewed Pull Requests">👀</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/steven-silvester-90318721/"><img src="https://avatars.githubusercontent.com/u/2096628?v=4?s=100" width="100px;" alt="Steven Silvester"/><br /><sub><b>Steven Silvester</b></sub></a><br /><a href="https://github.com/pyOpenSci/pyosMeta/commits?author=blink1073" title="Code">💻</a> <a href="https://github.com/pyOpenSci/pyosMeta/pulls?q=is%3Apr+reviewed-by%3Ablink1073" title="Reviewed Pull Requests">👀</a></td>
+    </tr>
   </tbody>
 </table>
 
