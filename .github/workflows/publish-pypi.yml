@@ -74,7 +74,9 @@ jobs:
     name: >-
       Sign the Python 🐍 distribution 📦 with Sigstore
       and upload them to GitHub Release
-    if: github.repository_owner == 'pyopensci'
+    # Only sign on release
+    if: github.repository_owner == 'pyopensci' && github.event_name == 'release'
+    environment: pypi
     needs:
     - publish
     runs-on: ubuntu-latest
@@ -94,8 +96,6 @@ jobs:
           ./dist/*.tar.gz
           ./dist/*.whl
     - name: Upload artifact signatures to GitHub Release
-      # Only upload on release
-      if: github.event_name == 'release'
       env:
         GITHUB_TOKEN: ${{ github.token }}
       # Upload to GitHub Release using the `gh` CLI.
