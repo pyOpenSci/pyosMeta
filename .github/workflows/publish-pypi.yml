@@ -76,7 +76,7 @@ jobs:
       and upload them to GitHub Release
     # Only sign on release
     if: github.repository_owner == 'pyopensci' && github.event_name == 'release'
-    environment: pypi
+    environment: sigstore
     needs:
     - publish
     runs-on: ubuntu-latest
