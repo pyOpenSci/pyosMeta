@@ -3,6 +3,8 @@
 [![PyPI](https://img.shields.io/pypi/v/pyosmeta.svg)](https://pypi.org/project/pyosmeta/)
 
 ## [Unreleased]
+
+## [v0.2.5] - 2024-06-10
 - Fix: bug where if a github username has a name after it returns a invalid cleaned github username (@lwasser)
 
 ## [v0.2.4] - 2024-03-29
