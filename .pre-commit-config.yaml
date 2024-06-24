@@ -39,7 +39,7 @@ repos:
 
   # Linting hook for Python code (see the file .flake8)
   - repo: https://github.com/PyCQA/flake8
-    rev: "7.0.0"
+    rev: "7.1.0"
     hooks:
       - id: flake8
 
@@ -59,6 +59,6 @@ repos:
 
   # Ensure GitHub workflows match the expected schema.
   - repo: https://github.com/sirosen/check-jsonschema
-    rev: 0.28.3
+    rev: 0.28.6
     hooks:
       - id: check-github-workflows
