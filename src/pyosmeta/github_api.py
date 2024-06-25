@@ -12,11 +12,11 @@ numbers, stars and more "health & stability" related metrics
 import logging
 import os
 import time
+from dataclasses import dataclass
+from typing import Any, Optional, Union
 
 import requests
-from dataclasses import dataclass
 from dotenv import load_dotenv
-from typing import Any, Optional, Union
 
 
 @dataclass

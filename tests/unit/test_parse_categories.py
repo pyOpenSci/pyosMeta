@@ -1,5 +1,4 @@
 import pytest
-
 from pyosmeta.models import ReviewModel
 
 checked = [

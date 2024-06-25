@@ -1,5 +1,4 @@
 import pytest
-
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.github_api import GitHubAPI
 from pyosmeta.parse_issues import ProcessIssues

@@ -17,7 +17,6 @@ import os
 import pickle
 
 import git
-
 from pyosmeta.file_io import open_yml_file
 
 
