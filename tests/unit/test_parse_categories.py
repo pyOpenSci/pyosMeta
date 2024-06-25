@@ -55,7 +55,6 @@ def test_get_categories(
     expected_categories: list[str | None],
     process_issues,
 ):
-
     # Call the get_categories method
     categories = process_issues.get_categories(issue_list, "## Scope", 3)
 

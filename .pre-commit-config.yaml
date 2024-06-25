@@ -37,25 +37,16 @@ repos:
         additional_dependencies:
           - tomli
 
-  # Linting hook for Python code (see the file .flake8)
-  - repo: https://github.com/PyCQA/flake8
-    rev: "7.0.0"
+  # Linting and formatting for Python code (see pyproject.toml for config)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.4.10
     hooks:
-      - id: flake8
-
-  # Code formatting hook
-  - repo: https://github.com/psf/black
-    rev: 24.4.2
-    hooks:
-      - id: black
-
-  # Best practice style for module imports
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        files: \.py$
-        args: ["--profile", "black", --line-length=79]
+      # Run the linter.
+      - id: ruff
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format
 
   # Ensure GitHub workflows match the expected schema.
   - repo: https://github.com/sirosen/check-jsonschema
