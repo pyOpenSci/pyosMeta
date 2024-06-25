@@ -85,10 +85,11 @@ line-length = 79
 [tool.ruff.lint]
 ignore = ["E501"]
 select = [
-    "C9",
-    "E",
-    "F",
-    "W",
+    "C90",  # mccabe
+    "E",    # pycodestyle (E)
+    "F",    # pyflakes
+    "I",    # isort
+    "W",    # pycodestyle (W)
 ]
 
 [tool.ruff.lint.mccabe]
