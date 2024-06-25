@@ -25,7 +25,6 @@ from pyosmeta.github_api import GitHubAPI
 
 
 def main():
-
     github_api = GitHubAPI(
         org="pyopensci",
         repo="software-submission",
@@ -52,7 +51,6 @@ def main():
         # First add gh meta to each dict
         print("Parsing & validating", key)
         try:
-
             final_reviews[key] = ReviewModel(**review)
         except ValidationError as ve:
             print(key, ":", ve)

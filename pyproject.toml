@@ -79,16 +79,17 @@ run-report = "run-coverage --cov-report=xml:coverage.xml"
 
 ### Tool configuration ###
 
-[tool.black]
+[tool.ruff]
 line-length = 79
-target-version = ['py310']
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-py_version = 27
+[tool.ruff.lint]
+ignore = ["E501"]
+select = [
+    "C9",
+    "E",
+    "F",
+    "W",
+]
 
-# Precommit ignores this config so i added a .flake8 file
-# but why did it ignore it?
-[tool.flake8]
-extend-ignore = ["E203", "W503"]
+[tool.ruff.lint.mccabe]
+max-complexity = 18
