@@ -5,7 +5,6 @@ We use these helpers to clean various markdown elements found in issue review te
 
 import re
 from datetime import datetime
-
 from typing import Any
 
 

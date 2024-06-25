@@ -1,8 +1,7 @@
 import os
-
-import pytest
 import secrets
 
+import pytest
 from pyosmeta.github_api import GitHubAPI
 
 

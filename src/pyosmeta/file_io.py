@@ -1,9 +1,9 @@
 import pickle
 import urllib.request
+from typing import Dict, List, Union
 
 import ruamel.yaml
 from ruamel.yaml import YAML
-from typing import Dict, List, Union
 
 
 def load_pickle(filename):

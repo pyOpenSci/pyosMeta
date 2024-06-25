@@ -4,6 +4,7 @@ This module also includes a convenience class for URL validation.
 """
 
 import re
+from typing import Optional, Set, Union
 
 import requests
 from pydantic import (
@@ -14,7 +15,6 @@ from pydantic import (
     field_serializer,
     field_validator,
 )
-from typing import Optional, Set, Union
 
 from pyosmeta.utils_clean import clean_date, clean_markdown
 

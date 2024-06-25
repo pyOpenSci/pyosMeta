@@ -1,7 +1,6 @@
 """Tests for parse helper functions located in utils_parse module."""
 
 import pytest
-
 from pyosmeta.utils_parse import parse_user_names
 
 

@@ -1,8 +1,8 @@
 import json
-
-import requests
 from dataclasses import dataclass
 from typing import Any, List, Optional, Tuple
+
+import requests
 
 from .github_api import GitHubAPI
 

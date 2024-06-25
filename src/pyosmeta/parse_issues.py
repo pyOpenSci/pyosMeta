@@ -1,6 +1,5 @@
 import re
 import warnings
-
 from dataclasses import dataclass
 from typing import Any
 

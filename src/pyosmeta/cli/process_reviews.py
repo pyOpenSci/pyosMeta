@@ -19,7 +19,6 @@ To run at the CLI: parse_issue_metadata
 import pickle
 
 from pydantic import ValidationError
-
 from pyosmeta import ProcessIssues, ReviewModel
 from pyosmeta.github_api import GitHubAPI
 
