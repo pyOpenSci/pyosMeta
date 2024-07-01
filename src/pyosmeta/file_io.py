@@ -151,6 +151,7 @@ def clean_yaml_file(filename):
 
     # TODO: regex would be cleaner here
     cleaned_lines = []
+    fix_indent = False
     for i, line in enumerate(lines):
         if i == 0 and line.startswith("  "):
             # check for 2 spaces in the first line
