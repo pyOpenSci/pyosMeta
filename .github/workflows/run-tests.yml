@@ -21,19 +21,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: hatch run test:run-report
-      - name: Check CLIs
+      - name: Run CLIs against website
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eux
           pip install -e .
-          update-contributors --help
-          update-reviews --help
-          update-review-teams --help
-      - name: Run CLIs against website
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
           git clone https://github.com/pyOpenSci/pyopensci.github.io.git
           cd pyopensci.github.io
           update-contributors
