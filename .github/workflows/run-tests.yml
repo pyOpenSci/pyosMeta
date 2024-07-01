@@ -21,6 +21,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: hatch run test:run-report
+      - name: Test CLI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eux
+          pip install -e .
+          update-contributors --help
+          update-contributors
+          update-reviews --help
+          update-reviews
+          update-review-teams --help
+          update-review-teams
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.2
         with:
