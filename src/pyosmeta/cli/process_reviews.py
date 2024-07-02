@@ -27,7 +27,7 @@ def main():
     github_api = GitHubAPI(
         org="pyopensci",
         repo="software-submission",
-        labels=["6/pyOS-approved 🚀🚀🚀"],
+        labels=["6/pyOS-approved"],
     )
 
     process_review = ProcessIssues(github_api)

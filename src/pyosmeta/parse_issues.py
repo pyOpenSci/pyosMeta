@@ -42,7 +42,7 @@ class ProcessIssues:
 
     def return_response(self) -> list[dict[str, object]]:
         """
-        Call return response in github api object.
+        Call return response in GitHub api object.
 
         Returns a list of dictionaries representing issues.
 
