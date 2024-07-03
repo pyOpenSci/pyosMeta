@@ -93,7 +93,7 @@ def main():
                             "github_username"
                         ]
                     )
-                except KeyError:
+                except Exception:
                     print(
                         f"Failed to handle {pkg_name}: {getattr(packages[pkg_name], issue_role)}"
                     )
