@@ -87,9 +87,17 @@ def main():
 
             else:
                 # Else we are processing editors, reviewers...
-                gh_user = get_clean_user(
-                    getattr(packages[pkg_name], issue_role)["github_username"]
-                )
+                try:
+                    gh_user = get_clean_user(
+                        getattr(packages[pkg_name], issue_role)[
+                            "github_username"
+                        ]
+                    )
+                except KeyError:
+                    print(
+                        f"Failed to get: {getattr(packages[pkg_name], issue_role)}"
+                    )
+                    raise
 
                 if gh_user not in contribs.keys():
                     # If they aren't already in contribs, add them
