@@ -18,8 +18,7 @@ To run at the CLI: parse_issue_metadata
 
 import pickle
 
-from pydantic import ValidationError
-from pyosmeta import ProcessIssues, ReviewModel
+from pyosmeta import ProcessIssues
 from pyosmeta.github_api import GitHubAPI
 
 
@@ -35,27 +34,15 @@ def main():
     # Get all issues for approved packages - load as dict
     # TODO: this doesn't have to be in process issues at all. it could fully
     # Call the github module
-    issues = process_review.return_response()
-    accepted_reviews = process_review.parse_issue_header(issues, 45)
+    issues = process_review.get_issues()
+    accepted_reviews = process_review.parse_issues(issues)
 
     # Update gh metrics via api for all packages
     repo_endpoints = process_review.get_repo_endpoints(accepted_reviews)
-    all_reviews = process_review.get_gh_metrics(
-        repo_endpoints, accepted_reviews
-    )
-
-    # Populate model objects with review data + metrics
-    final_reviews = {}
-    for key, review in all_reviews.items():
-        # First add gh meta to each dict
-        print("Parsing & validating", key)
-        try:
-            final_reviews[key] = ReviewModel(**review)
-        except ValidationError as ve:
-            print(key, ":", ve)
+    all_reviews = process_review.get_gh_metrics(repo_endpoints, accepted_reviews)
 
     with open("all_reviews.pickle", "wb") as f:
-        pickle.dump(final_reviews, f)
+        pickle.dump(all_reviews, f)
 
 
 if __name__ == "__main__":

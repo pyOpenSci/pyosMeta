@@ -1,10 +1,14 @@
+import pdb
 import re
 import warnings
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, List, Union
+
+from pyosmeta.models import ReviewModel, ReviewUser
+from pyosmeta.models.github import Issue
 
 from .github_api import GitHubAPI
-from .utils_clean import clean_date_accepted_key, clean_markdown
+from .utils_clean import clean_date_accepted_key
 from .utils_parse import parse_user_names
 
 
@@ -40,7 +44,7 @@ class ProcessIssues:
         "forks_count",
     ]
 
-    def return_response(self) -> list[dict[str, object]]:
+    def get_issues(self) -> list[Issue]:
         """
         Call return response in github api object.
 
@@ -52,14 +56,18 @@ class ProcessIssues:
             List of dict items each containing a review issue
         """
 
-        return self.github_api.return_response()
+        issues = self.github_api.return_response()
+        return [Issue(**i) for i in issues]
 
     def _is_review_role(self, string: str) -> bool:
         """
         Returns true if starts with any of the 3 items below.
         """
-        return string.startswith(
-            ("Submitting", "Editor", "Reviewer", "All current maintainers")
+        return any(
+            [
+                substr in string.lower()
+                for substr in (("submitting", "editor", "reviewer", "maintainers"))
+            ]
         )
 
     def _remove_extra_chars(self, a_str: str) -> str:
@@ -71,20 +79,169 @@ class ProcessIssues:
 
         return a_str.strip()
 
-    def parse_issue_header(
-        self, issues: list[str], total_lines: int = 20
-    ) -> dict[str, str]:
+    def _split_header(self, body: str) -> tuple[str, str]:
+        """
+        Split an issue body into the header and the body using ---,
+        joining the body remainder if there are extra unexpected ---'s
+        """
+        parts = body.split("---")
+        if len(parts) > 2:
+            body_remainder = "---".join(parts[1:])
+        elif len(parts) == 1:
+            # eg. if we just have a header
+            return parts[0], ""
+        else:
+            body_remainder = parts[1]
+        return parts[0], body_remainder
+
+    def _header_as_dict(self, header: str) -> dict[str, str]:
+        """
+        Preprocess each of the lines in the header, splitting on the
+        colon, returning key-value pairs of unprocessed header fields.
+
+        Since values are heterogeneous, don't do any processing here,
+        but keys can be preprocessed into a canonical form
+        """
+        lines = header.split("\n")
+        meta = {}
+        for line in lines:
+            # split on first occurrence of non-url colon
+            line_split = re.split(r"(?<!/):", line, 1)
+            if len(line_split) == 1:
+                # not a field (eg blank, etc.)
+                continue
+
+            # keeping in expanded form rather than a dict comprehension for now
+            # in case any additional preprocessing needed.
+            # strip trailing/leading whitespace
+            line_split = [line.strip() for line in line_split]
+            key, val = line_split
+            # put key in canonical form
+            key = key.lower().replace(" ", "_")
+
+            meta[key] = val
+        return meta
+
+    def _combine_reviewers(self, meta: dict) -> dict:
+        """
+        Combine reviewer_1, reviewer_2, ... to a single reviewers field
+        """
+        if "reviewers" not in meta:
+            meta["reviewers"] = []
+
+        # first gather reviewers (don't mutate object we're iterating over)
+        delete_keys = []
+        for key, val in meta.items():
+            if key.startswith("reviewer") and key != "reviewers":
+                meta["reviewers"].append(val)
+                delete_keys.append(key)
+
+        meta = {k: v for k, v in meta.items() if k not in delete_keys}
+
+        # later processing steps expect this to be a comma separated list
+        # this is a string if we only specified the `reviewers` key in the review issue,
+        # but a list if we specified `reviewer_1:` etc.
+        if isinstance(meta["reviewers"], list):
+            meta["reviewers"] = ", ".join(meta["reviewers"])
+
+        return meta
+
+    def _add_issue_metadata(self, meta: dict, issue: Issue, keys: list[str]) -> dict:
+        """
+        Add keys from the review issue to the review model
+        """
+        for key in keys:
+            meta[key] = getattr(issue, key)
+        return meta
+
+    def _preprocess_meta(self, meta: dict) -> dict:
+        """
+        Apply preprocessing steps before parsing specific fields in issue meta
+        """
+        meta = self._combine_reviewers(meta)
+        # add other preprocessing steps here...
+        return meta
+
+    def _postprocess_meta(self, meta: dict, body: List[str]) -> dict:
+        """
+        Apply postprocessing steps after parsing individual fields.
+
+        Putting all in one method for now, but individual steps should be split
+        out for testing and maintainability if this gets too big ;)
+        """
+        meta = clean_date_accepted_key(meta)
+        meta["issue_link"] = str(meta.get("url", "")).replace(
+            "https://api.github.com/repos/", "https://github.com/"
+        )
+        # Get categories and issue review link
+        meta["categories"] = self.get_categories(body, "## Scope", 10)
+        # NOTE: right now the numeric value is hard coded based on the
+        # number of categories listed in the issue template.
+        # this could be made more flexible if it just runs until it runs
+        # out of categories to parse
+        meta["partners"] = self.get_categories(body, "## Community Partnerships", 3)
+
+        return meta
+
+    def _parse_field(self, key: str, val: str) -> Any:
+        """
+        Method dispatcher for parsing specific header fields.
+        If none found, return value unchanged.
+        """
+        if self._is_review_role(key):
+            return self.get_contributor_data(val)
+        # elif False:
+        # add other conditions here for special processing of fields..
+        #   pass
+        else:
+            return val
+
+    def parse_issue(self, issue: Issue | str) -> ReviewModel:
+        """
+        Parse a single review header for its metadata
+
+        issue : :class:`.Issue`
+            The issue to parse! if a string, assume we are getting the issue body,
+            which prevents us from doing some postprocesing steps
+        """
+        if isinstance(issue, Issue):
+            issue_body = issue.body
+        else:
+            # issue body is passed in as string
+            issue_body = issue
+
+        # Separate the issue's header from its body
+        header, body = self._split_header(issue_body)
+        body = [line.strip() for line in body.split("\n")]
+
+        # Process the header...
+        meta = self._header_as_dict(header)
+        meta = self._preprocess_meta(meta)
+
+        model = {}
+        for key, val in meta.items():
+            model[key] = self._parse_field(key, val)
+
+        # Add any requested metadata from the Issue object to the review object
+        if isinstance(issue, Issue):
+            model = self._add_issue_metadata(
+                model, issue, ["url", "created_at", "updated_at", "closed_at"]
+            )
+
+        # Finalize review model before casting
+        model = self._postprocess_meta(model, body)
+
+        return ReviewModel(**model)
+
+    def parse_issues(self, issues: list[Issue]) -> dict[str, ReviewModel]:
         """Parses through each header comment for selected reviews and returns
         review metadata.
 
         Parameters
         ----------
-        issues : list
-            List returned from the return_response method that contains the
+        issues : list[:class:`.Issue`]
+            List returned from the get_issues method that contains the
             metadata at the top of each issue
-        total_lines : int
-            an integer representing the total number of lines to parse in the
-            issue header. Default = 20
 
         Returns
         -------
@@ -94,82 +251,14 @@ class ProcessIssues:
             See meta_dates below for the full list of keys.
         """
 
-        meta_dates = ["created_at", "updated_at", "closed_at"]
-
-        review = {}
-        review_final = {}
+        reviews = {}
         for issue in issues:
-            # Return issue comment as cleaned list + package name
-            pkg_name, body_data = self.comment_to_list(issue)
-            if not pkg_name:
-                continue
+            review = self.parse_issue(issue)
+            reviews[review.package_name] = review
 
-            review[pkg_name] = self.get_issue_meta(body_data, total_lines)
+        return reviews
 
-            # Normalize date accepted key to be the same in each review
-            review[pkg_name] = clean_date_accepted_key(review[pkg_name])
-
-            # Add issue open and close date to package meta from GH response
-            # Date cleaning happens via pydantic validator not here
-            for a_date in meta_dates:
-                review[pkg_name][a_date] = issue[a_date]
-
-            review[pkg_name]["issue_link"] = issue["url"].replace(
-                "https://api.github.com/repos/", "https://github.com/"
-            )
-
-            # Get categories and issue review link
-            review[pkg_name]["categories"] = self.get_categories(
-                body_data, "## Scope", 10
-            )
-            # NOTE: right now the numeric value is hard coded based on the
-            # number of categories listed in the issue template.
-            # this could be made more flexible if it just runs until it runs
-            # out of categories to parse
-            review[pkg_name]["partners"] = self.get_categories(
-                body_data, "## Community Partnerships", 3
-            )
-            # TODO: the current workflow will not parse domains
-            # add a separate workflow to parse domains and add them to the
-            # categories list
-            # review[pkg_name]["domains"] = self.get_categories(body_data,
-            #                                                    '## Domains',
-            #                                                    3)
-
-            # Only return keys for metadata that we need
-            final_keys = [
-                "submitting_author",
-                "all_current_maintainers",
-                "package_name",
-                "one-line_description_of_package",
-                "repository_link",
-                "version_submitted",
-                "editor",
-                "reviewer_1",
-                "reviewer_2",
-                "archive",
-                "version_accepted",
-                "joss_doi",
-                "date_accepted",
-                "categories",
-                "partners",
-                "domain",
-                "created_at",
-                "updated_at",
-                "closed_at",
-                "issue_link",
-                "categories",
-            ]
-
-            review_final[pkg_name] = {
-                key: review[pkg_name][key]
-                for key in final_keys
-                if key in review[pkg_name].keys()
-            }
-
-        return review_final
-
-    def get_contributor_data(self, line: list[str]) -> dict[str, str | int]:
+    def get_contributor_data(self, line: str) -> Union[ReviewUser, List[ReviewUser]]:
         """Parse names for various review roles from issue metadata.
 
         Parameters
@@ -184,67 +273,15 @@ class ProcessIssues:
             Containing the metadata for a submitting author, reviewer, or
             maintainer(s).
         """
-
-        meta = {}
-        a_key = line[0].lower().replace(" ", "_")
-
-        if line[0].startswith("All current maintainers"):
-            names = line[1].split(",")
-            meta[a_key] = []
-            for name in names:
-                # Add each maintainer to the dict
-                a_maint = parse_user_names(username=name)
-                meta[a_key].append(a_maint)
-        else:
-            names = parse_user_names(line[1])
-            meta[a_key] = names
-
-        return meta
-
-    def get_issue_meta(
-        self,
-        body_data: list[str],
-        end_range: int,
-    ) -> dict[str, str]:
-        """Process a single review returning metadata for that review.
-
-        Parse through a list of strings, each of which represents a line in the
-        first comment of a review. Return the cleaned review metadata.
-
-        Parameters
-        ----------
-        body_data : list
-            A list containing all body data for the top comment in an issue.
-        end_range : int
-            The number of lines to parse at the top of the issue (this may
-            change over time so this variable allows us to have different
-            processing based upon the date of the issue being opened)
-
-        Returns
-        -------
-            dict
-        """
-        issue_meta = {}
-        # TODO: change to for line in review_comment
-        for single_line in body_data[0:end_range]:
-            meta = {}
-            a_key = single_line[0].lower().replace(" ", "_")
-            # If the line is for a review role - editor, maintainer, reviewer
-            if self._is_review_role(single_line[0]):
-                # Collect metadata for each review role
-                meta = self.get_contributor_data(single_line)
-            elif len(single_line) > 1:
-                meta[a_key] = single_line[1].strip()
-            else:
-                meta[a_key] = self._remove_extra_chars(single_line[0])
-
-            issue_meta.update(meta)
-
-        return issue_meta
+        users = line.split(",")
+        models = [parse_user_names(username=user) for user in users]
+        if len(models) == 1:
+            models = models[0]
+        return models
 
     # TODO: decide if this belongs here or in the github obj?
     def get_repo_endpoints(
-        self, review_issues: dict[str, str]
+        self, review_issues: dict[str, ReviewModel]
     ) -> dict[str, str]:
         """
         Returns a list of repository endpoints
@@ -263,76 +300,21 @@ class ProcessIssues:
 
         all_repos = {}
         for a_package in review_issues.keys():
-            repo = review_issues[a_package]["repository_link"].strip("/")
+            repo = review_issues[a_package].repository_link.strip("/")
             owner, repo = repo.split("/")[-2:]
             # TODO: could be simpler code - Remove any link remnants
             pattern = r"[\(\)\[\]?]"
             owner = re.sub(pattern, "", owner)
             repo = re.sub(pattern, "", repo)
-            all_repos[a_package] = (
-                f"https://api.github.com/repos/{owner}/{repo}"
-            )
+            all_repos[a_package] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
-
-    def comment_to_list(self, issue: dict[str, str]) -> tuple[str, list[str]]:
-        """Parses the first comment in a pyOpenSci review issue.
-
-        Returns the package name
-        and the body of the comment parsed into a list of elements.
-
-        Parameters
-        ----------
-        issue : dict
-            A dictionary containing the json response for an issue comment.
-
-        Returns
-        -------
-            pkg_name : str
-                The name of the package
-            comment : list
-                A list containing the comment elements in order
-        """
-
-        body = issue["body"]
-        # Clean line breaks (could be done with a regex too)
-        lines = body.split("\n")
-        lines = [a_line.strip("\r").strip() for a_line in lines]
-        # Some users decide to hold the issue titles.
-        # For those, clean the markdown bold ** element
-        lines = [
-            line.replace("**", "").strip()
-            for line in lines
-            if line.strip() != ""
-        ]
-        # You need a space after : or else it will break https:// in two
-        body_data = [line.split(": ") for line in lines if line.strip() != ""]
-
-        # Loop through issue header and grab relevant review metadata
-        name_index = next(
-            (
-                i
-                for i, sublist in enumerate(body_data)
-                if sublist[0] == "Package Name"
-            ),
-            None,
-        )
-
-        if name_index is None:
-            warnings.warn(
-                "Package Name not found in the issue comment.", UserWarning
-            )
-            pkg_name = "missing_name"
-        else:
-            pkg_name = body_data[name_index][1]
-
-        return clean_markdown(pkg_name), body_data
 
     # Rename to process_gh_metrics?
     def get_gh_metrics(
         self,
         endpoints: dict[str, str],
-        reviews: dict[str, dict[str, Any]],
-    ) -> dict[str, dict[str, Any]]:
+        reviews: dict[str, ReviewModel],
+    ) -> dict[str, ReviewModel]:
         """
         Get GitHub metrics for each review based on provided endpoints.
 
@@ -354,14 +336,10 @@ class ProcessIssues:
             pkg_meta[pkg_name] = self.process_repo_meta(url)
 
             # These 2 lines both hit the API directly
-            pkg_meta[pkg_name]["contrib_count"] = (
-                self.github_api.get_repo_contribs(url)
-            )
-            pkg_meta[pkg_name]["last_commit"] = (
-                self.github_api.get_last_commit(url)
-            )
+            pkg_meta[pkg_name]["contrib_count"] = self.github_api.get_repo_contribs(url)
+            pkg_meta[pkg_name]["last_commit"] = self.github_api.get_last_commit(url)
             # Add github meta to review metadata
-            reviews[pkg_name]["gh_meta"] = pkg_meta[pkg_name]
+            reviews[pkg_name].gh_meta = pkg_meta[pkg_name]
 
         return reviews
 
@@ -407,16 +385,15 @@ class ProcessIssues:
     # This works - i could just make it more generic and remove fmt since it's
     # not used and replace it with a number of values and a test string
     def get_categories(
-        self, issue_list: list[list[str]], section_str: str, num_vals: int
-    ) -> list[str]:
+        self, issue_list: list[str], section_str: str, num_vals: int
+    ) -> list[str] | None:
         """Parse through a pyOS review issue and grab categories associated
         with a package
 
         Parameters
         ----------
         issue_list : list[list[str]]
-            The first comment from the issue split into lines and then the
-            lines split as by self.comment_to_list()
+            The body of the comment from the issue split into lines
 
         section_str : str
             The section string to find where the categories live in the review
@@ -428,35 +405,30 @@ class ProcessIssues:
             3 partner options.
         """
         # Find the starting index of the category section
-        # This will be more robust if we use starts_with rather than in i think
-        try:
-            index = next(
-                i
-                for i, sublist in enumerate(issue_list)
-                if section_str in sublist
-            )
-            # Iterate starting at the specified section location index
-            # find the first line starting with " - ["
-            # This represents the first category in a list of categories
-            for i in range(index + 1, len(issue_list)):
-                if issue_list[i] and issue_list[i][0].startswith("- ["):
-                    cat_index = i
-                    break
-        except StopIteration:
-            print(section_str, "not found in the list.")
+        index = [i for i, sublist in enumerate(issue_list) if section_str in sublist]
+        if len(index) == 0:
+            pdb.set_trace()
+            warnings.warn(f"{section_str} not found in the list")
+            return None
+        index = index[0]
+
+        # find the list within the category
+        cat_index = None
+        for i in range(index + 1, len(issue_list)):
+            if issue_list[i] and "- [" in issue_list[i]:
+                cat_index = i
+                break
+        if cat_index is None:
+            warnings.warn(f"List not found for section {section_str}")
             return None
 
         # Get checked categories for package
         # TODO: it would be nice to figure out where the end of the list is
         # rather than hard coding it
         cat_list = issue_list[cat_index : cat_index + num_vals]
-        selected = [
-            item[0] for item in cat_list if re.search(r"- \[[xX]\] ", item[0])
-        ]
+        selected = [item for item in cat_list if re.search(r"- \[[xX]\] ", item)]
         # Above returns a list of list elements that are checked
         # Now, clean the extra markdown and only return the category text
         cleaned = [re.sub(r"- \[[xX]\] ", "", item) for item in selected]
-        categories = [
-            re.sub(r"(\w+) (\w+)", r"\1-\2", item) for item in cleaned
-        ]
+        categories = [re.sub(r"(\w+) (\w+)", r"\1-\2", item) for item in cleaned]
         return [item.lower().replace("[^1]", "") for item in categories]

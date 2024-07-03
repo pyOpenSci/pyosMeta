@@ -40,7 +40,8 @@ dev = [
     "flake8",
     "pre-commit",
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
+    "pytest-mock"
 ]
 
 [project.urls]

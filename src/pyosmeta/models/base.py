@@ -4,7 +4,8 @@ This module also includes a convenience class for URL validation.
 """
 
 import re
-from typing import Optional, Set, Union
+from datetime import datetime
+from typing import Any, Optional, Set, Union
 
 import requests
 from pydantic import (
@@ -25,9 +26,7 @@ class UrlValidatorMixin:
 
     """
 
-    @field_validator(
-        "website", "documentation", mode="before", check_fields=False
-    )
+    @field_validator("website", "documentation", mode="before", check_fields=False)
     @classmethod
     def format_url(cls, url: str) -> str:
         """Append https to the beginning of URL if it doesn't exist & cleanup
@@ -88,9 +87,7 @@ class PersonModel(BaseModel, UrlValidatorMixin):
     title: Optional[Union[list[str], str]] = None
     sort: int | None = None
     bio: Optional[str] = None
-    organization: Optional[str] = Field(
-        None, validation_alias=AliasChoices("company")
-    )
+    organization: Optional[str] = Field(None, validation_alias=AliasChoices("company"))
     date_added: Optional[str] = ""
     deia_advisory: Optional[bool] = False
     editorial_board: Optional[bool] = Field(
@@ -202,6 +199,21 @@ class GhMeta(BaseModel, UrlValidatorMixin):
         return clean_date(a_date)
 
 
+class ReviewUser(BaseModel):
+    """Minimal model of a github user, used in several places in review parsing"""
+
+    name: str
+    github_username: str
+
+    @field_validator("github_username", mode="after")
+    def deurl_github_username(cls, github_username: str) -> str:
+        return github_username.replace("https://github.com/", "")
+
+    @field_validator("name", mode="after")
+    def demarkdown_name(cls, name: str) -> str:
+        return re.sub(r"\[|\]", "", name)
+
+
 class ReviewModel(BaseModel):
     # Make sure model populates both aliases and original attr name
     model_config = ConfigDict(
@@ -214,23 +226,22 @@ class ReviewModel(BaseModel):
     package_description: str = Field(
         "", validation_alias=AliasChoices("one-line_description_of_package")
     )
-    submitting_author: dict[str, str | None] = {}
-    all_current_maintainers: list[dict[str, str | None]] = {}
+    submitting_author: ReviewUser | None = None
+    all_current_maintainers: list[ReviewUser] = Field(default_factory=list)
     repository_link: str | None = None
     version_submitted: Optional[str] = None
     categories: Optional[list[str]] = None
-    editor: dict[str, str | None] = {}
-    reviewer_1: dict[str, str | None] = {}
-    reviewer_2: dict[str, str | None] = {}
+    editor: ReviewUser = {}
+    reviewers: list[ReviewUser] = Field(default_factory=list)
     archive: str | None = None
     version_accepted: str | None = None
     date_accepted: str | None = Field(
         default=None,
         validation_alias=AliasChoices("Date accepted", "date_accepted"),
     )
-    created_at: str = None
-    updated_at: str = None
-    closed_at: Optional[str] = None
+    created_at: datetime = None
+    updated_at: datetime = None
+    closed_at: Optional[datetime] = None
     issue_link: str = None
     joss: Optional[str] = None
     partners: Optional[list[str]] = None
@@ -254,22 +265,6 @@ class ReviewModel(BaseModel):
                 return f"{new_date[0]}-{new_date[1]}-{new_date[2]}"
             else:
                 return f"{new_date[2]}-{new_date[0]}-{new_date[1]}"
-
-    @field_validator(
-        "created_at",
-        "updated_at",
-        "closed_at",
-        mode="before",
-    )
-    @classmethod
-    def clean_date(cls, a_date: Optional[str]) -> str:
-        """Cleans up a datetime from github and returns a date string
-
-        Runs the general clean_date function in this module as a validator.
-
-        """
-
-        return clean_date(a_date)
 
     @field_validator(
         "package_name",
@@ -311,32 +306,11 @@ class ReviewModel(BaseModel):
             return repo
 
     @field_validator(
-        "editor",
-        "reviewer_1",
-        "reviewer_2",
-        mode="before",
-    )
-    @classmethod
-    def clean_gh_url(cls, user: dict[str, str]) -> dict[str, str]:
-        """Remove markdown link remnants from gh usernames and name.
-
-        Sometimes editors and reviewers add names using github links.
-        Remove the link data.
-        """
-
-        user["github_username"] = user["github_username"].replace(
-            "https://github.com/", ""
-        )
-        user["name"] = re.sub(r"\[|\]", "", user["name"])
-
-        return user
-
-    @field_validator(
         "categories",
         mode="before",
     )
     @classmethod
-    def clean_categories(cls, categories: list[str]) -> list[str]:
+    def clean_categories(cls, categories: list[str]) -> list[str] | None:
         """Make sure each category in the list is a valid value.
 
         Valid pyos software categories are:
@@ -358,6 +332,8 @@ class ReviewModel(BaseModel):
         list[str]
             List of cleaned categories.
         """
+        if categories is None:
+            return None
 
         valid_categories = {
             "data-processing": "data-processing-munging",
@@ -375,3 +351,12 @@ class ReviewModel(BaseModel):
                 # No match found, keep the original category
                 cleaned_cats.append(category)
         return cleaned_cats
+
+    @field_validator("all_current_maintainers", mode="before")
+    @classmethod
+    def listify(cls, item: Any):
+        """Make a field that's expected to be plural so before any validation"""
+        if not isinstance(item, list):
+            return [item]
+        else:
+            return item

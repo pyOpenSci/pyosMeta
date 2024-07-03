@@ -2,6 +2,7 @@ import os
 import secrets
 
 import pytest
+from pyosmeta import github_api
 from pyosmeta.github_api import GitHubAPI
 
 
@@ -22,6 +23,11 @@ def mock_missing_github_token(monkeypatch, tmpdir):
     # Remove the GitHub token from the environment variable
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
 
+    def do_nothing():
+        pass
+
+    monkeypatch.setattr(github_api, "load_dotenv", do_nothing)
+
 
 def test_get_token(mock_github_token):
     """Test that get_token accesses the token correctly when it is
@@ -33,10 +39,8 @@ def test_get_token(mock_github_token):
 
 
 def test_missing_token(mock_missing_github_token, tmpdir):
-    """Test that a keyerror is raised when the token is missing.
-    If you have a token in your temporary environment, this will
-    fail and not return a keyerror."""
-    os.chdir(tmpdir)
+    """Test that a keyerror is raised when the token is missing.."""
+
     github_api = GitHubAPI()
 
     with pytest.raises(KeyError, match="Oops! A GITHUB_TOKEN environment"):
