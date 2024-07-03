@@ -230,7 +230,15 @@ class ProcessIssues:
         # Add any requested metadata from the Issue object to the review object
         if isinstance(issue, Issue):
             model = self._add_issue_metadata(
-                model, issue, ["url", "created_at", "updated_at", "closed_at"]
+                model,
+                issue,
+                [
+                    "url",
+                    "created_at",
+                    "updated_at",
+                    "closed_at",
+                    "repository_link",
+                ],
             )
 
         # Finalize review model before casting
