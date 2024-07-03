@@ -69,7 +69,7 @@ class ProcessIssues:
             [
                 substr in string.lower()
                 for substr in (
-                    ("submitting", "editor", "reviewer", "maintainers")
+                    ("submitting", "editor", "eic", "reviewer", "maintainers")
                 )
             ]
         )
