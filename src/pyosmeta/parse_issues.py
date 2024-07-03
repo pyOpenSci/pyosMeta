@@ -1,4 +1,3 @@
-import pdb
 import re
 import warnings
 from dataclasses import dataclass
@@ -423,7 +422,6 @@ class ProcessIssues:
             i for i, sublist in enumerate(issue_list) if section_str in sublist
         ]
         if len(index) == 0:
-            pdb.set_trace()
             warnings.warn(f"{section_str} not found in the list")
             return None
         index = index[0]
