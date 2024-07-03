@@ -109,6 +109,10 @@ class ProcessIssues:
         lines = header.split("\n")
         meta = {}
         for line in lines:
+            # remove asterisks around keys
+            line = line.strip()
+            line = re.sub(r"^\*\*(.*?:)\*\*", r"\1", line)
+
             # split on first occurrence of non-url colon
             line_split = re.split(r"(?<!/):", line, 1)
             if len(line_split) == 1:

@@ -38,3 +38,12 @@ def test_parse_reviewers(file, expected, process_issues, data_file):
     review = data_file(file, True)
     review = process_issues.parse_issue(review)
     assert review.reviewers == expected
+
+
+def test_parse_bolded_keys(process_issues, data_file):
+    """
+    Bolding the keys in the review doesn't break the parser
+    """
+    review = data_file("reviews/bolded_keys.txt", True)
+    review = process_issues.parse_issue(review)
+    assert review.package_name == "fake_package"

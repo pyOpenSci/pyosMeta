@@ -1,0 +1,41 @@
+**Submitting Author:** Fakename (@fakeauthor)
+**All current maintainers:** (@fakeauthor1, @fakeauthor2)
+**Package Name:** fake_package
+**One-Line Description of Package:** A fake python package
+**Repository Link:** https://example.com/fakeauthor1/fake_package
+**Version submitted:** v1.0.0
+**EiC:** @fakeeic
+**Editor:** @fakeeditor
+**Reviewer 1:** @fakereviewer1
+**Reviewer 2:** @fakereviewer2
+**Reviews Expected By:** fake date
+**Archive:** [![DOI](https://example.com/fakearchive)](https://example.com/fakearchive)
+**Version accepted:** 2.0.0 ([repo](https://example.com/fakeauthor1/fake_package/releases/tag/v2.0.0), [pypi](https://pypi.org/project/fake_project/2.0.0), [archive](https://example.com/fakearchive))
+**Date accepted (month/day/year):** 06/29/2024
+
+---
+
+## Scope
+
+- Please indicate which category or categories.
+Check out our [package scope page][PackageCategories] to learn more about our
+scope. (If you are unsure of which category you fit, we suggest you make a pre-submission inquiry):
+
+	- [ ] Data retrieval
+	- [ ] Data extraction
+	- [x] Data processing/munging
+	- [ ] Data deposition
+	- [ ] Data validation and testing
+	- [ ] Data visualization[^1]
+	- [ ] Workflow automation
+	- [ ] Citation management and bibliometrics
+	- [ ] Scientific software wrappers
+	- [ ] Database interoperability
+
+
+## Community Partnerships
+If your package is associated with an
+existing community please check below:
+
+- [ ] [Pangeo][pangeoWebsite]
+	- [ ] My package adheres to the [Pangeo standards listed in the pyOpenSci peer review guidebook][PangeoCollaboration]
