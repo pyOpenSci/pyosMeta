@@ -82,9 +82,9 @@ def main():
                     # If name is missing in issue, populate from contribs
                     if a_maintainer.name == "":
                         name = getattr(contribs[gh_user], "name")
-                        packages[pkg_name].all_current_maintainers[i][
-                            "name"
-                        ] = name
+                        packages[pkg_name].all_current_maintainers[
+                            i
+                        ].name = name
 
             else:
                 # Else we are processing editors, reviewers...
@@ -119,9 +119,7 @@ def main():
                 # If users's name is missing in issue, populate from contribs
                 if getattr(issue_meta, issue_role).name == "":
                     attribute_value = getattr(packages[pkg_name], issue_role)
-                    attribute_value["name"] = getattr(
-                        contribs[gh_user], "name"
-                    )
+                    attribute_value.name = getattr(contribs[gh_user], "name")
 
     # Export to yaml
     contribs_ls = [model.model_dump() for model in contribs.values()]
