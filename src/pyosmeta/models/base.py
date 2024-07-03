@@ -26,7 +26,9 @@ class UrlValidatorMixin:
 
     """
 
-    @field_validator("website", "documentation", mode="before", check_fields=False)
+    @field_validator(
+        "website", "documentation", mode="before", check_fields=False
+    )
     @classmethod
     def format_url(cls, url: str) -> str:
         """Append https to the beginning of URL if it doesn't exist & cleanup
@@ -87,7 +89,9 @@ class PersonModel(BaseModel, UrlValidatorMixin):
     title: Optional[Union[list[str], str]] = None
     sort: int | None = None
     bio: Optional[str] = None
-    organization: Optional[str] = Field(None, validation_alias=AliasChoices("company"))
+    organization: Optional[str] = Field(
+        None, validation_alias=AliasChoices("company")
+    )
     date_added: Optional[str] = ""
     deia_advisory: Optional[bool] = False
     editorial_board: Optional[bool] = Field(

@@ -6,4 +6,10 @@ from pyosmeta.models.base import (
     UrlValidatorMixin,
 )
 
-__all__ = ["UrlValidatorMixin", "PersonModel", "GhMeta", "ReviewModel", "ReviewUser"]
+__all__ = [
+    "UrlValidatorMixin",
+    "PersonModel",
+    "GhMeta",
+    "ReviewModel",
+    "ReviewUser",
+]

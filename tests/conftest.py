@@ -42,7 +42,9 @@ def process_contribs(contrib_github_api):
 @pytest.fixture
 def github_api():
     """A fixture that instantiates an instance of the GitHubAPI object"""
-    return GitHubAPI(org="pyopensci", repo="pyosmeta", labels=["label1", "label2"])
+    return GitHubAPI(
+        org="pyopensci", repo="pyosmeta", labels=["label1", "label2"]
+    )
 
 
 @pytest.fixture
@@ -157,14 +159,16 @@ def data_file() -> Callable[[Optional[str], bool], Union[str, Path]]:
     @overload
     def _data_file(file: Optional[str], load: Literal[False]) -> Path: ...
 
-    def _data_file(file: Optional[str] = None, load: bool = False) -> Union[str, Path]:
+    def _data_file(
+        file: Optional[str] = None, load: bool = False
+    ) -> Union[str, Path]:
         if file is None:
             return DATA_DIR
 
         path = DATA_DIR / file
         if load:
-            with open(path, "r") as afile:
-                data = afile.read()
+            with open(path, "r") as a_file:
+                data = a_file.read()
             return data
         else:
             return path

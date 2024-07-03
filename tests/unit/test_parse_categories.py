@@ -89,7 +89,9 @@ def test_get_categories(
         ),
     ],
 )
-def test_clean_categories(input_categories: list[str], expected_return: list[str]):
+def test_clean_categories(
+    input_categories: list[str], expected_return: list[str]
+):
     """Test that ensures our pydantic model cleans categories as expected"""
 
     review = ReviewModel(categories=input_categories)

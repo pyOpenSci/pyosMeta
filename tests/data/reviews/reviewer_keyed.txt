@@ -25,4 +25,3 @@ Date accepted (month/day/year): 06/29/2024
 
 - [ ] etc
 - [ ] aaaaaa
-

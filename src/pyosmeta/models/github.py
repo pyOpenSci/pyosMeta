@@ -37,10 +37,14 @@ class User(BaseModel):
     url: Optional[AnyUrl] = Field(
         None, examples=["https://api.github.com/users/octocat"]
     )
-    html_url: Optional[AnyUrl] = Field(None, examples=["https://github.com/octocat"])
+    html_url: Optional[AnyUrl] = Field(
+        None, examples=["https://github.com/octocat"]
+    )
     type: str = Field(..., examples=["User"])
     site_admin: bool = False
-    starred_at: Optional[str] = Field(None, examples=['"2020-07-09T00:17:55Z"'])
+    starred_at: Optional[str] = Field(
+        None, examples=['"2020-07-09T00:17:55Z"']
+    )
 
     model_config = ConfigDict(extra="allow")
 

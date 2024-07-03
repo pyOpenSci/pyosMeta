@@ -1,6 +1,5 @@
 """Test parse issues workflow"""
 
-
 import pytest
 from pyosmeta.models import ReviewUser
 
