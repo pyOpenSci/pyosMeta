@@ -28,8 +28,48 @@ from pydantic import ValidationError
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
 from pyosmeta.github_api import GitHubAPI
-from pyosmeta.models import PersonModel, ReviewUser
+from pyosmeta.models import PersonModel, ReviewModel, ReviewUser
 from pyosmeta.utils_clean import get_clean_user
+
+
+def process_user(
+    user: ReviewUser,
+    role: str,
+    pkg_name: str,
+    contribs: dict[str, PersonModel],
+    processor: ProcessContributors,
+) -> tuple[ReviewUser, dict[str, PersonModel]]:
+    """
+    - Add a new contributor to `contribs` (mutating it)
+    - Add user to any reviews/etc. that they're on (i don't rly understand that part,
+      someone else write these docs plz (mutating `contribs`)
+    - get their human name from the github name, mutating the `user` object.
+    """
+    gh_user = get_clean_user(user.github_username)
+
+    if gh_user not in contribs.keys():
+        # If they aren't already in contribs, add them
+        print("Found a new contributor!", gh_user)
+        new_contrib = processor.return_user_info(gh_user)
+        new_contrib["date_added"] = datetime.now().strftime("%Y-%m-%d")
+        try:
+            contribs[gh_user] = PersonModel(**new_contrib)
+        except ValidationError as ve:
+            print(ve)
+
+    # Update user package contributions (if it's unique)
+    review_key = processor.contrib_types[role][0]
+    contribs[gh_user].add_unique_value(review_key, pkg_name.lower())
+
+    # Update user contrib list (if it's unique)
+    review_roles = processor.contrib_types[role][1]
+    contribs[gh_user].add_unique_value("contributor_type", review_roles)
+
+    # If users's name is missing in issue, populate from contribs
+    if user.name == "":
+        user.name = getattr(contribs[gh_user], "name")
+
+    return user, contribs
 
 
 def main():
@@ -38,88 +78,33 @@ def main():
 
     # Two pickle files are outputs of the two other scripts
     # use that data to limit web calls
-    contribs = load_pickle("all_contribs.pickle")
-    packages = load_pickle("all_reviews.pickle")
+    contribs: dict[str, PersonModel] = load_pickle("all_contribs.pickle")
+    packages: dict[str, ReviewModel] = load_pickle("all_reviews.pickle")
 
     contrib_types = process_contribs.contrib_types
 
-    for pkg_name, issue_meta in packages.items():
+    for pkg_name, review in packages.items():
         print("Processing review team for:", pkg_name)
-        for issue_role in contrib_types.keys():
-            if issue_role in ("all_current_maintainers", "reviewers"):
-                # Loop through each maintainer in the list
-                for i, a_maintainer in enumerate(
-                    issue_meta.all_current_maintainers
-                ):
-                    a_maintainer: ReviewUser
-                    gh_user = get_clean_user(a_maintainer.github_username)
+        for role in contrib_types.keys():
+            user: list[ReviewUser] | ReviewUser = getattr(review, role)
 
-                    if gh_user not in contribs.keys():
-                        print("Found a new contributor!", gh_user)
-                        new_contrib = process_contribs.return_user_info(
-                            gh_user
-                        )
-                        new_contrib["date_added"] = datetime.now().strftime(
-                            "%Y-%m-%d"
-                        )
-                        try:
-                            contribs[gh_user] = PersonModel(**new_contrib)
-                        except ValidationError as ve:
-                            print(ve)
-
-                    # Update user package contributions (if it's unique)
-                    review_key = contrib_types[issue_role][0]
-                    contribs[gh_user].add_unique_value(
-                        review_key, pkg_name.lower()
+            # handle lists or singleton users separately
+            if isinstance(user, list):
+                for i, a_user in enumerate(user):
+                    a_user, contribs = process_user(
+                        a_user, role, pkg_name, contribs, process_contribs
                     )
-
-                    # Update user contrib list (if it's unique)
-                    review_roles = contrib_types[issue_role][1]
-                    contribs[gh_user].add_unique_value(
-                        "contributor_type", review_roles
-                    )
-
-                    # If name is missing in issue, populate from contribs
-                    if a_maintainer.name == "":
-                        name = getattr(contribs[gh_user], "name")
-                        packages[pkg_name].all_current_maintainers[
-                            i
-                        ].name = name
-
+                    # update individual user in reference to issue list
+                    user[i] = a_user
+            elif isinstance(user, ReviewUser):
+                user, contribs = process_user(
+                    user, role, pkg_name, contribs, process_contribs
+                )
+                setattr(review, role, user)
             else:
-                # Else we are processing editors, reviewers...
-                gh_user = get_clean_user(
-                    getattr(packages[pkg_name], issue_role).github_username
+                raise TypeError(
+                    "Keys in the `contrib_types` map must be a `ReviewUser` or `list[ReviewUser]` in the `ReviewModel`"
                 )
-
-                if gh_user not in contribs.keys():
-                    # If they aren't already in contribs, add them
-                    print("Found a new contributor!", gh_user)
-                    new_contrib = process_contribs.return_user_info(gh_user)
-                    new_contrib["date_added"] = datetime.now().strftime(
-                        "%Y-%m-%d"
-                    )
-                    try:
-                        contribs[gh_user] = PersonModel(**new_contrib)
-                    except ValidationError as ve:
-                        print(ve)
-
-                # Update user package contributions (if it's unique)
-                review_key = contrib_types[issue_role][0]
-                contribs[gh_user].add_unique_value(
-                    review_key, pkg_name.lower()
-                )
-
-                # Update user contrib list (if it's unique)
-                review_roles = contrib_types[issue_role][1]
-                contribs[gh_user].add_unique_value(
-                    "contributor_type", review_roles
-                )
-
-                # If users's name is missing in issue, populate from contribs
-                if getattr(issue_meta, issue_role).name == "":
-                    attribute_value = getattr(packages[pkg_name], issue_role)
-                    attribute_value.name = getattr(contribs[gh_user], "name")
 
     # Export to yaml
     contribs_ls = [model.model_dump() for model in contribs.values()]
