@@ -1,7 +1,10 @@
 import re
+import traceback
 import warnings
 from dataclasses import dataclass
 from typing import Any, List, Union
+
+from pydantic import ValidationError
 
 from pyosmeta.models import ReviewModel, ReviewUser
 from pyosmeta.models.github import Issue
@@ -237,7 +240,7 @@ class ProcessIssues:
                     "created_at",
                     "updated_at",
                     "closed_at",
-                    "repository_link",
+                    "repository_url",
                 ],
             )
 
@@ -246,7 +249,9 @@ class ProcessIssues:
 
         return ReviewModel(**model)
 
-    def parse_issues(self, issues: list[Issue]) -> dict[str, ReviewModel]:
+    def parse_issues(
+        self, issues: list[Issue]
+    ) -> tuple[dict[str, ReviewModel], dict[str, str]]:
         """Parses through each header comment for selected reviews and returns
         review metadata.
 
@@ -265,11 +270,17 @@ class ProcessIssues:
         """
 
         reviews = {}
+        errors = {}
         for issue in issues:
-            review = self.parse_issue(issue)
-            reviews[review.package_name] = review
+            try:
+                review = self.parse_issue(issue)
+                reviews[review.package_name] = review
+            except ValidationError as e:
+                errors[str(issue.url)] = "\n".join(
+                    traceback.format_exception(e)
+                )
 
-        return reviews
+        return reviews, errors
 
     def get_contributor_data(
         self, line: str
@@ -316,7 +327,7 @@ class ProcessIssues:
 
         all_repos = {}
         for a_package in review_issues.keys():
-            repo = review_issues[a_package].repository_link.strip("/")
+            repo = review_issues[a_package].repository_url.strip("/")
             owner, repo = repo.split("/")[-2:]
             # TODO: could be simpler code - Remove any link remnants
             pattern = r"[\(\)\[\]?]"

@@ -35,7 +35,11 @@ def main():
     # TODO: this doesn't have to be in process issues at all. it could fully
     # Call the github module
     issues = process_review.get_issues()
-    accepted_reviews = process_review.parse_issues(issues)
+    accepted_reviews, errors = process_review.parse_issues(issues)
+    for url, error in errors.items():
+        print(f"Error in review at url: {url}")
+        print(error)
+        print("-" * 20)
 
     # Update gh metrics via api for all packages
     repo_endpoints = process_review.get_repo_endpoints(accepted_reviews)
