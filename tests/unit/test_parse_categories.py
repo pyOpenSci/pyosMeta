@@ -94,5 +94,5 @@ def test_clean_categories(
 ):
     """Test that ensures our pydantic model cleans categories as expected"""
 
-    review = ReviewModel(categories=input_categories)
-    assert review.categories == expected_return
+    review = ReviewModel.clean_categories(categories=input_categories)
+    assert review == expected_return
