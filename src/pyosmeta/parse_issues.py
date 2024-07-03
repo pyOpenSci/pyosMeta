@@ -331,7 +331,7 @@ class ProcessIssues:
 
         all_repos = {}
         for a_package in review_issues.keys():
-            repo = review_issues[a_package].repository_url.strip("/")
+            repo = review_issues[a_package].repository_link.strip("/")
             owner, repo = repo.split("/")[-2:]
             # TODO: could be simpler code - Remove any link remnants
             pattern = r"[\(\)\[\]?]"
