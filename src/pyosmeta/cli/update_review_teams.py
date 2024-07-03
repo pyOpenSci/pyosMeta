@@ -95,7 +95,7 @@ def main():
                     )
                 except KeyError:
                     print(
-                        f"Failed to get: {getattr(packages[pkg_name], issue_role)}"
+                        f"Failed to handle {pkg_name}: {getattr(packages[pkg_name], issue_role)}"
                     )
                     raise
 
