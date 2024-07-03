@@ -28,7 +28,7 @@ from pydantic import ValidationError
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
 from pyosmeta.github_api import GitHubAPI
-from pyosmeta.models import PersonModel
+from pyosmeta.models import PersonModel, ReviewUser
 from pyosmeta.utils_clean import get_clean_user
 
 
@@ -46,12 +46,13 @@ def main():
     for pkg_name, issue_meta in packages.items():
         print("Processing review team for:", pkg_name)
         for issue_role in contrib_types.keys():
-            if issue_role == "all_current_maintainers":
+            if issue_role in ("all_current_maintainers", "reviewers"):
                 # Loop through each maintainer in the list
                 for i, a_maintainer in enumerate(
                     issue_meta.all_current_maintainers
                 ):
-                    gh_user = get_clean_user(a_maintainer["github_username"])
+                    a_maintainer: ReviewUser
+                    gh_user = get_clean_user(a_maintainer.github_username)
 
                     if gh_user not in contribs.keys():
                         print("Found a new contributor!", gh_user)
@@ -79,7 +80,7 @@ def main():
                     )
 
                     # If name is missing in issue, populate from contribs
-                    if a_maintainer["name"] == "":
+                    if a_maintainer.name == "":
                         name = getattr(contribs[gh_user], "name")
                         packages[pkg_name].all_current_maintainers[i][
                             "name"
@@ -88,7 +89,7 @@ def main():
             else:
                 # Else we are processing editors, reviewers...
                 gh_user = get_clean_user(
-                    getattr(packages[pkg_name], issue_role)["github_username"]
+                    getattr(packages[pkg_name], issue_role).github_username
                 )
 
                 if gh_user not in contribs.keys():
@@ -116,7 +117,7 @@ def main():
                 )
 
                 # If users's name is missing in issue, populate from contribs
-                if getattr(issue_meta, issue_role)["name"] == "":
+                if getattr(issue_meta, issue_role).name == "":
                     attribute_value = getattr(packages[pkg_name], issue_role)
                     attribute_value["name"] = getattr(
                         contribs[gh_user], "name"

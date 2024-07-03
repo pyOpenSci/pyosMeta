@@ -39,8 +39,7 @@ class ProcessContributors:
         ]
 
         self.contrib_types = {
-            "reviewer_1": ["packages_reviewed", ["reviewer", "peer-review"]],
-            "reviewer_2": ["packages_reviewed", ["reviewer", "peer-review"]],
+            "reviewers": ["packages_reviewed", ["reviewer", "peer-review"]],
             "editor": ["packages_editor", ["editor", "peer-review"]],
             "submitting_author": [
                 "packages_submitted",
