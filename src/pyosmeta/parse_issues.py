@@ -65,9 +65,7 @@ class ProcessIssues:
         return any(
             [
                 substr in string.lower()
-                for substr in (
-                    ("submitting", "editor", "reviewer", "maintainers")
-                )
+                for substr in (("submitting", "editor", "reviewer", "maintainers"))
             ]
         )
 
@@ -147,9 +145,7 @@ class ProcessIssues:
 
         return meta
 
-    def _add_issue_metadata(
-        self, meta: dict, issue: Issue, keys: list[str]
-    ) -> dict:
+    def _add_issue_metadata(self, meta: dict, issue: Issue, keys: list[str]) -> dict:
         """
         Add keys from the review issue to the review model
         """
@@ -182,9 +178,7 @@ class ProcessIssues:
         # number of categories listed in the issue template.
         # this could be made more flexible if it just runs until it runs
         # out of categories to parse
-        meta["partners"] = self.get_categories(
-            body, "## Community Partnerships", 3
-        )
+        meta["partners"] = self.get_categories(body, "## Community Partnerships", 3)
 
         return meta
 
@@ -263,9 +257,7 @@ class ProcessIssues:
 
         return reviews
 
-    def get_contributor_data(
-        self, line: str
-    ) -> Union[ReviewUser, List[ReviewUser]]:
+    def get_contributor_data(self, line: str) -> Union[ReviewUser, List[ReviewUser]]:
         """Parse names for various review roles from issue metadata.
 
         Parameters
@@ -282,6 +274,7 @@ class ProcessIssues:
         """
         users = line.split(",")
         models = [parse_user_names(username=user) for user in users]
+        models = [model for model in models if model is not None]
         if len(models) == 1:
             models = models[0]
         return models
@@ -313,9 +306,7 @@ class ProcessIssues:
             pattern = r"[\(\)\[\]?]"
             owner = re.sub(pattern, "", owner)
             repo = re.sub(pattern, "", repo)
-            all_repos[a_package] = (
-                f"https://api.github.com/repos/{owner}/{repo}"
-            )
+            all_repos[a_package] = f"https://api.github.com/repos/{owner}/{repo}"
         return all_repos
 
     # Rename to process_gh_metrics?
@@ -345,12 +336,8 @@ class ProcessIssues:
             pkg_meta[pkg_name] = self.process_repo_meta(url)
 
             # These 2 lines both hit the API directly
-            pkg_meta[pkg_name]["contrib_count"] = (
-                self.github_api.get_repo_contribs(url)
-            )
-            pkg_meta[pkg_name]["last_commit"] = (
-                self.github_api.get_last_commit(url)
-            )
+            pkg_meta[pkg_name]["contrib_count"] = self.github_api.get_repo_contribs(url)
+            pkg_meta[pkg_name]["last_commit"] = self.github_api.get_last_commit(url)
             # Add github meta to review metadata
             reviews[pkg_name].gh_meta = pkg_meta[pkg_name]
 
@@ -418,9 +405,7 @@ class ProcessIssues:
             3 partner options.
         """
         # Find the starting index of the category section
-        index = [
-            i for i, sublist in enumerate(issue_list) if section_str in sublist
-        ]
+        index = [i for i, sublist in enumerate(issue_list) if section_str in sublist]
         if len(index) == 0:
             warnings.warn(f"{section_str} not found in the list")
             return None
@@ -440,13 +425,9 @@ class ProcessIssues:
         # TODO: it would be nice to figure out where the end of the list is
         # rather than hard coding it
         cat_list = issue_list[cat_index : cat_index + num_vals]
-        selected = [
-            item for item in cat_list if re.search(r"- \[[xX]\] ", item)
-        ]
+        selected = [item for item in cat_list if re.search(r"- \[[xX]\] ", item)]
         # Above returns a list of list elements that are checked
         # Now, clean the extra markdown and only return the category text
         cleaned = [re.sub(r"- \[[xX]\] ", "", item) for item in selected]
-        categories = [
-            re.sub(r"(\w+) (\w+)", r"\1-\2", item) for item in cleaned
-        ]
+        categories = [re.sub(r"(\w+) (\w+)", r"\1-\2", item) for item in cleaned]
         return [item.lower().replace("[^1]", "") for item in categories]
