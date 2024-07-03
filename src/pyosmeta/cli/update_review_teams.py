@@ -22,6 +22,7 @@ To run: update_reviewers
 """
 
 import os
+import warnings
 from datetime import datetime
 
 from pydantic import ValidationError
@@ -87,17 +88,18 @@ def main():
 
             else:
                 # Else we are processing editors, reviewers...
-                try:
-                    gh_user = get_clean_user(
-                        getattr(packages[pkg_name], issue_role)[
-                            "github_username"
-                        ]
+
+                # Get the Github username if possible.
+                raw_user = getattr(packages[pkg_name], issue_role).get(
+                    "github_username"
+                )
+                if raw_user is None:
+                    warnings.warn(
+                        f"No github_username found for {pkg_name}!",
+                        stacklevel=2,
                     )
-                except Exception:
-                    print(
-                        f"Failed to handle {pkg_name}: {getattr(packages[pkg_name], issue_role)}"
-                    )
-                    raise
+                    continue
+                gh_user = get_clean_user(raw_user)
 
                 if gh_user not in contribs.keys():
                     # If they aren't already in contribs, add them
