@@ -66,7 +66,7 @@ def process_user(
     contribs[gh_user].add_unique_value("contributor_type", review_roles)
 
     # If users's name is missing in issue, populate from contribs
-    if user.name == "":
+    if not user.name:
         user.name = getattr(contribs[gh_user], "name")
 
     return user, contribs
