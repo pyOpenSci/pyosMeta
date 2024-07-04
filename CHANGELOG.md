@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [v0.3.1] - 2024-07-04
+
+* Add: add emeritus_editor to personModel (@lwasser, #182)
+
 ## [v0.3] - 2024-07-04
 
 This is a bump that supports a big refactor to make our code more maintainable. Many thanks to @sneakers-the-rat. It also
