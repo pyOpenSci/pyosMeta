@@ -4,10 +4,10 @@
 
 ## [Unreleased]
 
-## [v0.2.7] - 2024-07-04
+## [v0.3] - 2024-07-04
 
-This is a small patch that supports a big refactor to make our code more maintainable. Many thanks to @sneakers-the-rat. It also
-makes our CI more robust thanks to  (@blink1073)
+This is a bump that supports a big refactor to make our code more maintainable. Many thanks to @sneakers-the-rat. It also
+makes our CI more robust thanks to (@blink1073)
 
 ### What's Changed
 
