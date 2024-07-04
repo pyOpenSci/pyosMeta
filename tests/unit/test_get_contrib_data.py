@@ -1,12 +1,13 @@
 import pytest
+from pydantic import ValidationError
+from pyosmeta.models.github import Issue
 
 sample_response = {
     "url": "https://api.github.com/repos/pyOpenSci/software-submission/issues/147",
     "repository_url": "https://api.github.com/repos/pyOpenSci/software-submission",
     "title": "`sunpy` Review",
-    "assignee": {
-        "login": "cmarmo",
-    },
+    "number": 147,
+    "assignee": {"login": "cmarmo", "id": 12345, "type": "User"},
     "comments": 35,
     "created_at": "2023-10-30T18:45:06Z",
     "updated_at": "2024-02-22T01:24:31Z",
@@ -27,12 +28,13 @@ sample_response_no_name = {
 }
 
 
-def test_comment_to_list_returns_list(process_issues):
-    """Test that comment_to_list returns a list"""
+def test_parse_header_as_dict(process_issues):
+    """Test that we can parse a header as a dict"""
+    header, body = process_issues._split_header(sample_response["body"])
 
-    name, body = process_issues.comment_to_list(sample_response)
+    meta = process_issues._header_as_dict(header)
 
-    assert isinstance(body, list)
+    assert isinstance(meta, dict)
 
 
 def test_comment_no_name(process_issues):
@@ -43,16 +45,16 @@ def test_comment_no_name(process_issues):
     This is a template issue not a code issue.
     """
 
-    with pytest.warns(
-        UserWarning, match="Package Name not found in the issue comment."
-    ):
-        name, body = process_issues.comment_to_list(sample_response_no_name)
-        assert name == "missing_name"
+    with pytest.raises(ValidationError):
+        _ = process_issues.parse_issue(Issue(**sample_response_no_name))
 
 
 def test_comment_to_list_package_name(process_issues):
     """Test that comment_to_list returns a proper package name"""
+    header, body = process_issues._split_header(sample_response["body"])
 
-    name, body = process_issues.comment_to_list(sample_response)
+    meta = process_issues._header_as_dict(header)
+    assert meta["package_name"] == "sunpy"
 
-    assert name == "sunpy"
+    review = process_issues.parse_issue(Issue(**sample_response))
+    assert review.package_name == "sunpy"

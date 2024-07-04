@@ -3,10 +3,11 @@ A small module containing functions that support parsing
 pyOpenSci review and contributor metadata.
 """
 
+from pyosmeta.models import ReviewUser
 from pyosmeta.utils_clean import clean_name
 
 
-def parse_user_names(username: str) -> dict[str, str]:
+def parse_user_names(username: str) -> ReviewUser | None:
     """Parses authors, contributors, editors and usernames from
     the requested issues.
 
@@ -37,11 +38,12 @@ def parse_user_names(username: str) -> dict[str, str]:
             "github_username": clean_name(names[1]),
             "name": clean_name(names[0]),
         }
-
+    elif len(names) == 0:
+        return None
     else:
         parsed = {
             "github_username": clean_name(names[0]),
             "name": "",
         }
 
-    return parsed
+    return ReviewUser(**parsed)
