@@ -101,6 +101,9 @@ class PersonModel(BaseModel, UrlValidatorMixin):
         None, validation_alias=AliasChoices("emeritus_editor")
     )
     advisory: Optional[bool] = False
+    emeritus_advisory: Optional[bool] = Field(
+        None, validation_alias=AliasChoices("emeritus_editor")
+    )
     twitter: Optional[str] = Field(
         None, validation_alias=AliasChoices("twitter_username")
     )
