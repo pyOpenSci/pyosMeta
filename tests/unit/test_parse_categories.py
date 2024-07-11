@@ -96,3 +96,18 @@ def test_clean_categories(
 
     review = ReviewModel.clean_categories(categories=input_categories)
     assert review == expected_return
+
+@pytest.mark.parametrize(
+    'partners,input_file',
+    [
+        (['astropy'], 'reviews/partnership_astropy.txt')
+    ]
+)
+def test_parse_partnerships(partners, input_file, data_file, process_issues):
+    """
+    The community partnership checkboxes should be correctly parsed into
+    a value in the :class:`.Partnerships` enum
+    """
+    review = data_file(input_file, True)
+    review = process_issues.parse_issue(review)
+    assert review.partners == partners

@@ -5,6 +5,7 @@ This module also includes a convenience class for URL validation.
 
 import re
 from datetime import datetime
+from enum import Enum
 from typing import Any, Optional, Set, Union
 
 import requests
@@ -19,6 +20,9 @@ from pydantic import (
 
 from pyosmeta.utils_clean import clean_date, clean_markdown
 
+class Partnerships(str, Enum):
+    astropy = 'astropy'
+    pangeo = 'pangeo'
 
 class UrlValidatorMixin:
     """A mixin to validate classes that are of the same type across
@@ -227,6 +231,7 @@ class ReviewModel(BaseModel):
         populate_by_name=True,
         str_strip_whitespace=True,
         validate_assignment=True,
+        use_enum_values=True,
     )
 
     package_name: str | None = ""
@@ -252,7 +257,7 @@ class ReviewModel(BaseModel):
     closed_at: Optional[datetime] = None
     issue_link: str = None
     joss: Optional[str] = None
-    partners: Optional[list[str]] = None
+    partners: Optional[list[Partnerships]] = None
     gh_meta: Optional[GhMeta] = None
 
     @field_validator(
