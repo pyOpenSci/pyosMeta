@@ -13,6 +13,16 @@ from .github_api import GitHubAPI
 from .utils_clean import clean_date_accepted_key
 from .utils_parse import parse_user_names
 
+KEYED_STRING = re.compile(r'\s*(?P<key>\w*?)\s*:\s*(?P<value>.*)')
+"""
+Parse a key-value string into keys and values.
+
+Examples:
+
+    >>> text = 'Astropy: Link coming soon to standards'
+    >>> KEYED_STRING.search(text).groupdict()
+    {'key': 'Astropy', 'value': 'Link coming soon to standards'}
+"""
 
 @dataclass
 class ProcessIssues:
@@ -190,7 +200,7 @@ class ProcessIssues:
         # this could be made more flexible if it just runs until it runs
         # out of categories to parse
         meta["partners"] = self.get_categories(
-            body, "## Community Partnerships", 3
+            body, "## Community Partnerships", 3, keyed=True
         )
 
         return meta
@@ -422,7 +432,7 @@ class ProcessIssues:
     # This works - i could just make it more generic and remove fmt since it's
     # not used and replace it with a number of values and a test string
     def get_categories(
-        self, issue_list: list[str], section_str: str, num_vals: int
+        self, issue_list: list[str], section_str: str, num_vals: int, keyed:bool=False
     ) -> list[str] | None:
         """Parse through a pyOS review issue and grab categories associated
         with a package
@@ -440,6 +450,12 @@ class ProcessIssues:
         num_vals : int
             Number of categories expected in the list. for instance
             3 partner options.
+
+        keyed : bool
+            If True, treat the category value as a key-value pair separated by a colon
+            (and just extract the key).
+
+            eg. ``- [x] Astropy: some other text`` would be parsed as ``'astropy'``
         """
         # Find the starting index of the category section
         index = [
@@ -473,4 +489,8 @@ class ProcessIssues:
         categories = [
             re.sub(r"(\w+) (\w+)", r"\1-\2", item) for item in cleaned
         ]
-        return [item.lower().replace("[^1]", "") for item in categories]
+        categories = [item.lower().replace("[^1]", "") for item in categories]
+        if keyed:
+            categories = [KEYED_STRING.search(c).groupdict().get('key') for c in categories]
+
+        return categories
