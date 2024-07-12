@@ -13,7 +13,7 @@ from .github_api import GitHubAPI
 from .utils_clean import clean_date_accepted_key
 from .utils_parse import parse_user_names
 
-KEYED_STRING = re.compile(r'\s*(?P<key>\S*?)\s*:\s*(?P<value>.*)\s*')
+KEYED_STRING = re.compile(r"\s*(?P<key>\S*?)\s*:\s*(?P<value>.*)\s*")
 """
 Parse a key-value string into keys and values.
 
@@ -23,6 +23,7 @@ Examples:
     >>> KEYED_STRING.search(text).groupdict()
     {'key': 'Astropy', 'value': 'Link coming soon to standards'}
 """
+
 
 @dataclass
 class ProcessIssues:
@@ -432,7 +433,11 @@ class ProcessIssues:
     # This works - i could just make it more generic and remove fmt since it's
     # not used and replace it with a number of values and a test string
     def get_categories(
-        self, issue_list: list[str], section_str: str, num_vals: int, keyed:bool=False
+        self,
+        issue_list: list[str],
+        section_str: str,
+        num_vals: int,
+        keyed: bool = False,
     ) -> list[str] | None:
         """Parse through a pyOS review issue and grab categories associated
         with a package
@@ -492,7 +497,7 @@ class ProcessIssues:
         categories = [item.lower().replace("[^1]", "") for item in categories]
         if keyed:
             categories = [
-                KEYED_STRING.search(c).groupdict().get('key')
+                KEYED_STRING.search(c).groupdict().get("key")
                 for c in categories
                 if KEYED_STRING.search(c) is not None
             ]

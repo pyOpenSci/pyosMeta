@@ -22,8 +22,9 @@ from pyosmeta.utils_clean import clean_date, clean_markdown
 
 
 class Partnerships(str, Enum):
-    astropy = 'astropy'
-    pangeo = 'pangeo'
+    astropy = "astropy"
+    pangeo = "pangeo"
+
 
 class UrlValidatorMixin:
     """A mixin to validate classes that are of the same type across

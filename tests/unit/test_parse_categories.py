@@ -97,11 +97,9 @@ def test_clean_categories(
     review = ReviewModel.clean_categories(categories=input_categories)
     assert review == expected_return
 
+
 @pytest.mark.parametrize(
-    'partners,input_file',
-    [
-        (['astropy'], 'reviews/partnership_astropy.txt')
-    ]
+    "partners,input_file", [(["astropy"], "reviews/partnership_astropy.txt")]
 )
 def test_parse_partnerships(partners, input_file, data_file, process_issues):
     """
