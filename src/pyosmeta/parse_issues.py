@@ -491,6 +491,10 @@ class ProcessIssues:
         ]
         categories = [item.lower().replace("[^1]", "") for item in categories]
         if keyed:
-            categories = [KEYED_STRING.search(c).groupdict().get('key') for c in categories]
+            categories = [
+                KEYED_STRING.search(c).groupdict().get('key')
+                for c in categories
+                if KEYED_STRING.search(c) is not None
+            ]
 
         return categories

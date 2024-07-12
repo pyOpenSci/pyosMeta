@@ -20,6 +20,7 @@ from pydantic import (
 
 from pyosmeta.utils_clean import clean_date, clean_markdown
 
+
 class Partnerships(str, Enum):
     astropy = 'astropy'
     pangeo = 'pangeo'
