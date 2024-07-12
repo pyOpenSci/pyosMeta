@@ -55,4 +55,3 @@ existing community please check below:
 
 - [x] Astropy: Link coming soon to standards
 - [ ] Pangeo: My package adheres to the [Pangeo standards listed in the pyOpenSci peer review guidebook][PangeoCollaboration]
-
