@@ -18,6 +18,7 @@ from pydantic import (
 )
 
 from pyosmeta.utils_clean import clean_date, clean_markdown
+from pyosmeta.models.github import Labels
 
 
 class UrlValidatorMixin:
@@ -254,6 +255,7 @@ class ReviewModel(BaseModel):
     joss: Optional[str] = None
     partners: Optional[list[str]] = None
     gh_meta: Optional[GhMeta] = None
+    labels: list[str] = Field(default_factory=list)
 
     @field_validator(
         "date_accepted",
@@ -368,3 +370,13 @@ class ReviewModel(BaseModel):
             return [item]
         else:
             return item
+
+    @field_validator("labels", mode="before")
+    def extract_label(cls, labels: list[str | Labels]) -> list[str]:
+        """
+        Get just the ``name`` from the Labels model, if given
+        """
+        return [
+            label.name if isinstance(label, Labels) else label
+            for label in labels
+        ]

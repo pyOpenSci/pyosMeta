@@ -245,6 +245,7 @@ class ProcessIssues:
                     "updated_at",
                     "closed_at",
                     "repository_url",
+                    "labels",
                 ],
             )
 

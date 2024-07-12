@@ -2,6 +2,7 @@
 
 import pytest
 from pyosmeta.models import ReviewUser
+from pyosmeta.models.github import Labels
 
 
 def test_parse_issue_header(process_issues, issue_list):
@@ -47,3 +48,23 @@ def test_parse_bolded_keys(process_issues, data_file):
     review = data_file("reviews/bolded_keys.txt", True)
     review = process_issues.parse_issue(review)
     assert review.package_name == "fake_package"
+
+
+def test_parse_labels(issue_list, process_issues):
+    """
+    `Label` models should be coerced to a string when parsing an issue
+    """
+    label_inst = Labels(
+        id=1196238794,
+        node_id="MDU6TGFiZWwxMTk2MjM4Nzk0",
+        url="https://api.github.com/repos/pyOpenSci/software-submission/labels/6/pyOS-approved",
+        name="6/pyOS-approved",
+        description="",
+        color="006B75",
+        default=False,
+    )
+    labels = [label_inst, "another_label"]
+    for issue in issue_list:
+        issue.labels = labels
+        review = process_issues.parse_issue(issue)
+        assert review.labels == ["6/pyOS-approved", "another_label"]
