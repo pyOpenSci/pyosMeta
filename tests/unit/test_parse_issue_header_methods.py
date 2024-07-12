@@ -2,6 +2,7 @@
 This workflow grabs the first comment from the review header and
 parses out (and cleans) pyOpenSci review metadata.
 """
+
 import pytest
 from pyosmeta.parse_issues import KEYED_STRING
 
@@ -19,19 +20,52 @@ def test_issue_as_dict(process_issues, issue_list):
 
 
 @pytest.mark.parametrize(
-    'text,expected',
+    "text,expected",
     [
-        pytest.param('apple: banana', {'key': 'apple', 'value': 'banana'},id='base'),
-        pytest.param('Apple :  Banana', {'key': 'Apple', 'value': 'Banana'}, id='whitespace'),
-        pytest.param(' Apple : Banana ',  {'key': 'Apple', 'value': 'Banana '}, id='whitespace-leading'),
-        pytest.param('Apple: Multiple words', {'key': 'Apple', 'value': 'Multiple words'}, id='whitespace-value'),
-        pytest.param('Apple:banana:cherry', {'key': 'Apple', 'value':'banana:cherry'}, id='non-greedy-key'),
-        pytest.param('a line\nApple: banana cherry\nwatermelon', {'key': 'Apple','value': 'banana cherry'}, id='multiline'),
-        pytest.param('multiword key: banana', {'key': 'key', 'value': 'banana'}, id='multiword-key'),
-        pytest.param('multiword-key: banana', {'key': 'multiword-key', 'value': 'banana'}, id='multiword-key-hyphenated'),
-        pytest.param('* bulleted: key', {'key': 'bulleted', 'value': 'key'}, id='bulleted-key'),
-
-    ]
+        pytest.param(
+            "apple: banana", {"key": "apple", "value": "banana"}, id="base"
+        ),
+        pytest.param(
+            "Apple :  Banana",
+            {"key": "Apple", "value": "Banana"},
+            id="whitespace",
+        ),
+        pytest.param(
+            " Apple : Banana ",
+            {"key": "Apple", "value": "Banana "},
+            id="whitespace-leading",
+        ),
+        pytest.param(
+            "Apple: Multiple words",
+            {"key": "Apple", "value": "Multiple words"},
+            id="whitespace-value",
+        ),
+        pytest.param(
+            "Apple:banana:cherry",
+            {"key": "Apple", "value": "banana:cherry"},
+            id="non-greedy-key",
+        ),
+        pytest.param(
+            "a line\nApple: banana cherry\nwatermelon",
+            {"key": "Apple", "value": "banana cherry"},
+            id="multiline",
+        ),
+        pytest.param(
+            "multiword key: banana",
+            {"key": "key", "value": "banana"},
+            id="multiword-key",
+        ),
+        pytest.param(
+            "multiword-key: banana",
+            {"key": "multiword-key", "value": "banana"},
+            id="multiword-key-hyphenated",
+        ),
+        pytest.param(
+            "* bulleted: key",
+            {"key": "bulleted", "value": "key"},
+            id="bulleted-key",
+        ),
+    ],
 )
 def test_keyed_string(text, expected):
     """
@@ -46,4 +80,3 @@ def test_keyed_string(text, expected):
         assert matched == expected
     else:
         assert matched is None
-
