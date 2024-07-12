@@ -18,8 +18,8 @@ from pydantic import (
     field_validator,
 )
 
-from pyosmeta.utils_clean import clean_date, clean_markdown
 from pyosmeta.models.github import Labels
+from pyosmeta.utils_clean import clean_date, clean_markdown
 
 
 class Partnerships(str, Enum):
