@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [v0.3.2] - 2024-07-04
+
+### Fixes
+
+* Fix parsing of partnerships by (@sneakers-the-rat, #187)
+* Get labels from issue metadata (@sneakers-the-rat, #189)
+
 ## [v0.3.1] - 2024-07-04
 
 * Add: add emeritus_editor to personModel (@lwasser, #182)
