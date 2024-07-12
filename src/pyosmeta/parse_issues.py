@@ -13,7 +13,7 @@ from .github_api import GitHubAPI
 from .utils_clean import clean_date_accepted_key
 from .utils_parse import parse_user_names
 
-KEYED_STRING = re.compile(r'\s*(?P<key>\w*?)\s*:\s*(?P<value>.*)')
+KEYED_STRING = re.compile(r'\s*(?P<key>\S*?)\s*:\s*(?P<value>.*)\s*')
 """
 Parse a key-value string into keys and values.
 
