@@ -243,7 +243,8 @@ class ReviewModel(BaseModel):
     )
     submitting_author: ReviewUser | None = None
     all_current_maintainers: list[ReviewUser] = Field(default_factory=list)
-    repository_link: str
+    # Support presubmissions with an alias
+    repository_link: str = Field(..., alias="repository_link_(if_existing)")
     version_submitted: Optional[str] = None
     categories: Optional[list[str]] = None
     editor: ReviewUser | None = None
