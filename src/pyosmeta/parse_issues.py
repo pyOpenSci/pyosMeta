@@ -67,10 +67,25 @@ class ProcessIssues:
         -------
         list
             List of dict items each containing a review issue
+
+        Notes
+        -----
+        We add a filter here to labels because the github api defaults to
+        grabbing issues with ALL using an and operator labels in a list. We
+        need to use an OR as a selector.
         """
 
         issues = self.github_api.return_response()
-        return [Issue(**i) for i in issues]
+        # Filter labels according to label select input
+        labels = self.github_api.labels
+
+        filtered_issues = [
+            issue
+            for issue in issues
+            if any(label["name"] in labels for label in issue["labels"])
+        ]
+
+        return [Issue(**i) for i in filtered_issues]
 
     def _is_review_role(self, string: str) -> bool:
         """

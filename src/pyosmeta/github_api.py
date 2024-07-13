@@ -73,12 +73,34 @@ class GitHubAPI:
             )
 
     @property
-    def api_endpoint(self):
-        labels_query = ",".join(self.labels) if self.labels else ""
-        url = (
-            f"https://api.github.com/repos/{self.org}/{self.repo}/"
-            f"issues?labels={labels_query}&state=all&per_page=100"
-        )
+    def api_endpoint(self) -> str:
+        """Create the API endpoint url
+
+        Returns
+        -------
+        str
+            A string representing the api endpoint to query.
+
+        Notes
+        -----
+        The rest API will look for issues that have ALL labels provided in a
+        query (using an AND query vs an OR query by default). The graphQL may
+        support OR. As such if there is a list provided, we will want to parse
+        down the returned list to only include issues with a specific label
+        included.
+        """
+        # If there is more than one label provided, request all issues
+        # Will have to parse later.
+        if len(self.labels) > 1:
+            url = (
+                f"https://api.github.com/repos/{self.org}/{self.repo}/"
+                f"issues?state=all&per_page=100"
+            )
+        else:
+            url = (
+                f"https://api.github.com/repos/{self.org}/{self.repo}/"
+                f"issues?labels={self.labels[0]}&state=all&per_page=100"
+            )
         return url
 
     def handle_rate_limit(self, response):
