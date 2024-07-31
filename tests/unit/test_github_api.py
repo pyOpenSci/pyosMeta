@@ -53,7 +53,7 @@ def test_api_endpoint(github_api):
         (
         "https://api.github.com/repos/pyopensci/pyosmeta/"
         "issues?labels=label1,label2&state=all&per_page=100"
-        pre),
+        ),
         (
         "https://api.github.com/repos/pyopensci/pyosmeta/"
         "issues?state=all&per_page=100"
