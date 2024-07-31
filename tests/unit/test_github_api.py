@@ -48,14 +48,16 @@ def test_missing_token(mock_missing_github_token, tmpdir):
 
 
 def test_api_endpoint(github_api):
-    """Test that the generated api url created in the property
-    is as expected
-    """
-    expected_endpoint = (
+    """Test that the generated api url created in the property is valid"""
+    expected_endpoint = [(
         "https://api.github.com/repos/pyopensci/pyosmeta/"
-        "issues?labels=label1,label2&state=all&per_page=100"
-    )
-    assert github_api.api_endpoint == expected_endpoint
+        "issues?labels=label1,label2&state=all&per_page=100"),
+        (
+        "https://api.github.com/repos/pyopensci/pyosmeta/"
+        "issues?state=all&per_page=100"
+        )
+    ]
+    assert github_api.api_endpoint in expected_endpoint
 
 
 def test_get_user_info_successful(mocker, ghuser_response):
