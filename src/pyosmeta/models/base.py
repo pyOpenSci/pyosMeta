@@ -104,12 +104,12 @@ class PersonModel(BaseModel, UrlValidatorMixin):
     editorial_board: Optional[bool] = Field(
         None, validation_alias=AliasChoices("editorial-board")
     )
-    emeritus_editor: Optional[bool] = Field(
-        None, validation_alias=AliasChoices("emeritus_editor")
+    emeritus_editor: bool = Field(
+        False, validation_alias=AliasChoices("emeritus_editor")
     )
-    advisory: Optional[bool] = False
-    emeritus_advisory: Optional[bool] = Field(
-        None, validation_alias=AliasChoices("emeritus_editor")
+    advisory: bool = False
+    emeritus_advisory: bool = Field(
+        False, validation_alias=AliasChoices("emeritus_advisory")
     )
     twitter: Optional[str] = Field(
         None, validation_alias=AliasChoices("twitter_username")
@@ -129,6 +129,19 @@ class PersonModel(BaseModel, UrlValidatorMixin):
     packages_reviewed: Set[str] = set()
     location: Optional[str] = None
     email: Optional[str] = None
+
+    @field_validator(
+        "emeritus_advisory",
+        "advisory",
+        "emeritus_editor",
+        "editorial_board",
+        mode="before",
+        always=True,
+    )
+    def validate_bool_fields(cls, v: Any) -> bool:
+        if isinstance(v, bool):
+            return v
+        return False
 
     @field_validator(
         "packages_reviewed",
