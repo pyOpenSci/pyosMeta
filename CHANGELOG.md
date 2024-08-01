@@ -4,8 +4,19 @@
 
 ## [Unreleased]
 
+## [v0.3.4] - 2024-08-01
+
+### Fixes
+
+* Fix: Edit .env-default file to correct syntax (@ehinman, #196)
+* Fix: Update api endpoint test to check for any valid endpoint (@willingc, #199)
 * Fix: emeritus and advisory roles default to false + bug fix (@lwasser, #200, #202)
 * Fix: allow for issues with multiple labels & fix presubmission ingest (@lwasser)
+* Fix: move to BSD-3 license so pyOS aligns with project Jupyter (@lwasser)
+
+### :sparkles: Thank you to the new contributors in this release :sparkles:
+
+@ehinman
 
 ## [v0.3.2] - 2024-07-04
 
