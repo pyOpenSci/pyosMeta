@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 
+* Fix: emeritus and advisory roles default to false + bug fix (@lwasser, #200, #202)
 * Fix: allow for issues with multiple labels & fix presubmission ingest (@lwasser)
 
 ## [v0.3.2] - 2024-07-04
