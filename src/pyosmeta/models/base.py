@@ -136,7 +136,6 @@ class PersonModel(BaseModel, UrlValidatorMixin):
         "emeritus_editor",
         "editorial_board",
         mode="before",
-        always=True,
     )
     def validate_bool_fields(cls, v: Any) -> bool:
         if isinstance(v, bool):
