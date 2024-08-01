@@ -178,6 +178,16 @@
         "code",
         "review"
       ]
+    },
+    {
+      "login": "ehinman",
+      "name": "Elise Hinman",
+      "avatar_url": "https://avatars.githubusercontent.com/u/121896266?v=4",
+      "profile": "https://github.com/ehinman",
+      "contributions": [
+        "code",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
