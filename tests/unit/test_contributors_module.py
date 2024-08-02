@@ -67,11 +67,37 @@ def test_return_user_info(process_contributors, github_api_mock):
         "github_username": "testuser"
     }
 
-def test_update_contrib_type(process_contributors):
-    web_contrib_types = ["type1", "type2"]
+def test_update_contrib_type_web_none(process_contributors):
+    web_contrib_types = None
     repo_contrib_types = ["type2", "type3"]
     updated_types = process_contributors._update_contrib_type(web_contrib_types, repo_contrib_types)
+    assert updated_types == ["type2", "type3"]
+
+def test_update_contrib_type_new_types(process_contributors):
+    web_contrib_types = ["type1"]
+    repo_contrib_types = ["type1", "type2", "type3"]
+    updated_types = process_contributors._update_contrib_type(web_contrib_types, repo_contrib_types)
     assert updated_types == ["type1", "type2", "type3"]
+
+def test_update_contrib_type_no_new_types(process_contributors):
+    web_contrib_types = ["type1", "type2"]
+    repo_contrib_types = ["type1", "type2"]
+    updated_types = process_contributors._update_contrib_type(web_contrib_types, repo_contrib_types)
+    assert updated_types == ["type1", "type2"]
+
+def test_update_contrib_type_empty(process_contributors):
+    web_contrib_types = []
+    repo_contrib_types = []
+    updated_types = process_contributors._update_contrib_type(web_contrib_types, repo_contrib_types)
+    assert updated_types == []
+
+
+def test_update_contrib_type_same_types(process_contributors):
+    web_contrib_types = ["type1", "type2"]
+    repo_contrib_types = ["type2", "type1"]
+    updated_types = process_contributors._update_contrib_type(web_contrib_types, repo_contrib_types)
+    assert updated_types == ["type1", "type2"]
+
 
 def test_combine_users(process_contributors):
     repo_dict = {
