@@ -1,27 +1,90 @@
+import pytest
+from unittest.mock import Mock, patch
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.github_api import GitHubAPI
 
+@pytest.fixture
+def github_api_mock():
+    return Mock(spec=GitHubAPI)
 
-def test_init(mocker):
-    """Test that the ProcessContributors object instantiates as
-    expected"""
+@pytest.fixture
+def json_files():
+    return ["https://example.com/file1.json", "https://example.com/file2.json"]
 
-    # Create a mock GitHubAPI object
-    github_api_mock = mocker.MagicMock(spec=GitHubAPI)
-    json_files = ["file1.json", "file2.json"]
+@pytest.fixture
+def process_contributors(github_api_mock, json_files):
+    return ProcessContributors(github_api_mock, json_files)
 
-    process_contributors = ProcessContributors(github_api_mock, json_files)
+def test_check_contrib_type(process_contributors):
+    assert process_contributors.check_contrib_type("software-peer-review") == "peer-review-guide"
+    assert process_contributors.check_contrib_type("python-package-guide") == "package-guide"
+    assert process_contributors.check_contrib_type("pyopensci.github.io") == "web-contrib"
+    assert process_contributors.check_contrib_type("update-web-metadata") == "code-contrib"
+    assert process_contributors.check_contrib_type("other") == "community"
 
-    assert process_contributors.github_api == github_api_mock
-    assert process_contributors.json_files == json_files
+@patch("requests.get")
+def test_load_json(mock_get, process_contributors):
+    mock_get.return_value.text = '{"key": "value"}'
+    result = process_contributors.load_json("https://example.com/test.json")
+    assert result == {"key": "value"}
 
+@patch.object(ProcessContributors, 'load_json')
+def test_process_json_file(mock_load_json, process_contributors):
+    mock_load_json.return_value = {"contributors": [{"login": "user1"}, {"login": "user2"}]}
+    contrib_type, users = process_contributors.process_json_file("https://example.com/file1.json")
+    assert contrib_type == "community"
+    assert users == ["user1", "user2"]
 
-def test_return_user_info(mock_github_api, ghuser_response):
-    """Test that return from github API user info returns expected
-    GH username."""
+@patch.object(ProcessContributors, 'process_json_file')
+def test_combine_json_data(mock_process_json_file, process_contributors):
+    mock_process_json_file.side_effect = [("type1", ["user1"]), ("type2", ["user2"])]
+    combined_data = process_contributors.combine_json_data()
+    assert combined_data == {"type1": ["user1"], "type2": ["user2"]}
 
-    process_contributors = ProcessContributors(mock_github_api, [])
-    gh_handle = "chayadecacao"
-    user_info = process_contributors.return_user_info(gh_handle)
+def test_return_user_info(process_contributors, github_api_mock):
+    github_api_mock.get_user_info.return_value = {
+        "name": "Test User",
+        "location": "Test Location",
+        "email": "test@example.com",
+        "bio": "Test Bio",
+        "twitter_username": "test_twitter",
+        "company": "Test Company",
+        "blog": "https://test.com",
+        "id": 12345,
+        "login": "testuser"
+    }
+    user_info = process_contributors.return_user_info("testuser")
+    assert user_info == {
+        "name": "Test User",
+        "location": "Test Location",
+        "email": "test@example.com",
+        "bio": "Test Bio",
+        "twitter": "test_twitter",
+        "mastodon": None,
+        "organization": "Test Company",
+        "website": "https://test.com",
+        "github_image_id": 12345,
+        "github_username": "testuser"
+    }
 
-    assert user_info["github_username"] == gh_handle
+def test_update_contrib_type(process_contributors):
+    web_contrib_types = ["type1", "type2"]
+    repo_contrib_types = ["type2", "type3"]
+    updated_types = process_contributors._update_contrib_type(web_contrib_types, repo_contrib_types)
+    assert updated_types == ["type1", "type2", "type3"]
+
+def test_combine_users(process_contributors):
+    repo_dict = {
+        "user1": {"contributor_type": ["type1"]},
+        "user2": {"contributor_type": ["type2"]}
+    }
+    web_dict = {
+        "user1": {"contributor_type": ["type1"]},
+        "user3": {"contributor_type": ["type3"]}
+    }
+    combined_users = process_contributors.combine_users(repo_dict, web_dict)
+    assert combined_users == {
+        "user1": {"contributor_type": ["type1"]},
+        "user3": {"contributor_type": ["type3"]},
+        "user2": {"contributor_type": ["type2"]}
+    }
