@@ -4,6 +4,8 @@
 [![.github/workflows/test-run-script.yml](https://github.com/pyOpenSci/update-web-metadata/actions/workflows/test-run-script.yml/badge.svg)](https://github.com/pyOpenSci/update-web-metadata/actions/workflows/test-run-script.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pyopensci/update-web-metadata/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/pyOpenSci/pyosMeta/graph/badge.svg?token=GOXKA8Z44X)](https://codecov.io/gh/pyOpenSci/pyosMeta)
+[![CITE DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13159327.svg)](https://doi.org/10.5281/zenodo.13159327)
+
 
 ## Description
 
