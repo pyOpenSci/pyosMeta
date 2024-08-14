@@ -47,13 +47,41 @@ def test_missing_token(mock_missing_github_token, tmpdir):
         github_api.get_token()
 
 
-def test_api_endpoint(github_api):
-    """Test that the generated api url created in the property is valid"""
-    expected_endpoint = [
-        "https://api.github.com/repos/pyopensci/pyosmeta/issues?labels=label1,label2&state=all&per_page=100",
-        "https://api.github.com/repos/pyopensci/pyosmeta/issues?state=all&per_page=100",
-    ]
-    assert github_api.api_endpoint in expected_endpoint
+@pytest.mark.parametrize(
+    "org, repo, endpoint_type, labels, expected_url",
+    [
+        (
+            "pyopensci",
+            "pyosmeta",
+            "issues",
+            [],
+            "https://api.github.com/repos/pyopensci/pyosmeta/issues?state=all&per_page=100",
+        ),
+        (
+            "pyopensci",
+            "pyosmeta",
+            "issues",
+            ["label1"],
+            "https://api.github.com/repos/pyopensci/pyosmeta/issues?labels=label1&state=all&per_page=100",
+        ),
+        (
+            "pyopensci",
+            "pyosmeta",
+            "issues",
+            ["label1", "label2"],
+            "https://api.github.com/repos/pyopensci/pyosmeta/issues?state=all&per_page=100",
+        ),
+    ],
+)
+def test_api_endpoint(org, repo, endpoint_type, labels, expected_url):
+    """Test that the generated API URL created in the property is valid."""
+    github_api = GitHubAPI()
+    github_api.org = org
+    github_api.repo = repo
+    github_api.endpoint_type = endpoint_type
+    github_api.labels = labels
+
+    assert github_api.api_endpoint == expected_url
 
 
 def test_get_user_info_successful(mocker, ghuser_response):
