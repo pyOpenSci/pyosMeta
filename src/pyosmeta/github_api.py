@@ -1,8 +1,8 @@
 """
-A module that houses all of the methods related to interfacing
-with the GitHub API. THere are three groupings of activities here:
+A module that contains all of the methods related to interfacing
+with the GitHub API. There are three groupings of activities:
 
-1. Parsing github issues to return peer review information
+1. Parsing GitHub issues to return pyOS software peer review information
 2. Parsing contributor profile data to return names and affiliations where
 available
 3. Parsing package repositories to return package metadata such as pull request
@@ -28,9 +28,10 @@ class GitHubAPI:
 
     def __init__(
         self,
-        org: str | None = None,
+        org: str | None = "pyopensci",
         repo: str | None = None,
         labels: list[str] | None = None,
+        endpoint_type: str = "issues",
     ):
         """
         Initialize a GitHub client object that handles interfacing with the
@@ -43,12 +44,16 @@ class GitHubAPI:
         repo : str, Optional
             Repo name where the software review issues live
         labels : list of strings, Optional
-            Labels for issues that we want to access - e.g. pyos approved
+            Labels for issues that we want to access - e.g. pyOS approved
+        endpoint_type : str
+            The end point type to hit (pull request -- pulls or issues).
+            Default is "issues".
         """
 
         self.org: str | None = org
         self.repo: str | None = repo
         self.labels: list[str] | None = labels
+        self.endpoint_type: str = endpoint_type
 
     def get_token(self) -> str | None:
         """Fetches the GitHub API key from the users environment. If running
@@ -89,17 +94,26 @@ class GitHubAPI:
         down the returned list to only include issues with a specific label
         included.
         """
+
+        endpoint = self.endpoint_type
         # If there is more than one label provided, request all issues
-        # Will have to parse later.
-        if len(self.labels) > 1:
+        # TODO: this will cause a problem with reviews if there is a presubmission
+        # and a submission with the same package name
+        # If there are no labels provided, query all
+        if not self.labels:
             url = (
                 f"https://api.github.com/repos/{self.org}/{self.repo}/"
-                f"issues?state=all&per_page=100"
+                f"{endpoint}?state=all&per_page=100"
+            )
+        elif len(self.labels) > 1:
+            url = (
+                f"https://api.github.com/repos/{self.org}/{self.repo}/"
+                f"{endpoint}?state=all&per_page=100"
             )
         else:
             url = (
                 f"https://api.github.com/repos/{self.org}/{self.repo}/"
-                f"issues?labels={self.labels[0]}&state=all&per_page=100"
+                f"{endpoint}?labels={self.labels[0]}&state=all&per_page=100"
             )
         return url
 
