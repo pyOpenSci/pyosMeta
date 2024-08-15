@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+* Add: Endpoint variable to support both prs and issues to GitHubAPI (@lwasser)
+
 ## [v0.3.4] - 2024-08-01
 
 ### Fixes

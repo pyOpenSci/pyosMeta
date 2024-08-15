@@ -71,6 +71,27 @@ def test_missing_token(mock_missing_github_token, tmpdir):
             ["label1", "label2"],
             "https://api.github.com/repos/pyopensci/pyosmeta/issues?state=all&per_page=100",
         ),
+        (
+            "pyopensci",
+            "pyosmeta",
+            "pulls",
+            [],
+            "https://api.github.com/repos/pyopensci/pyosmeta/pulls?state=all&per_page=100",
+        ),
+        (
+            "pyopensci",
+            "pyosmeta",
+            "pulls",
+            ["label1"],
+            "https://api.github.com/repos/pyopensci/pyosmeta/pulls?labels=label1&state=all&per_page=100",
+        ),
+        (
+            "pyopensci",
+            "pyosmeta",
+            "pulls",
+            ["label1", "label2"],
+            "https://api.github.com/repos/pyopensci/pyosmeta/pulls?state=all&per_page=100",
+        ),
     ],
 )
 def test_api_endpoint(org, repo, endpoint_type, labels, expected_url):
