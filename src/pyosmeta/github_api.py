@@ -97,8 +97,6 @@ class GitHubAPI:
 
         endpoint = self.endpoint_type
         # If there is more than one label provided, request all issues
-        # TODO: this will cause a problem with reviews if there is a presubmission
-        # and a submission with the same package name
         # If there are no labels provided, query all
         if not self.labels:
             url = (
