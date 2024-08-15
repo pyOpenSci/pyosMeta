@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [v0.3.6] - 2024-08-15
+
 * Add: pyos Repos that contributors contribute to  (@lwasser, #197)
 
 ## [v0.3.5] - 2024-08-15
