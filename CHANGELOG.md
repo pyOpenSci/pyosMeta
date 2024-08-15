@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [v0.3.5] - 2024-08-15
+
+This is a tiny release to add support for pr and issue aggregation in our metrics.
+
+### Add
+
 * Add: Endpoint variable to support both prs and issues to GitHubAPI (@lwasser)
 
 ## [v0.3.4] - 2024-08-01
