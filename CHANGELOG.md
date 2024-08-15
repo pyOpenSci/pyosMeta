@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+* Add: pyos Repos that contributors contribute to  (@lwasser, #197)
+
 ## [v0.3.5] - 2024-08-15
 
 This is a tiny release to add support for pr and issue aggregation in our metrics.
@@ -11,6 +13,7 @@ This is a tiny release to add support for pr and issue aggregation in our metric
 ### Add
 
 * Add: Endpoint variable to support both prs and issues to GitHubAPI (@lwasser)
+* Add: Tests for the contributors module & file_io (@willingc)
 
 ## [v0.3.4] - 2024-08-01
 

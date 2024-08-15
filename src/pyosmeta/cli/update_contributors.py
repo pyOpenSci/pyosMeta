@@ -8,10 +8,6 @@ from pyosmeta.file_io import create_paths, load_pickle, open_yml_file
 from pyosmeta.github_api import GitHubAPI
 from pyosmeta.models import PersonModel
 
-# TODO - https://stackoverflow.com
-# /questions/55762673/how-to-parse-list-of-models-with-pydantic
-# I can use TypeAdapter to convert the json data to model objects!
-
 
 def main():
     update_dates = False
@@ -36,6 +32,11 @@ def main():
         "pyopensci.github.io",
         "software-review",
         "pyosmeta",
+        "handbook",
+        "software-submission",
+        "peer-review-metrics",
+        "pyosPackage",
+        "pyos-sphinx-theme",
     ]
     json_files = create_paths(repos)
 
