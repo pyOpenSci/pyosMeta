@@ -62,7 +62,7 @@ def test_missing_token(mock_missing_github_token, tmpdir):
             "pyosmeta",
             "issues",
             ["label1"],
-            "https://api.github.com/repos/pyopensci/pyosmeta/issues?labels=label1&state=all&per_page=100",
+            "https://api.github.com/repos/pyopensci/pyosmeta/issues?state=all&per_page=100&labels=label1",
         ),
         (
             "pyopensci",
@@ -83,7 +83,7 @@ def test_missing_token(mock_missing_github_token, tmpdir):
             "pyosmeta",
             "pulls",
             ["label1"],
-            "https://api.github.com/repos/pyopensci/pyosmeta/pulls?labels=label1&state=all&per_page=100",
+            "https://api.github.com/repos/pyopensci/pyosmeta/pulls?state=all&per_page=100&labels=label1",
         ),
         (
             "pyopensci",
@@ -103,6 +103,44 @@ def test_api_endpoint(org, repo, endpoint_type, labels, expected_url):
     github_api.labels = labels
 
     assert github_api.api_endpoint == expected_url
+
+
+@pytest.mark.parametrize(
+    "after_date, expected_url",
+    [
+        (
+            "2023-13-01",  # Invalid month
+            None,
+        ),
+        (
+            "2023-10-32",  # Invalid day
+            None,
+        ),
+        (
+            "2023-10",  # Incomplete date
+            None,
+        ),
+        (
+            "invalid-date",  # Invalid format
+            None,
+        ),
+        (
+            "2024-08-16",  # Valid date
+            "https://api.github.com/repos/org/repo/issues?state=all&per_page=100&since=2024-08-16",
+        ),
+    ],
+)
+def test_api_endpoint_with_invalid_dates(after_date, expected_url):
+    """Test that a URL generated with valid or invalid dates works as expected"""
+    github_api = GitHubAPI(
+        org="org", repo="repo", endpoint_type="issues", after_date=after_date
+    )
+
+    if expected_url is None:
+        with pytest.raises(ValueError, match="Invalid after date"):
+            github_api.api_endpoint
+    else:
+        assert github_api.api_endpoint == expected_url
 
 
 def test_get_user_info_successful(mocker, ghuser_response):
