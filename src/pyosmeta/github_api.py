@@ -32,6 +32,7 @@ class GitHubAPI:
         repo: str | None = None,
         labels: list[str] | None = None,
         endpoint_type: str = "issues",
+        after_date: str = None,
     ):
         """
         Initialize a GitHub client object that handles interfacing with the
@@ -54,6 +55,8 @@ class GitHubAPI:
         self.repo: str | None = repo
         self.labels: list[str] | None = labels
         self.endpoint_type: str = endpoint_type
+        # ISO 8601 format YYYY-MM-DDTHH:MM:SSZ.
+        self.after_date: str = after_date
 
     def get_token(self) -> str | None:
         """Fetches the GitHub API key from the users environment. If running
@@ -90,30 +93,27 @@ class GitHubAPI:
         -----
         The rest API will look for issues that have ALL labels provided in a
         query (using an AND query vs an OR query by default). The graphQL may
-        support OR. As such if there is a list provided, we will want to parse
-        down the returned list to only include issues with a specific label
-        included.
+        support the OR param.
         """
+        base_url = f"https://api.github.com/repos/{self.org}/{self.repo}/{self.endpoint_type}"
+        params = ["state=all", "per_page=100"]
 
-        endpoint = self.endpoint_type
         # If there is more than one label provided, request all issues
-        # If there are no labels provided, query all
-        if not self.labels:
-            url = (
-                f"https://api.github.com/repos/{self.org}/{self.repo}/"
-                f"{endpoint}?state=all&per_page=100"
-            )
-        elif len(self.labels) > 1:
-            url = (
-                f"https://api.github.com/repos/{self.org}/{self.repo}/"
-                f"{endpoint}?state=all&per_page=100"
-            )
-        else:
-            url = (
-                f"https://api.github.com/repos/{self.org}/{self.repo}/"
-                f"{endpoint}?labels={self.labels[0]}&state=all&per_page=100"
-            )
-        return url
+        if self.labels:
+            if len(self.labels) == 1:
+                params.append(f"labels={self.labels[0]}")
+        if self.after_date:
+            # Check if the after date is in the correct format (YYYY-MM-DD)
+            try:
+                time.strptime(self.after_date, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError(
+                    "Invalid after date format. Please use YYYY-MM-DD."
+                )
+
+            params.append(f"since={self.after_date}")
+
+        return f"{base_url}?{'&'.join(params)}"
 
     def handle_rate_limit(self, response):
         """
