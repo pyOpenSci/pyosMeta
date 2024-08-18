@@ -56,6 +56,7 @@ class GitHubAPI:
         self.labels: list[str] | None = labels
         self.endpoint_type: str = endpoint_type
         # ISO 8601 format YYYY-MM-DDTHH:MM:SSZ.
+        # using the api since query which represents updated at not created_at
         self.after_date: str = after_date
 
     def get_token(self) -> str | None:
