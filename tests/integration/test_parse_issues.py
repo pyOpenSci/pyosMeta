@@ -1,6 +1,7 @@
 """Test parse issues workflow"""
 
 import pytest
+
 from pyosmeta.models import ReviewUser
 from pyosmeta.models.github import Labels
 

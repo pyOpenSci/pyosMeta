@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Callable, Literal, Optional, Union, overload
 
 import pytest
+
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.github_api import GitHubAPI
 from pyosmeta.models.github import Issue

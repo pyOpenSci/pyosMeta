@@ -1,5 +1,6 @@
 import pytest
 from pydantic import ValidationError
+
 from pyosmeta.models.github import Issue
 
 sample_response = {

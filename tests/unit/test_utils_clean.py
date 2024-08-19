@@ -1,6 +1,7 @@
 """Tests for the clean helper functions located in the utils_clean module."""
 
 import pytest
+
 from pyosmeta.utils_clean import (
     clean_date,
     clean_date_accepted_key,

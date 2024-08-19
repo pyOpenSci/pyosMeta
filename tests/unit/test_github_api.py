@@ -2,6 +2,7 @@ import os
 import secrets
 
 import pytest
+
 from pyosmeta import github_api
 from pyosmeta.github_api import GitHubAPI
 

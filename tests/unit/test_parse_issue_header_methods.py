@@ -4,6 +4,7 @@ parses out (and cleans) pyOpenSci review metadata.
 """
 
 import pytest
+
 from pyosmeta.parse_issues import KEYED_STRING
 
 
