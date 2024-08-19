@@ -1,6 +1,7 @@
 import pickle
 
 import pytest
+
 from pyosmeta.file_io import _list_to_dict, create_paths, load_pickle
 
 

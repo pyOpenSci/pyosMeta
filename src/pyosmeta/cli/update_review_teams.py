@@ -25,6 +25,7 @@ import os
 from datetime import datetime
 
 from pydantic import ValidationError
+
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
 from pyosmeta.github_api import GitHubAPI

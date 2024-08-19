@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.github_api import GitHubAPI
 

@@ -3,6 +3,7 @@ import pickle
 from datetime import datetime
 
 from pydantic import ValidationError
+
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import create_paths, load_pickle, open_yml_file
 from pyosmeta.github_api import GitHubAPI
