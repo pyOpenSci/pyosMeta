@@ -40,7 +40,7 @@ repos:
   # Linting and formatting for Python code (see pyproject.toml for config)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.6.1
+    rev: v0.6.2
     hooks:
       # Run the linter.
       - id: ruff
@@ -50,6 +50,6 @@ repos:
 
   # Ensure GitHub workflows match the expected schema.
   - repo: https://github.com/sirosen/check-jsonschema
-    rev: 0.29.1
+    rev: 0.29.2
     hooks:
       - id: check-github-workflows
