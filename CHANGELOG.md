@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+* Add: after-date to api call and return clearer 401 message when token needs a refresh. (@lwasser)
+
 ## [v0.3.6] - 2024-08-15
 
 * Add: pyos Repos that contributors contribute to  (@lwasser, #197)
