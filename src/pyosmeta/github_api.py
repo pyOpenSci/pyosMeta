@@ -176,7 +176,13 @@ class GitHubAPI:
                 self.handle_rate_limit(response)
 
         except requests.HTTPError as exception:
-            raise exception
+            if exception.response.status_code == 401:
+                print(
+                    "Oops - your request isn't authorized. Your token may be "
+                    "expired or invalid. Please refresh your token."
+                )
+            else:
+                raise exception
 
         return results
 
