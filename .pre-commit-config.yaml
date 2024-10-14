@@ -50,6 +50,6 @@ repos:
 
   # Ensure GitHub workflows match the expected schema.
   - repo: https://github.com/sirosen/check-jsonschema
-    rev: 0.29.3
+    rev: 0.29.4
     hooks:
       - id: check-github-workflows
