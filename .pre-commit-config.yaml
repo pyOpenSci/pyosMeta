@@ -15,7 +15,7 @@ ci:
   # pyosMeta disables autofixing of PRs to simplify new contributor experience and cleaner git history
   autofix_prs: false
   # Frequency of hook updates
-  autoupdate_schedule: weekly
+  autoupdate_schedule: quarterly
 
 repos:
   # Out of the box hooks for pre-commit https://github.com/pre-commit/pre-commit-hooks
@@ -50,6 +50,6 @@ repos:
 
   # Ensure GitHub workflows match the expected schema.
   - repo: https://github.com/sirosen/check-jsonschema
-    rev: 0.29.3
+    rev: 0.29.4
     hooks:
       - id: check-github-workflows
