@@ -1,10 +1,11 @@
 """
-This script parses through our reviews and contributors and:
+This script parses through our packages.yml and contributors.yml files
+and:
 
 1. Updates reviewer, editor and maintainer data in the contributor.yml file to
 ensure all packages they supported are listed there.
 1b: And that they have a listing as peer-review under contributor type
-2. Updates the packages metadata with the participants names if it's missing
+2. TODO: not working as expected? Updates the `packages.yml` file with review contributor's names if it's missing
 3. Finally it looks to see if we are missing review participants from
 the review issues in the contributor file and updates that file.
 
@@ -15,7 +16,6 @@ To run: update_reviewers
 # TODO - FEATURE we have some packages that were NOT approved but we had
 # editors and reviewers who participated. We need to acknowledge these people
 # Make sure each issue is tagged "on hold" and then parse contributions
-# TODO: package-wide feature: create no update flag for entries
 # TODO: make sure the script recognizes a 3rd or 4th reviewer - crowsetta has
 # this as will biocypher
 
@@ -40,16 +40,73 @@ def process_user(
     contribs: dict[str, PersonModel],
     processor: ProcessContributors,
 ) -> tuple[ReviewUser, dict[str, PersonModel]]:
-    """
-    - Add a new contributor to `contribs` (mutating it)
-    - Add user to any reviews/etc. that they're on (i don't rly understand that part,
-      someone else write these docs plz (mutating `contribs`)
-    - get their human name from the github name, mutating the `user` object.
+    """Updates a ReviewUser which represents software review participant
+
+    The contributor entry looks something like this:
+    https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml
+    - name: First Last
+        github_username: ghid
+        github_image_id: 7649194
+        contributor_type:
+        - editor
+        - package-guide
+        - package-maintainer
+        - peer-review
+        - submitting-author
+    packages_editor:
+        - errdapy
+        - nbless
+        - pandera
+        - pygmt
+        - pyrolite
+    packages_submitted:
+        - earthpy
+    packages_reviewed:
+
+    This function updates contributor's contribution types entries and the
+     package reviews that they's contributed to in the `contribs` object which
+    gets dumped into our contributors.yml file in the website repo.
+
+    It also updates the contributors human name (if only the GitHub username is
+    available in packages.yml) in
+     the packages object IF that name is available in the contributors.yml file.
+
+     Finally, if the contributor is new and not yet in our contributors.yml file,
+     it adds them to the contribs object
+
+    Parameters
+    ----------
+    user : ReviewUser
+        The user object representing a person involved in the peer review process.
+        Must have a GitHub username to process their data. Name is optional and
+        is looked up from the contribs dict
+    role : str
+        The role of the user in the review process (e.g., "reviewer", "editor").
+        Used to update their contributions in the contribs dict
+    pkg_name : str
+        The name of the package the user is contributing to or reviewing.
+        Used to update their list of packages that they've supported through
+        the review process
+    contribs : dict[str, PersonModel]
+        A dictionary mapping GitHub usernames to `PersonModel` objects. This
+        contains information about all contributors and is updated in
+        this function.
+    processor : ProcessContributors
+        A utility object for handling contributor processing logic, including
+        role mapping and fetching contributor details.
+
+    Returns
+    -------
+    tuple[ReviewUser, dict[str, PersonModel]]
+        - Updated `user` object, potentially with additional details (e.g., name).
+        - Updated `contribs` dictionary, including any new contributor or or
+        updated data for existing contributors.
     """
     gh_user = get_clean_user(user.github_username)
 
     if gh_user not in contribs.keys():
-        # If they aren't already in contribs, add them
+        # If they aren't in the existing contribs.yml data, add them by using
+        # their github username and hitting the github api
         print("Found a new contributor!", gh_user)
         new_contrib = processor.return_user_info(gh_user)
         new_contrib["date_added"] = datetime.now().strftime("%Y-%m-%d")
@@ -58,15 +115,18 @@ def process_user(
         except ValidationError as ve:
             print(ve)
 
-    # Update user package contributions (if it's unique)
+    # Update user the list of contribution types if there are new types to add
+    # for instance a new reviewer would have a "Reviewer" contributor type
+    # added to their contributors.yml entry. But if reviewer is already in the
+    # list we don't need to have it twice!
     review_key = processor.contrib_types[role][0]
     contribs[gh_user].add_unique_value(review_key, pkg_name.lower())
 
-    # Update user contrib list (if it's unique)
+    # Update users contribution type list (if the role is not already there)
     review_roles = processor.contrib_types[role][1]
     contribs[gh_user].add_unique_value("contributor_type", review_roles)
 
-    # If users's name is missing in issue, populate from contribs
+    # If users's name is missing in issue, populate from contribs dict.
     if not user.name:
         user.name = getattr(contribs[gh_user], "name")
 
@@ -85,11 +145,13 @@ def main():
     contrib_types = process_contribs.contrib_types
 
     for pkg_name, review in packages.items():
+        if pkg_name == "automata":
+            print("Let's check this data out")
         print("Processing review team for:", pkg_name)
         for role in contrib_types.keys():
             user: list[ReviewUser] | ReviewUser = getattr(review, role)
 
-            # handle lists or singleton users separately
+            # Handle lists or single users separately
             if isinstance(user, list):
                 for i, a_user in enumerate(user):
                     a_user, contribs = process_user(

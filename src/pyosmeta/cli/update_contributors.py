@@ -1,3 +1,14 @@
+"""
+A CLI script that parses through our existing contributor list stored
+in pyopensci.github.io repo in the _data/contributors.yml file.
+
+This script should respect if a persons's name is in the contributor file,
+then it should be able to retain that name as their desired name (they can update
+that file if they wish). It should NOT overwrite that name
+
+It can also use that name when searching for maintainers
+"""
+
 import argparse
 import pickle
 from datetime import datetime
@@ -95,9 +106,12 @@ def main():
                 if key == "mastodon":
                     # Mastodon isn't available in the GH api yet
                     continue
-                # Don't replace the value if there is a noupdate flag
-                # TODO: This approach doesn't work, ruemal-yaml doesn't
-                # preserve inline comments
+                # Don't replace the Name value from GitHub if there is a name
+                # already listed in the contributors.yml file.
+                # This allows for users to manually update their names and it
+                # won't be overwritten. This also means an update on GitHub will
+                # not be updated here which for now is ok. Not everyone has their
+                # name listed on GH.
                 if key == "name" and existing[key]:
                     continue
                 else:
