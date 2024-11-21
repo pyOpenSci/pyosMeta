@@ -8,6 +8,10 @@
 
 * Add: new repos to track contribs (@lwasser)
 
+### Fixed
+
+* Fix: Updated documentation throughout with a focus on how a user's name is accessed and updated (@lwasser)
+
 ## [v0.3.7] - 2024-08-27
 
 * Add: after-date to api call and return clearer 401 message when token needs a refresh. (@lwasser)
