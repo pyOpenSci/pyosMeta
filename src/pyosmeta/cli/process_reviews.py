@@ -3,6 +3,12 @@ Script that parses metadata from and issue and adds it to a .yml file for the
 website. It also grabs some of the package metadata such as stars,
 last commit, etc.
 
+This script also checks:
+* That each packages documentation is both https compliant and resolves
+* If documentation link is broken it removes it.
+* NOTE: we may want to have the website note if docs are not available for a
+package and have a process to followup
+
 Output: packages.yml file containing a list of:
  1. all packages with accepted reviews
  2. information related to the review including reviewers, editors
