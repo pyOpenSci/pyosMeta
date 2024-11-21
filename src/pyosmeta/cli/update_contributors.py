@@ -38,6 +38,8 @@ def main():
         "peer-review-metrics",
         "pyosPackage",
         "pyos-sphinx-theme",
+        "lessons",
+        "pyos-package-template",
     ]
     json_files = create_paths(repos)
 
