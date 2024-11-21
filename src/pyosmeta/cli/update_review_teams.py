@@ -5,7 +5,6 @@ and:
 1. Updates reviewer, editor and maintainer data in the contributor.yml file to
 ensure all packages they supported are listed there.
 1b: And that they have a listing as peer-review under contributor type
-2. TODO: not working as expected? Updates the `packages.yml` file with review contributor's names if it's missing
 3. Finally it looks to see if we are missing review participants from
 the review issues in the contributor file and updates that file.
 
