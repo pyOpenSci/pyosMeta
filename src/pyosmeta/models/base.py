@@ -228,7 +228,7 @@ class GhMeta(BaseModel, UrlValidatorMixin):
 class ReviewUser(BaseModel):
     """Minimal model of a github user, used in several places in review parsing"""
 
-    name: str
+    name: str | None
     github_username: str
 
     @field_validator("github_username", mode="after")

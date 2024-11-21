@@ -144,8 +144,6 @@ def main():
     contrib_types = process_contribs.contrib_types
 
     for pkg_name, review in packages.items():
-        if pkg_name == "automata":
-            print("Let's check this data out")
         print("Processing review team for:", pkg_name)
         for role in contrib_types.keys():
             user: list[ReviewUser] | ReviewUser = getattr(review, role)
@@ -156,7 +154,7 @@ def main():
                     a_user, contribs = process_user(
                         a_user, role, pkg_name, contribs, process_contribs
                     )
-                    # update individual user in reference to issue list
+                    # Update individual user within the user list
                     user[i] = a_user
             elif isinstance(user, ReviewUser):
                 user, contribs = process_user(
