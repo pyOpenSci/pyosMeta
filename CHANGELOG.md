@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+* Add: new repos to track contribs (@lwasser)
+
 ## [v0.3.7] - 2024-08-27
 
 * Add: after-date to api call and return clearer 401 message when token needs a refresh. (@lwasser)
