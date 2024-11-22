@@ -24,7 +24,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pip install pyosmeta
+          # Install dev version
+          python -m pip install .
           update-contributors
           update-reviews
           update-review-teams
