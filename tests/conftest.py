@@ -13,7 +13,7 @@ DATA_DIR = Path(__file__).parent / "data"
 
 @pytest.fixture
 def ghuser_response():
-    """This is the initial github response. I changed the username to
+    """This is the initial GitHub response. I changed the username to
     create this object"""
     expected_response = {
         "login": "chayadecacao",
