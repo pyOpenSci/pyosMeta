@@ -1,0 +1,50 @@
+name: Update Contribs & reviewers
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs on the 1 and 15 of each month at 00:00 UTC (see https://crontab.guru)
+    - cron: "0 0 1,15 * *"
+jobs:
+  run-meta:
+    if: github.repository_owner == 'pyopensci'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Upgrade pip
+        run: |
+          # install pip=>20.1 to use "pip cache dir"
+          python -m pip install --upgrade pip wheel
+      - name: Install pyosmeta and run update contribs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install pyosmeta
+          update-contributors
+          update-reviews
+          update-review-teams
+
+      - name: run precommit hooks
+        uses: pre-commit/action@v3.0.1
+        continue-on-error: true
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          add-paths: |
+            _data/contributors.yml
+            _data/packages.yml
+          author: Leah <leah@pyopensci.org>
+          base: main
+          branch: contribs
+          commit-message: "Update: Contributor & review file update"
+          delete-branch: true
+          title: Update contributor and review data
+        env:
+          # Custom token needed to trigger PR checks, as GITHUB_TOKEN won't
+          # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs
+          GITHUB_TOKEN: ${{ secrets.PYOS_PR_TOKEN }}
