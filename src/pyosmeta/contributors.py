@@ -38,7 +38,20 @@ class ProcessContributors:
             "github_username",
         ]
 
+        """A dictionary that maps a category type found in our peer review
+        submission template to the roles and role categories that a contributor
+        should have populated associated with the review in the contributors.yml
+
+        example
+        reviewers is in the software submission template like this:
+        reviewers: @username, @username2
+        Being a reviewer maps to two roles in the users contributions to
+        pyOpenSci: reviewer and peer-review
+        packages_reviewed is another item in the contributors file that lists
+        all of the packages that user has reviewed. So if they ar e
+        """
         self.contrib_types = {
+            "eic": ["packages_eic", ["eic", "peer-review"]],
             "reviewers": ["packages_reviewed", ["reviewer", "peer-review"]],
             "editor": ["packages_editor", ["editor", "peer-review"]],
             "submitting_author": [

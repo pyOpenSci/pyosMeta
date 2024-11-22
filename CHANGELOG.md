@@ -10,6 +10,7 @@
 
 ### Fixed
 
+* Fix: Eix field not processing correctly  (@lwasser, #234)
 * Fix: Updated documentation throughout with a focus on how a user's name is accessed and updated (@lwasser)
 * Fix: ReviewUser object name can be optional. There are times when we don't have the actual person's name only the GH username (@lwasser)
 
