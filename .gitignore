@@ -157,4 +157,3 @@ src/pyosmeta/_version.py
 *.pickle
 .token
 token.txt
-_data/*
