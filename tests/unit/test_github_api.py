@@ -147,21 +147,21 @@ def test_api_endpoint_with_invalid_dates(after_date, expected_url):
 def test_get_user_info_successful(mocker, ghuser_response):
     """Test that an expected response returns properly"""
 
-    expected_response = ghuser_response
     mock_response = mocker.Mock()
     mock_response.status_code = 200
-    mock_response.json.return_value = expected_response
+    mock_response.json.return_value = ghuser_response
     mocker.patch("requests.get", return_value=mock_response)
 
     github_api_instance = GitHubAPI()
     user_info = github_api_instance.get_user_info("example_user")
 
-    assert user_info == expected_response
+    assert user_info == ghuser_response
 
 
 def test_get_user_info_bad_credentials(mocker):
     """Test that a value error is raised when the GH token is not
     valid."""
+
     mock_response = mocker.Mock()
     mock_response.status_code = 401
     mocker.patch("requests.get", return_value=mock_response)
