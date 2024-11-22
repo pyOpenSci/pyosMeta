@@ -124,6 +124,7 @@ class PersonModel(BaseModel, UrlValidatorMixin):
     )
     board: Optional[bool] = False
     contributor_type: Set[str] = set()
+    packages_eic: Set[str] = set()
     packages_editor: Set[str] = set()
     packages_submitted: Set[str] = set()
     packages_reviewed: Set[str] = set()
@@ -143,6 +144,7 @@ class PersonModel(BaseModel, UrlValidatorMixin):
         return False
 
     @field_validator(
+        "packages_eic",
         "packages_reviewed",
         "packages_submitted",
         "packages_editor",
@@ -176,6 +178,7 @@ class PersonModel(BaseModel, UrlValidatorMixin):
             raise ValueError(f"{attr_name} is not a set attribute")
 
     @field_serializer(
+        "packages_eic",
         "packages_reviewed",
         "packages_submitted",
         "packages_editor",

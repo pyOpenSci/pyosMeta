@@ -115,8 +115,6 @@ def export_yaml(filename: str, data_list: list):
         yaml.dump(data_list, file)
 
 
-# TODO: Double check - i may be able to combine this with the other clean
-# function created
 def clean_string(astr: str) -> str:
     """
     Clean - remove strings starting with "*id0" and "[]".

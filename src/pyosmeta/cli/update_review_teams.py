@@ -148,23 +148,28 @@ def main():
         for role in contrib_types.keys():
             user: list[ReviewUser] | ReviewUser = getattr(review, role)
 
-            # Handle lists or single users separately
-            if isinstance(user, list):
-                for i, a_user in enumerate(user):
-                    a_user, contribs = process_user(
-                        a_user, role, pkg_name, contribs, process_contribs
+            # Eic is a newer field, so in some instances it will be empty
+            # if it's empty print a message noting the data are missing
+            if user:
+                # Handle lists or single users separately
+                if isinstance(user, list):
+                    for i, a_user in enumerate(user):
+                        a_user, contribs = process_user(
+                            a_user, role, pkg_name, contribs, process_contribs
+                        )
+                        # Update individual user in reference to issue list
+                        user[i] = a_user
+                elif isinstance(user, ReviewUser):
+                    user, contribs = process_user(
+                        user, role, pkg_name, contribs, process_contribs
                     )
-                    # Update individual user within the user list
-                    user[i] = a_user
-            elif isinstance(user, ReviewUser):
-                user, contribs = process_user(
-                    user, role, pkg_name, contribs, process_contribs
-                )
-                setattr(review, role, user)
+                    setattr(review, role, user)
+                else:
+                    raise TypeError(
+                        "Keys in the `contrib_types` map must be a `ReviewUser` or `list[ReviewUser]` in the `ReviewModel`"
+                    )
             else:
-                raise TypeError(
-                    "Keys in the `contrib_types` map must be a `ReviewUser` or `list[ReviewUser]` in the `ReviewModel`"
-                )
+                print(f"I can't find a username for {role}. Moving on.")
 
     # Export to yaml
     contribs_ls = [model.model_dump() for model in contribs.values()]
