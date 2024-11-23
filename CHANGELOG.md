@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+[v0.4] - 2024-11-22
+
 ### Added
 
 * Add: new repos to track contribs (@lwasser)
