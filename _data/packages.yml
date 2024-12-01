@@ -1,7 +1,7 @@
 - package_name: THzTools
   package_description:
   submitting_author:
-      name: Name
+      name: J. Steven Dodge
       github_username: jsdodge
   all_current_maintainers:
     - name: J. Steven Dodge
@@ -21,11 +21,11 @@
       github_username: frank1010111
     - name:
       github_username: Romain-Peretti
-  archive: TBD
-  version_accepted: TBD
-  date_accepted: missing
+  archive: '[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10100093.svg)](https://doi.org/10.5281/zenodo.10100093)'
+  version_accepted: 0.5.5
+  date_accepted: '2024-11-22'
   created_at: 2024-08-01 11:54:53+00:00
-  updated_at: 2024-11-20 00:07:21+00:00
+  updated_at: 2024-11-26 18:46:20+00:00
   closed_at:
   issue_link: https://github.com/pyOpenSci/software-submission/issues/209
   joss:
@@ -40,9 +40,10 @@
       forks_count: 2
       documentation: https://dodge-research-group.github.io/thztools/
       contrib_count: 5
-      last_commit: '2024-11-19'
+      last_commit: '2024-11-23'
   labels:
     - 6/pyOS-approved
+    - 7/under-joss-review
 - package_name: Stingray
   package_description: A spectral-timing software package for astrophysical X-ray
       (and other) data
@@ -51,7 +52,13 @@
       github_username: matteobachetti
   all_current_maintainers:
     - name: Daniela Huppenkothen
-      github_username: dhuppenkothen mgullik jdswinbank matteolucchini1
+      github_username: dhuppenkothen
+    - name: Guglielmo Mastroserio
+      github_username: mgullik
+    - name: John Swinbank
+      github_username: jdswinbank
+    - name:
+      github_username: matteolucchini1
   repository_link: https://github.com/stingraysoftware/stingray
   version_submitted: '2.1'
   categories:
@@ -72,7 +79,7 @@
   version_accepted: '2.1'
   date_accepted: '2024-10-01'
   created_at: 2024-06-14 12:59:47+00:00
-  updated_at: 2024-11-21 20:27:31+00:00
+  updated_at: 2024-11-23 00:06:34+00:00
   closed_at: 2024-11-13 00:03:51+00:00
   issue_link: https://github.com/pyOpenSci/software-submission/issues/201
   joss:
@@ -83,13 +90,13 @@
       description: Anything can happen in the next half hour (including spectral
           timing made easy)!
       created_at: '2015-09-30'
-      stargazers_count: 174
-      watchers_count: 174
-      open_issues_count: 43
+      stargazers_count: 176
+      watchers_count: 176
+      open_issues_count: 44
       forks_count: 144
       documentation: https://stingray.science/stingray
       contrib_count: 30
-      last_commit: '2024-11-21'
+      last_commit: '2024-11-22'
   labels:
     - 6/pyOS-approved
     - 9/joss-approved
@@ -112,6 +119,8 @@
       name: Chiara Marmo
       github_username: cmarmo
   eic:
+      name: Alex Batisse
+      github_username: Batalex
   reviewers:
     - name: Sebastiano Tronto
       github_username: sebastianotronto
@@ -121,7 +130,7 @@
   version_accepted: 0.4.1
   date_accepted: '2024-09-16'
   created_at: 2024-04-15 21:44:43+00:00
-  updated_at: 2024-10-01 11:51:34+00:00
+  updated_at: 2024-11-22 01:30:45+00:00
   closed_at: 2024-10-01 11:51:34+00:00
   issue_link: https://github.com/pyOpenSci/software-submission/issues/173
   joss:
@@ -130,13 +139,13 @@
       name: pooltool
       description: A sandbox billiards game that emphasizes realistic physics
       created_at: '2020-04-09'
-      stargazers_count: 230
-      watchers_count: 230
-      open_issues_count: 6
-      forks_count: 36
+      stargazers_count: 234
+      watchers_count: 234
+      open_issues_count: 7
+      forks_count: 37
       documentation: https://pooltool.readthedocs.io
       contrib_count: 7
-      last_commit: '2024-11-06'
+      last_commit: '2024-11-25'
   labels:
     - 6/pyOS-approved
     - 9/joss-approved
@@ -162,7 +171,7 @@
   reviewers:
     - name: Tom Aldcroft
       github_username: taldcroft
-    - name:
+    - name: Michele Delli Veneri
       github_username: MicheleDelliVeneri
   archive: https://zenodo.org/doi/10.5281/zenodo.11193206
   version_accepted: 2.0.15
@@ -185,7 +194,7 @@
       forks_count: 4
       documentation: https://martini.readthedocs.io/
       contrib_count: 1
-      last_commit: '2024-11-19'
+      last_commit: '2024-11-30'
   labels:
     - 6/pyOS-approved
     - 9/joss-approved
@@ -264,11 +273,11 @@
       github_username: rcaneill
     - name: Jacqui Levy
       github_username: jacqui-123
-  archive: TBD
-  version_accepted: TBD
+  archive: https://doi.org/10.5281/zenodo.13356847
+  version_accepted: 0.5.0
   date_accepted: '2024-08-10'
   created_at: 2024-02-08 19:43:03+00:00
-  updated_at: 2024-10-22 16:37:21+00:00
+  updated_at: 2024-11-25 08:22:59+00:00
   closed_at:
   issue_link: https://github.com/pyOpenSci/software-submission/issues/157
   joss:
@@ -281,13 +290,13 @@
       stargazers_count: 15
       watchers_count: 15
       open_issues_count: 25
-      forks_count: 4
+      forks_count: 5
       documentation: https://usepa.github.io/harmonize-wq/
       contrib_count: 5
       last_commit: '2024-11-05'
   labels:
     - 6/pyOS-approved
-    - 7/under-joss-review
+    - 9/joss-approved
 - package_name: xnemogcm
   package_description: Interface to open NEMO global circulation model output dataset
       with xarray and create a xgcm grid.
@@ -377,8 +386,8 @@
       description: A Python library for simulating finite automata, pushdown automata,
           and Turing machines
       created_at: '2016-02-16'
-      stargazers_count: 350
-      watchers_count: 350
+      stargazers_count: 354
+      watchers_count: 354
       open_issues_count: 11
       forks_count: 64
       documentation: https://caleb531.github.io/automata/
@@ -492,13 +501,13 @@
       name: sunpy
       description: SunPy - Python for Solar Physics
       created_at: '2011-08-06'
-      stargazers_count: 920
-      watchers_count: 920
-      open_issues_count: 295
-      forks_count: 592
+      stargazers_count: 923
+      watchers_count: 923
+      open_issues_count: 296
+      forks_count: 591
       documentation: https://www.sunpy.org
       contrib_count: 30
-      last_commit: '2024-11-21'
+      last_commit: '2024-11-28'
   labels:
     - 6/pyOS-approved
 - package_name: ncompare
@@ -539,7 +548,7 @@
       created_at: '2023-08-17'
       stargazers_count: 27
       watchers_count: 27
-      open_issues_count: 6
+      open_issues_count: 7
       forks_count: 9
       documentation: https://ncompare.readthedocs.io
       contrib_count: 6
@@ -550,7 +559,7 @@
 - package_name: rdata
   package_description: Read R datasets from Python.
   submitting_author:
-      name: Name
+      name: Carlos Ramos Carreño
       github_username: vnmabus
   all_current_maintainers:
     - name: Carlos Ramos Carreño
@@ -572,7 +581,7 @@
   version_accepted: '[0.11.0](https://github.com/vnmabus/rdata/releases/tag/0.11.0)'
   date_accepted: 2024-2-29
   created_at: 2023-10-20 08:26:10+00:00
-  updated_at: 2024-11-10 14:12:11+00:00
+  updated_at: 2024-11-22 03:19:31+00:00
   closed_at:
   issue_link: https://github.com/pyOpenSci/software-submission/issues/144
   joss:
@@ -654,18 +663,18 @@
     - data-processing-munging
   editor:
       name: Emily Jane McTavish
-      github_username: snacktavish Emily Jane McTavish
+      github_username: snacktavish
   eic:
   reviewers:
     - name: Lili Andersson-Li
-      github_username: LilyAnderssonLee Lili Andersson-Li
+      github_username: LilyAnderssonLee
     - name: Elais Player
-      github_username: elais Elais Player
+      github_username: elais
   archive: '[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10951577.svg)](https://doi.org/10.5281/zenodo.10951577)'
   version_accepted: '[v4.8.8](https://github.com/sourmash-bio/sourmash/releases/tag/v4.8.8)'
   date_accepted: 2024-4-4
   created_at: 2023-08-14 21:02:57+00:00
-  updated_at: 2024-07-23 19:41:56+00:00
+  updated_at: 2024-11-23 00:44:05+00:00
   closed_at: 2024-07-22 20:13:57+00:00
   issue_link: https://github.com/pyOpenSci/software-submission/issues/129
   joss: '[![DOI](https://joss.theoj.org/papers/10.21105/joss.06830/status.svg)](https://doi.org/10.21105/joss.06830)'
@@ -675,13 +684,13 @@
       description: Quickly search, compare, and analyze genomic and metagenomic
           data sets.
       created_at: '2016-04-09'
-      stargazers_count: 476
-      watchers_count: 476
-      open_issues_count: 733
+      stargazers_count: 478
+      watchers_count: 478
+      open_issues_count: 732
       forks_count: 79
       documentation: https://sourmash.readthedocs.io/en/latest/
       contrib_count: 30
-      last_commit: '2024-11-20'
+      last_commit: '2024-11-26'
   labels:
     - 6/pyOS-approved
     - 9/joss-approved
@@ -737,7 +746,7 @@
   all_current_maintainers:
     - name: Kevin Spiekermann
       github_username: kspieks
-    - name:
+    - name: Himaghna Bhattacharjee
       github_username: himaghna
   repository_link: https://github.com/JacksonBurns/astartes
   version_submitted: v[1.1.2](https://github.com/JacksonBurns/astartes/releases/tag/v1.1.2)
@@ -748,7 +757,7 @@
       github_username: cmarmo
   eic:
   reviewers:
-    - name:
+    - name: Beryl Kanali
       github_username: BerylKanali
     - name: Du Phan
       github_username: du-phan
@@ -765,8 +774,8 @@
       name: astartes
       description: Better Data Splits for Machine Learning
       created_at: '2022-04-22'
-      stargazers_count: 64
-      watchers_count: 64
+      stargazers_count: 66
+      watchers_count: 66
       open_issues_count: 6
       forks_count: 3
       documentation: https://jacksonburns.github.io/astartes/
@@ -795,7 +804,7 @@
       github_username: acuschwarze
     - name: Thomas Robiglio
       github_username: thomasrobiglio
-    - name: alice patania
+    - name: Alice Patania
       github_username: alpatania
   repository_link: https://github.com/xgi-org/xgi
   version_submitted: '0.7'
@@ -829,10 +838,10 @@
       stargazers_count: 187
       watchers_count: 187
       open_issues_count: 52
-      forks_count: 30
+      forks_count: 32
       documentation: https://xgi.readthedocs.io
       contrib_count: 15
-      last_commit: '2024-11-19'
+      last_commit: '2024-11-26'
   labels:
     - 6/pyOS-approved
     - 9/joss-approved
@@ -878,9 +887,9 @@
       name: biocypher
       description: A unifying framework for biomedical research knowledge graphs
       created_at: '2021-09-10'
-      stargazers_count: 224
-      watchers_count: 224
-      open_issues_count: 169
+      stargazers_count: 225
+      watchers_count: 225
+      open_issues_count: 172
       forks_count: 31
       documentation: https://biocypher.org
       contrib_count: 16
@@ -1118,7 +1127,7 @@
       created_at: '2019-11-11'
       stargazers_count: 126
       watchers_count: 126
-      open_issues_count: 59
+      open_issues_count: 60
       forks_count: 15
       documentation: https://python-graphblas.readthedocs.io/en/stable/
       contrib_count: 11
@@ -1168,11 +1177,11 @@
       created_at: '2018-07-27'
       stargazers_count: 333
       watchers_count: 333
-      open_issues_count: 63
+      open_issues_count: 64
       forks_count: 59
       documentation: https://xclim.readthedocs.io/en/stable/
       contrib_count: 30
-      last_commit: '2024-11-20'
+      last_commit: '2024-11-22'
   labels:
     - 6/pyOS-approved
     - 9/joss-approved
@@ -1365,13 +1374,13 @@
       name: pygmt
       description: A Python interface for the Generic Mapping Tools.
       created_at: '2017-03-17'
-      stargazers_count: 766
-      watchers_count: 766
-      open_issues_count: 196
-      forks_count: 221
+      stargazers_count: 769
+      watchers_count: 769
+      open_issues_count: 193
+      forks_count: 222
       documentation: https://www.pygmt.org
       contrib_count: 30
-      last_commit: '2024-11-21'
+      last_commit: '2024-11-30'
   labels:
     - 6/pyOS-approved
 - package_name: Devicely
@@ -1550,8 +1559,8 @@
       name: pystiche
       description: Framework for Neural Style Transfer (NST) built upon PyTorch
       created_at: '2019-09-16'
-      stargazers_count: 269
-      watchers_count: 269
+      stargazers_count: 270
+      watchers_count: 270
       open_issues_count: 15
       forks_count: 28
       documentation:
@@ -1642,8 +1651,8 @@
       name: pyrolite
       description: A set of tools for getting the most from your geochemical data.
       created_at: '2018-06-13'
-      stargazers_count: 133
-      watchers_count: 133
+      stargazers_count: 135
+      watchers_count: 135
       open_issues_count: 10
       forks_count: 37
       documentation: https://pyrolite.readthedocs.io
@@ -1687,13 +1696,13 @@
       name: movingpandas
       description: Movement trajectory classes and functions built on top of GeoPandas
       created_at: '2018-12-16'
-      stargazers_count: 1237
-      watchers_count: 1237
+      stargazers_count: 1243
+      watchers_count: 1243
       open_issues_count: 33
       forks_count: 194
       documentation: https://movingpandas.org
       contrib_count: 30
-      last_commit: '2024-11-21'
+      last_commit: '2024-11-23'
   labels:
     - 6/pyOS-approved
 - package_name: pandera
@@ -1733,9 +1742,9 @@
       description: A light-weight, flexible, and expressive statistical data testing
           library
       created_at: '2018-11-01'
-      stargazers_count: 3407
-      watchers_count: 3407
-      open_issues_count: 401
+      stargazers_count: 3424
+      watchers_count: 3424
+      open_issues_count: 405
       forks_count: 311
       documentation: https://www.union.ai/pandera
       contrib_count: 30
