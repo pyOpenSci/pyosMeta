@@ -19,7 +19,7 @@ from pydantic import (
 )
 
 from pyosmeta.models.github import Labels
-from pyosmeta.utils_clean import clean_date, clean_markdown
+from pyosmeta.utils_clean import clean_archive, clean_date, clean_markdown
 
 
 class Partnerships(str, Enum):
@@ -403,3 +403,21 @@ class ReviewModel(BaseModel):
             label.name if isinstance(label, Labels) else label
             for label in labels
         ]
+
+    @field_validator(
+        "archive",
+        mode="before",
+    )
+    @classmethod
+    def clean_archive(cls, archive: str) -> str:
+        """Clean the archive value to ensure it's a valid archive URL."""
+        return clean_archive(archive)
+
+    @field_validator(
+        "joss",
+        mode="before",
+    )
+    @classmethod
+    def clean_joss(cls, joss: str) -> str:
+        """Clean the joss value to ensure it's a valid URL."""
+        return clean_archive(joss)

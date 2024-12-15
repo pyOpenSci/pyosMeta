@@ -7,6 +7,8 @@ import re
 from datetime import datetime
 from typing import Any
 
+import doi
+
 
 def get_clean_user(username: str) -> str:
     """Cleans a GitHub username provided in a review issue by removing any
@@ -125,3 +127,30 @@ def clean_date_accepted_key(review_dict: dict[str, Any]) -> dict[str, str]:
             review_dict["date_accepted"] = value
             break
     return review_dict
+
+
+def clean_archive(archive):
+    """Clean an archive link to ensure it is a valid URL."""
+
+    def is_doi(archive):
+        try:
+            return doi.validate_doi(archive)
+        except ValueError:
+            return False
+
+    if archive.startswith("[") and archive.endswith(")"):
+        # Extract the outermost link
+        link = archive[archive.rfind("](") + 2 : -1]
+        if not link.startswith("http"):
+            return clean_archive(link)
+        return link
+    elif archive.startswith("http"):
+        return archive
+    elif link := is_doi(archive):
+        return link
+    elif archive.lower() == "n/a":
+        return None
+    elif archive.lower() == "tbd":
+        return None
+    else:
+        raise ValueError(f"Invalid archive URL: {archive}")
