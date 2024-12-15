@@ -69,3 +69,20 @@ def test_parse_labels(issue_list, process_issues):
         issue.labels = labels
         review = process_issues.parse_issue(issue)
         assert review.labels == ["6/pyOS-approved", "another_label"]
+        assert review.active
+
+    # Now add an archive label
+    label_inst = Labels(
+        id=1196238794,
+        node_id="MDU6TGFiZWwxMTk2MjM4Nzk0",
+        url="https://api.github.com/repos/pyOpenSci/software-submission/labels/archived",
+        name="archived",
+        description="",
+        color="006B75",
+        default=False,
+    )
+    labels = [label_inst, "another_label"]
+    for issue in issue_list:
+        issue.labels = labels
+        review = process_issues.parse_issue(issue)
+        assert not review.active

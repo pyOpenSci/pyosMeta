@@ -17,9 +17,10 @@ datamodel-codegen --input issue_schema.json --input-file-type jsonschema --outpu
 from __future__ import annotations
 
 from datetime import datetime
+from enum import Enum
 from typing import Any, List, Literal, Optional, Union
 
-from pydantic import AnyUrl, BaseModel, ConfigDict, Field
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field, model_validator
 
 
 class User(BaseModel):
@@ -61,6 +62,12 @@ class ClosedBy(User): ...
 class Owner(User): ...
 
 
+class LabelType(str, Enum):
+    ARCHIVED = "archived"
+    PYOS_APPROVED = "6/pyOS-approved"
+    JOSS_APPROVED = "9/joss-approved"
+
+
 class Labels(BaseModel):
     id: Optional[int] = None
     node_id: Optional[str] = None
@@ -69,6 +76,17 @@ class Labels(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
     default: Optional[bool] = None
+    type: Optional[LabelType] = None
+
+    @model_validator(mode="before")
+    def parse_label_type(cls, data):
+        """Parse the label type from the name before validation."""
+        if "name" in data:
+            try:
+                data["type"] = LabelType(data["name"])
+            except ValueError:
+                pass
+        return data
 
 
 class Issue(BaseModel):

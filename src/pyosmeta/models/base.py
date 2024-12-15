@@ -279,6 +279,7 @@ class ReviewModel(BaseModel):
     partners: Optional[list[Partnerships]] = None
     gh_meta: Optional[GhMeta] = None
     labels: list[str] = Field(default_factory=list)
+    active: bool = True  # To indicate if package is maintained or archived
 
     @field_validator(
         "date_accepted",
