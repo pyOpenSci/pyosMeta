@@ -96,11 +96,10 @@ class Labels(BaseModel):
         value to the "archived" label so that we can easily filter out archived
         issues.
         """
-        if "name" in data:
-            try:
-                data["type"] = LabelType(data["name"])
-            except ValueError:
-                pass
+        try:
+            data["type"] = LabelType(data["name"])
+        except ValueError:
+            pass
         return data
 
 
