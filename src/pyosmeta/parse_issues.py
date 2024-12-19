@@ -218,6 +218,9 @@ class ProcessIssues:
         meta["partners"] = self.get_categories(
             body, "## Community Partnerships", 3, keyed=True
         )
+        if "joss_doi" in meta:
+            # Normalize the JOSS archive field. Some issues use `JOSS DOI` others `JOSS`
+            meta["joss"] = meta.pop("joss_doi")
 
         return meta
 
