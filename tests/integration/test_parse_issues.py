@@ -51,6 +51,23 @@ def test_parse_bolded_keys(process_issues, data_file):
     assert review.package_name == "fake_package"
 
 
+def test_parse_doi_archives(process_issues, data_file):
+    """
+    Test handling of DOI archives in various formats.
+
+    This is a smoke test to ensure graceful handling of these cases.
+    """
+    review = data_file("reviews/archives_doi.txt", True)
+    review = process_issues.parse_issue(review)
+    assert review.archive == "https://zenodo.org/record/8415866"
+    assert review.joss == "http://joss.theoj.org/papers/10.21105/joss.01450"
+
+    review = data_file("reviews/unknown_archives.txt", True)
+    review = process_issues.parse_issue(review)
+    assert review.archive is None
+    assert review.joss is None
+
+
 def test_parse_labels(issue_list, process_issues):
     """
     `Label` models should be coerced to a string when parsing an issue
