@@ -189,6 +189,9 @@ def clean_archive(archive):
         link = archive[archive.rfind("](") + 2 : -1]
         # recursively clean the archive link
         return clean_archive(link)
+    elif link := is_doi(archive):
+        # is_doi returns the DOI link if it is valid
+        return link
     elif archive.startswith("http"):
         if archive.startswith("http://"):
             archive = archive.replace("http://", "https://")
@@ -196,8 +199,6 @@ def clean_archive(archive):
         if not check_url(archive):
             raise ValueError(f"Invalid archive URL: {archive}")
         return archive
-    elif link := is_doi(archive):
-        return link
     elif archive.lower() == "n/a":
         return None
     elif archive.lower() == "tbd":
