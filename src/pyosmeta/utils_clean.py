@@ -143,7 +143,7 @@ def check_url(url: str) -> bool:
     try:
         response = requests.get(url, timeout=6)
         return response.status_code == 200
-    except Exception:
+    except Exception:  # pragma: no cover
         return False
 
 

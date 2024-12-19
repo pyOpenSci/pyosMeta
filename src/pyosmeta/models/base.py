@@ -65,7 +65,7 @@ class UrlValidatorMixin:
                 url = "https://" + url
         if check_url(url=url):
             return url
-        else:
+        else:  # pragma: no cover
             print(f"Oops, url `{url}` is not valid, removing it")
             return None
 
