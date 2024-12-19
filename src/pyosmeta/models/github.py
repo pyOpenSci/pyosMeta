@@ -63,9 +63,17 @@ class Owner(User): ...
 
 
 class LabelType(str, Enum):
+    """Enum for the different types of labels that can be assigned to an issue.
+
+    This enum is not meant to be exhaustive, but rather capture a few important
+    labels for life cycle of approved reviews.
+
+    For now, this only includes the "archived" label, which is used to mark
+    packages that are no longer maintained ("inactive"). The "archived" label
+    corresponds to setting ``active=False`` on the ReviewModel
+    """
+
     ARCHIVED = "archived"
-    PYOS_APPROVED = "6/pyOS-approved"
-    JOSS_APPROVED = "9/joss-approved"
 
 
 class Labels(BaseModel):
@@ -80,7 +88,14 @@ class Labels(BaseModel):
 
     @model_validator(mode="before")
     def parse_label_type(cls, data):
-        """Parse the label type from the name before validation."""
+        """Parse the label type from the name before validation.
+
+        This will parse the label name into an available LabelType enum value.
+        Not all labels will have a corresponding LabelType, so this will
+        gracefully fail. This was implemented for assigning the LabelType.ARCHIVED
+        value to the "archived" label so that we can easily filter out archived
+        issues.
+        """
         if "name" in data:
             try:
                 data["type"] = LabelType(data["name"])

@@ -223,10 +223,18 @@ class ProcessIssues:
 
     def _postprocess_labels(self, meta: dict) -> dict:
         """
-        Handle specific labels that are model properties
+        Process specific labels for attributes in the review model.
+
+        Presently, this method only checks if the review has the "archived"
+        (LabelType.ARCHIVED) label and sets the active attribute to False
+        if it does. We may add more label processing in the future.
+
+        The intention behind this is to assign specific ReviewModel attributes
+        based on the presence of certain labels in the review issue.
         """
 
         def _is_archived(label: str) -> bool:
+            """Internal helper to check if a label is the "archived" label"""
             if isinstance(label, str):
                 return "archived" in label.lower()
             elif isinstance(label, Labels):
