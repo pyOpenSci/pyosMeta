@@ -11,6 +11,7 @@ Notes: it looks like i may have mistakenly bumped to 1.3.7 in august. rather tha
 ### Added
 
 * Add: new repos to track contribs (@lwasser)
+* Add: new `active` status under `ReviewModel` which is set to `False` if the `"archived"` label is present on a review to mark the package as inactive (@banesullivan)
 
 ### Fixed
 
