@@ -86,3 +86,11 @@ def test_parse_labels(issue_list, process_issues):
         issue.labels = labels
         review = process_issues.parse_issue(issue)
         assert not review.active
+
+    # Handle label with missing details
+    label_inst = Labels(name="test")
+    labels = [label_inst, "another_label"]
+    for issue in issue_list:
+        issue.labels = labels
+        review = process_issues.parse_issue(issue)
+        assert review.labels == ["test", "another_label"]

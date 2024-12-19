@@ -77,10 +77,10 @@ class LabelType(str, Enum):
 
 
 class Labels(BaseModel):
+    name: str
     id: Optional[int] = None
     node_id: Optional[str] = None
     url: Optional[AnyUrl] = None
-    name: Optional[str] = None
     description: Optional[str] = None
     color: Optional[str] = None
     default: Optional[bool] = None

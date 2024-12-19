@@ -233,13 +233,11 @@ class ProcessIssues:
         based on the presence of certain labels in the review issue.
         """
 
-        def _is_archived(label: str) -> bool:
+        def _is_archived(label: str | Labels) -> bool:
             """Internal helper to check if a label is the "archived" label"""
-            if isinstance(label, str):
-                return "archived" in label.lower()
-            elif isinstance(label, Labels):
+            if isinstance(label, Labels):
                 return label.type == LabelType.ARCHIVED
-            raise ValueError("Invalid label type")
+            return "archived" in label.lower()
 
         # Check if the review has the "archived" label
         if "labels" in meta and [
