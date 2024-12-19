@@ -7,8 +7,8 @@ Version submitted:  v.0.8.5
 Editor: @editoruser
 Reviewer 1: @reviewer1
 Reviewer 2: @reviewer2
-Archive: [![DOI](https://zenodo.org/badge/DOI/fakedoi/doi.svg)](https://doi.org/fakedoi/doi.svg)
-JOSS DOI: [![DOI](https://joss.theoj.org/papers/fakedoi.svg)](https://joss.theoj.org/papers/fakedoi)
+Archive: [![DOI](https://zenodo.org/badge/DOI/fakedoi/doi.svg)](https://zenodo.org/records/8415866)
+JOSS DOI: [![DOI](https://joss.theoj.org/papers/fakedoi.svg)](https://doi.org/10.21105/joss.01450)
 Version accepted: v.0.9.2
 Date accepted (month/day/year): 04/21/2024
 

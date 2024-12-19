@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any
 
 import doi
+import requests
 
 
 def get_clean_user(username: str) -> str:
@@ -129,22 +130,71 @@ def clean_date_accepted_key(review_dict: dict[str, Any]) -> dict[str, str]:
     return review_dict
 
 
+def check_url(url: str) -> bool:
+    """Test url. Return true if there's a valid response, False if not
+
+    Parameters
+    ----------
+    url : str
+        String for a url to a website to test.
+
+    """
+
+    try:
+        response = requests.get(url, timeout=6)
+        return response.status_code == 200
+    except Exception:
+        return False
+
+
+def is_doi(archive) -> str | None:
+    """Check if the DOI is valid and return the DOI link.
+
+    Parameters
+    ----------
+    archive : str
+        The DOI string to validate, e.g., `10.1234/zenodo.12345678`
+
+    Returns
+    -------
+    str | None
+        The DOI link in the form `https://doi.org/10.1234/zenodo.12345678` or `None`
+        if the DOI is invalid.
+    """
+    try:
+        return doi.validate_doi(archive)
+    except ValueError:
+        pass
+
+
 def clean_archive(archive):
-    """Clean an archive link to ensure it is a valid URL."""
+    """Clean an archive link to ensure it is a valid URL.
 
-    def is_doi(archive):
-        try:
-            return doi.validate_doi(archive)
-        except ValueError:
-            return False
+    This utility will attempt to parse the DOI link from the various formats
+    that are commonly present in review metadata. This utility will handle:
 
+    * Markdown links in the format `[label](URL)`, e.g., `[my archive](https://doi.org/10.1234/zenodo.12345678)`
+    * Raw text in the format `DOI` e.g., `10.1234/zenodo.12345678`
+    * URLs in the format `http(s)://...` e.g., `https://doi.org/10.1234/zenodo.12345678`
+    * The special cases `n/a` and `tbd` which will be returned as `None` in anticipation of future data
+
+    If the archive link is a URL, it will be returned as is with a check that
+    it resolves but is not required to be a valid DOI. If the archive link is
+    a DOI, it will be validated and returned as a URL in the form
+    `https://doi.org/10.1234/zenodo.12345678` using the `python-doi` package.
+
+    """
     if archive.startswith("[") and archive.endswith(")"):
         # Extract the outermost link
         link = archive[archive.rfind("](") + 2 : -1]
-        if not link.startswith("http"):
-            return clean_archive(link)
-        return link
+        # recursively clean the archive link
+        return clean_archive(link)
     elif archive.startswith("http"):
+        if archive.startswith("http://"):
+            archive = archive.replace("http://", "https://")
+        # Validate that the URL resolves
+        if not check_url(archive):
+            raise ValueError(f"Invalid archive URL: {archive}")
         return archive
     elif link := is_doi(archive):
         return link
