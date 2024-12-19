@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+* Fix: Parse archive and JOSS links to handle markdown links and validate DOI links are valid (@banesullivan)
+
 [v1.4] - 2024-11-22
 
 Notes: it looks like i may have mistakenly bumped to 1.3.7 in august. rather than try to fix on pypi we will just go with it to ensure our release cycles are smooth given no one else uses this package except pyopensci.
@@ -17,7 +19,6 @@ Notes: it looks like i may have mistakenly bumped to 1.3.7 in august. rather tha
 * Fix: Eix field not processing correctly  (@lwasser, #234)
 * Fix: Updated documentation throughout with a focus on how a user's name is accessed and updated (@lwasser)
 * Fix: ReviewUser object name can be optional. There are times when we don't have the actual person's name only the GH username (@lwasser)
-* Fix: Parse archive and JOSS links to handle markdown links and validate DOI links are valid (@banesullivan)
 
 ## [v1.3.7] - 2024-08-27
 
