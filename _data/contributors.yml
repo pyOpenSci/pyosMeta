@@ -277,6 +277,7 @@
   contributor_type:
     - leadership
     - package-guide
+    - web-contrib
   packages_eic:
   packages_editor:
   packages_submitted:
@@ -802,6 +803,7 @@
     - web-contrib
   packages_eic:
     - pooltool
+    - quadratik
   packages_editor:
     - cardsort
     - harmonize-wq
@@ -1255,7 +1257,7 @@
   mastodon:
   orcidid:
   partners:
-  website: https://www.dov.vlaanderen.be
+  website:
   board: false
   contributor_type:
     - package-maintainer
@@ -4280,6 +4282,7 @@
   packages_eic:
     - automata
   packages_editor:
+    - quadratik
     - rdata
   packages_submitted:
   packages_reviewed:
@@ -6062,6 +6065,7 @@
   board: false
   contributor_type:
     - community
+    - package-guide
   packages_eic:
   packages_editor:
   packages_submitted:
@@ -7975,9 +7979,9 @@
   sort:
   bio: Full stack scientific programmer - from raw data to decisions
   organization: Penn State University
-  date_added: '2024-12-01'
+  date_added: '2024-12-13'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8004,9 +8008,9 @@
   sort:
   bio:
   organization:
-  date_added: '2024-12-01'
+  date_added: '2024-12-13'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8033,9 +8037,9 @@
   sort:
   bio:
   organization:
-  date_added: '2024-12-01'
+  date_added: '2024-12-13'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8063,9 +8067,9 @@
   sort:
   bio:
   organization:
-  date_added: '2024-12-01'
+  date_added: '2024-12-13'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8092,9 +8096,9 @@
   sort:
   bio:
   organization:
-  date_added: '2024-12-01'
+  date_added: '2024-12-13'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8121,9 +8125,9 @@
   sort:
   bio:
   organization:
-  date_added: '2024-12-01'
+  date_added: '2024-12-13'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8143,3 +8147,176 @@
   packages_reviewed:
   location:
   email:
+- name: Alyssa Columbus
+  github_username: acolum
+  github_image_id: 21285656
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2024-12-13'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://alyssacolumbus.com
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - quadratik
+  location:
+  email:
+- name: Avik Basu
+  github_username: ab93
+  github_image_id: 3485425
+  title:
+  sort:
+  bio: Data Scientist | Machine Learning Engineer
+  organization: Intuit
+  date_added: '2024-12-13'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - quadratik
+  location: Sunnyvale
+  email:
+- name: Raktim Mukhopadhyay
+  github_username: rmj3197
+  github_image_id: 54344732
+  title:
+  sort:
+  bio:
+  organization: SUNY at Buffalo
+  date_added: '2024-12-13'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - quadratik
+  packages_reviewed:
+  location: Buffalo, New York, USA
+  email:
+- name: Giovanni Saraceno
+  github_username: giovsaraceno
+  github_image_id: 92368611
+  title:
+  sort:
+  bio: My principal area of research are robust statistics, directional statistics,
+      kernel-based methods, neural networks, neuroscience applications.
+  organization: University of Padova
+  date_added: '2024-12-13'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - quadratik
+  packages_reviewed:
+  location:
+  email:
+- name: Santiago Soler
+  github_username: santisoler
+  github_image_id: 11541317
+  title:
+  sort:
+  bio: PhD in Geophysics and Physicist. Postdoc researcher at UBC. Develop @fatiando
+      and @simpeg.
+  organization: '@fatiando @simpeg @ubcgif @compgeolab @GeoLatinas'
+  date_added: '2025-01-01'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://www.santisoler.com
+  board: false
+  contributor_type:
+    - package-guide
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location: British Columbia, Canada
+  email: santisoler@fastmail.com
+- name: Seth Michael Larson
+  github_username: sethmlarson
+  github_image_id: 18519037
+  title:
+  sort:
+  bio: PSF Security Developer-in-Residence 🐍 PSF Fellow ✨ Minnesoootan, he/him
+  organization: '@psf'
+  date_added: '2025-01-01'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://sethmlarson.dev
+  board: false
+  contributor_type:
+    - web-contrib
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location: Minneapolis, MN
+  email: sethmichaellarson@gmail.com
