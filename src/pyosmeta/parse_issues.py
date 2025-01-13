@@ -306,6 +306,7 @@ class ProcessIssues:
         reviews = {}
         errors = {}
         for issue in issues:
+            print(f"Processing review {issue.title}")
             try:
                 review = self.parse_issue(issue)
                 reviews[review.package_name] = review
