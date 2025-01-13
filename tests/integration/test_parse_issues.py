@@ -74,7 +74,7 @@ def test_parse_doi_archives(process_issues, data_file):
 
     review = data_file("reviews/archives_invalid.txt", True)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Invalid archive"):
         review = process_issues.parse_issue(review)
 
 
