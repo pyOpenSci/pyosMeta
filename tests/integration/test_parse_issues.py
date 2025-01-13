@@ -62,10 +62,20 @@ def test_parse_doi_archives(process_issues, data_file):
     assert review.archive == "https://zenodo.org/record/8415866"
     assert review.joss == "http://joss.theoj.org/papers/10.21105/joss.01450"
 
-    review = data_file("reviews/unknown_archives.txt", True)
+    review = data_file("reviews/archives_unknown.txt", True)
     review = process_issues.parse_issue(review)
     assert review.archive is None
     assert review.joss is None
+
+    review = data_file("reviews/archives_missing.txt", True)
+    review = process_issues.parse_issue(review)
+    assert review.archive is None
+    assert review.joss is None
+
+    review = data_file("reviews/archives_invalid.txt", True)
+
+    with pytest.raises(ValueError):
+        review = process_issues.parse_issue(review)
 
 
 def test_parse_labels(issue_list, process_issues):
