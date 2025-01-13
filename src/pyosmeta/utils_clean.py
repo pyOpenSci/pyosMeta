@@ -168,7 +168,7 @@ def is_doi(archive) -> str | None:
 
 
 def clean_archive(archive):
-    """Clean an archive link to ensure it is a valid URL.
+    """Clean an archive link to ensure it is a valid DOI URL.
 
     This utility will attempt to parse the DOI link from the various formats
     that are commonly present in review metadata. This utility will handle:
@@ -184,6 +184,10 @@ def clean_archive(archive):
     `https://doi.org/10.1234/zenodo.12345678` using the `python-doi` package.
 
     """
+    archive = archive.strip()  # Remove leading/trailing whitespace
+    if not archive:
+        # If field is empty, return None
+        return None
     if archive.startswith("[") and archive.endswith(")"):
         # Extract the outermost link
         link = archive[archive.rfind("](") + 2 : -1]
@@ -197,7 +201,7 @@ def clean_archive(archive):
             archive = archive.replace("http://", "https://")
         # Validate that the URL resolves
         if not check_url(archive):
-            raise ValueError(f"Invalid archive URL: {archive}")
+            raise ValueError(f"Invalid archive URL (not resolving): {archive}")
         return archive
     elif archive.lower() == "n/a":
         return None
