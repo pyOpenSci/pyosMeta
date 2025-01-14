@@ -6,10 +6,11 @@ Repository Link: https://example.com/fakeauthor1/fake_package
 Version submitted: v1.0.0
 EiC: @fakeeic
 Editor: @fakeeditor
-Reviewers: @fakereviewer1 , @fakereviewer2, @fakereviewer3
+Reviewer 1: @fakereviewer1
+Reviewer 2: @fakereviewer2
 Reviews Expected By: fake date
-Archive: [![DOI](https://example.com/fakearchive)](https://zenodo.org/records/8415866)
-JOSS DOI: [![DOI](https://example.com/fakearchive)](https://doi.org/10.21105/joss.01450)
+Archive: 10.5281/zenodo.8415866
+JOSS DOI: 10.21105/joss.01450
 Version accepted: 2.0.0 ([repo](https://example.com/fakeauthor1/fake_package/releases/tag/v2.0.0), [pypi](https://pypi.org/project/fake_project/2.0.0), [archive](https://example.com/fakearchive))
 Date accepted (month/day/year): 06/29/2024
 

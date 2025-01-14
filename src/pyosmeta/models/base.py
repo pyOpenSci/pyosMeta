@@ -8,7 +8,6 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional, Set, Union
 
-import requests
 from pydantic import (
     AliasChoices,
     BaseModel,
@@ -19,7 +18,12 @@ from pydantic import (
 )
 
 from pyosmeta.models.github import Labels
-from pyosmeta.utils_clean import clean_date, clean_markdown
+from pyosmeta.utils_clean import (
+    check_url,
+    clean_archive,
+    clean_date,
+    clean_markdown,
+)
 
 
 class Partnerships(str, Enum):
@@ -59,28 +63,11 @@ class UrlValidatorMixin:
             elif not url.startswith("http"):
                 print("Oops, missing http")
                 url = "https://" + url
-        if cls._check_url(url=url):
+        if check_url(url=url):
             return url
-        else:
+        else:  # pragma: no cover
+            print(f"Oops, url `{url}` is not valid, removing it")
             return None
-
-    @staticmethod
-    def _check_url(url: str) -> bool:
-        """Test url. Return true if there's a valid response, False if not
-
-        Parameters
-        ----------
-        url : str
-            String for a url to a website to test.
-
-        """
-
-        try:
-            response = requests.get(url, timeout=6)
-            return response.status_code == 200
-        except Exception:
-            print("Oops, url", url, "is not valid, removing it")
-            return False
 
 
 class PersonModel(BaseModel, UrlValidatorMixin):
@@ -404,3 +391,21 @@ class ReviewModel(BaseModel):
             label.name if isinstance(label, Labels) else label
             for label in labels
         ]
+
+    @field_validator(
+        "archive",
+        mode="before",
+    )
+    @classmethod
+    def clean_archive(cls, archive: str) -> str:
+        """Clean the archive value to ensure it's a valid archive URL."""
+        return clean_archive(archive)
+
+    @field_validator(
+        "joss",
+        mode="before",
+    )
+    @classmethod
+    def clean_joss(cls, joss: str) -> str:
+        """Clean the joss value to ensure it's a valid URL."""
+        return clean_archive(joss)
