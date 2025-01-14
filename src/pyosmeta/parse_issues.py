@@ -7,7 +7,7 @@ from typing import Any, List, Union
 from pydantic import ValidationError
 
 from pyosmeta.models import ReviewModel, ReviewUser
-from pyosmeta.models.github import Issue
+from pyosmeta.models.github import Issue, Labels, LabelType
 
 from .github_api import GitHubAPI
 from .utils_clean import clean_date_accepted_key
@@ -224,6 +224,31 @@ class ProcessIssues:
 
         return meta
 
+    def _postprocess_labels(self, meta: dict) -> dict:
+        """
+        Process specific labels for attributes in the review model.
+
+        Presently, this method only checks if the review has the "archived"
+        (LabelType.ARCHIVED) label and sets the active attribute to False
+        if it does. We may add more label processing in the future.
+
+        The intention behind this is to assign specific ReviewModel attributes
+        based on the presence of certain labels in the review issue.
+        """
+
+        def _is_archived(label: str | Labels) -> bool:
+            """Internal helper to check if a label is the "archived" label"""
+            if isinstance(label, Labels):
+                return label.type == LabelType.ARCHIVED
+            return "archived" in label.lower()
+
+        # Check if the review has the "archived" label
+        if "labels" in meta and [
+            label for label in meta["labels"] if _is_archived(label)
+        ]:
+            meta["active"] = False
+        return meta
+
     def _parse_field(self, key: str, val: str) -> Any:
         """
         Method dispatcher for parsing specific header fields.
@@ -280,6 +305,7 @@ class ProcessIssues:
 
         # Finalize review model before casting
         model = self._postprocess_meta(model, body)
+        model = self._postprocess_labels(model)
 
         return ReviewModel(**model)
 
