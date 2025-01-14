@@ -7,8 +7,12 @@
 ## [v1.5] - 2025-01-14
 
 * Fix: Parse archive and JOSS links to handle markdown links and validate DOI links are valid. Added python-doi as a dependency to ensure archive/DOI URLs fully resolve (@banesullivan)
+* Add: new `active` status under `ReviewModel` which is set to `False` if the `"archived"` label is present on a review to mark the package as inactive (@banesullivan)
 
-## [v1.4] - 2024-11-22
+[v1.4] - 2024-11-22
+
+
+* Fix: Parse archive and JOSS links to handle markdown links and validate DOI links are valid. Added python-doi as a dependency to ensure archive/DOI URLs fully resolve (@banesullivan)
 
 Notes: it looks like i may have mistakenly bumped to 1.3.7 in august. rather than try to fix on pypi we will just go with it to ensure our release cycles are smooth given no one else uses this package except pyopensci.
 

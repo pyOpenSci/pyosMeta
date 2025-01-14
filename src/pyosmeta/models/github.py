@@ -17,9 +17,10 @@ datamodel-codegen --input issue_schema.json --input-file-type jsonschema --outpu
 from __future__ import annotations
 
 from datetime import datetime
+from enum import Enum
 from typing import Any, List, Literal, Optional, Union
 
-from pydantic import AnyUrl, BaseModel, ConfigDict, Field
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field, model_validator
 
 
 class User(BaseModel):
@@ -61,14 +62,45 @@ class ClosedBy(User): ...
 class Owner(User): ...
 
 
+class LabelType(str, Enum):
+    """Enum for the different types of labels that can be assigned to an issue.
+
+    This enum is not meant to be exhaustive, but rather capture a few important
+    labels for life cycle of approved reviews.
+
+    For now, this only includes the "archived" label, which is used to mark
+    packages that are no longer maintained ("inactive"). The "archived" label
+    corresponds to setting ``active=False`` on the ReviewModel
+    """
+
+    ARCHIVED = "archived"
+
+
 class Labels(BaseModel):
+    name: str
     id: Optional[int] = None
     node_id: Optional[str] = None
     url: Optional[AnyUrl] = None
-    name: Optional[str] = None
     description: Optional[str] = None
     color: Optional[str] = None
     default: Optional[bool] = None
+    type: Optional[LabelType] = None
+
+    @model_validator(mode="before")
+    def parse_label_type(cls, data):
+        """Parse the label type from the name before validation.
+
+        This will parse the label name into an available LabelType enum value.
+        Not all labels will have a corresponding LabelType, so this will
+        gracefully fail. This was implemented for assigning the LabelType.ARCHIVED
+        value to the "archived" label so that we can easily filter out archived
+        issues.
+        """
+        try:
+            data["type"] = LabelType(data["name"])
+        except ValueError:
+            pass
+        return data
 
 
 class Issue(BaseModel):
