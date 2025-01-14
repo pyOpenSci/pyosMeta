@@ -4,9 +4,13 @@
 
 ## [Unreleased]
 
+## [v1.5] - 2025-01-14
+
+* Fix: Parse archive and JOSS links to handle markdown links and validate DOI links are valid. Added python-doi as a dependency to ensure archive/DOI URLs fully resolve (@banesullivan)
 * Add: new `active` status under `ReviewModel` which is set to `False` if the `"archived"` label is present on a review to mark the package as inactive (@banesullivan)
 
 [v1.4] - 2024-11-22
+
 
 * Fix: Parse archive and JOSS links to handle markdown links and validate DOI links are valid. Added python-doi as a dependency to ensure archive/DOI URLs fully resolve (@banesullivan)
 
