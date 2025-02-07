@@ -84,6 +84,19 @@ pip install -e ".[dev]"
 To run this you need to [create a TOKEN that can be used to access the GitHub
 API.](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens)
 
+In GitHub, click on your profile image and navigate to "Settings", and then
+"Developer Settings".
+
+![Image of GitHub Developer Settings page](images/developer_settings.png "Developer Settings page")
+<br/><br/>
+Create a new fine-grained personal access token, adding a name, expiration,
+description, and ensure the "Repository Access" is set to "Public Repositories
+(read-only)". No other configuration needed. At the bottom of the page, click
+"Generate token".
+
+![Image of personal access token](images/token.png "Token configuration page")
+<br/><br/>
+
 After obtaining a token;
 
 1. Duplicate the `.env-default` file and rename the copy to `.env`
