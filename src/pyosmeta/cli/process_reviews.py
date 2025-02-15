@@ -48,6 +48,7 @@ def main():
         print("-" * 20)
 
     # Update gh metrics via api for all packages
+    print("Getting GitHub metrics for all packages...")
     repo_endpoints = process_review.get_repo_endpoints(accepted_reviews)
     all_reviews = process_review.get_gh_metrics(
         repo_endpoints, accepted_reviews
