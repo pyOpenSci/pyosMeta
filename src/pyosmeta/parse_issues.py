@@ -423,7 +423,7 @@ class ProcessIssues:
         pkg_meta = {}
         # url is the api endpoint for a specific pyos-reviewed package repo
         for pkg_name, url in endpoints.items():
-            print(f"Processing review {pkg_name}")
+            print(f"Processing GitHub metrics {pkg_name}")
             pkg_meta[pkg_name] = self.process_repo_meta(url)
 
             # These 2 lines both hit the API directly
