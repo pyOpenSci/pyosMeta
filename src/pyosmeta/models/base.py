@@ -190,7 +190,7 @@ class PersonModel(BaseModel, UrlValidatorMixin):
 
 class GhMeta(BaseModel, UrlValidatorMixin):
     name: str
-    description: str
+    description: Optional[str]
     created_at: str
     stargazers_count: int
     watchers_count: int
