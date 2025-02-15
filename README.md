@@ -8,6 +8,7 @@
 [![Run pyos meta tests](https://github.com/pyOpenSci/pyosMeta/actions/workflows/run-tests.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/run-tests.yml)
 [![codecov](https://codecov.io/gh/pyOpenSci/pyosMeta/graph/badge.svg?token=GOXKA8Z44X)](https://codecov.io/gh/pyOpenSci/pyosMeta)
 [![Update Contribs & reviewers](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-update-contribs.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-update-contribs.yml)
+[![Publish to PyPI](https://github.com/pyOpenSci/pyosMeta/actions/workflows/publish-pypi.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/publish-pypi.yml)
 [![.github/workflows/test-run-script.yml](https://github.com/pyOpenSci/update-web-metadata/actions/workflows/test-run-script.yml/badge.svg)](https://github.com/pyOpenSci/update-web-metadata/actions/workflows/test-run-script.yml)
 
 
