@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pyopensci/update-web-metadata/blob/master/LICENSE)
 [![CITE DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13159326.svg)](https://doi.org/10.5281/zenodo.13159326)
 
-
+<!--- Tests, Coverage, and CI badges -->
 [![Run pyos meta tests](https://github.com/pyOpenSci/pyosMeta/actions/workflows/run-tests.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/run-tests.yml)
 [![codecov](https://codecov.io/gh/pyOpenSci/pyosMeta/graph/badge.svg?token=GOXKA8Z44X)](https://codecov.io/gh/pyOpenSci/pyosMeta)
 [![Update Contribs & reviewers](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-update-contribs.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-update-contribs.yml)
