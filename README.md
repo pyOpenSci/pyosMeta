@@ -1,10 +1,15 @@
 # pyosmeta
 
 [![PyPI](https://img.shields.io/pypi/v/pyosmeta.svg)](https://pypi.org/project/pyosmeta/)
-[![.github/workflows/test-run-script.yml](https://github.com/pyOpenSci/update-web-metadata/actions/workflows/test-run-script.yml/badge.svg)](https://github.com/pyOpenSci/update-web-metadata/actions/workflows/test-run-script.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pyopensci/update-web-metadata/blob/master/LICENSE)
-[![codecov](https://codecov.io/gh/pyOpenSci/pyosMeta/graph/badge.svg?token=GOXKA8Z44X)](https://codecov.io/gh/pyOpenSci/pyosMeta)
 [![CITE DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13159326.svg)](https://doi.org/10.5281/zenodo.13159326)
+
+<!--- Tests, Coverage, and CI badges -->
+[![Run pyos meta tests](https://github.com/pyOpenSci/pyosMeta/actions/workflows/run-tests.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/run-tests.yml)
+[![codecov](https://codecov.io/gh/pyOpenSci/pyosMeta/graph/badge.svg?token=GOXKA8Z44X)](https://codecov.io/gh/pyOpenSci/pyosMeta)
+[![Update Contribs & reviewers](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-update-contribs.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-update-contribs.yml)
+[![Publish to PyPI](https://github.com/pyOpenSci/pyosMeta/actions/workflows/publish-pypi.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/publish-pypi.yml)
+[![.github/workflows/test-run-script.yml](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-run-script.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-run-script.yml)
 
 
 ## Description
