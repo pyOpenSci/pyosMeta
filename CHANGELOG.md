@@ -2,9 +2,11 @@
 
 [![PyPI](https://img.shields.io/pypi/v/pyosmeta.svg)](https://pypi.org/project/pyosmeta/)
 
+See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for additional information.
+
 ## [Unreleased]
 
-## [v1.6] - 2025-01-17
+## [v1.6] - 2025-02-17
 
 
 ## [v1.5] - 2025-01-14
