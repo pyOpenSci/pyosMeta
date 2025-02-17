@@ -4,7 +4,7 @@
 
 ## [Unreleased]
 
-## [v1.6] 2025-01-17
+## [v1.6] - 2025-01-17
 
 
 ## [v1.5] - 2025-01-14
@@ -13,7 +13,6 @@
 * Add: new `active` status under `ReviewModel` which is set to `False` if the `"archived"` label is present on a review to mark the package as inactive (@banesullivan)
 
 ## [v1.4] - 2024-11-22
-
 
 * Fix: Parse archive and JOSS links to handle markdown links and validate DOI links are valid. Added python-doi as a dependency to ensure archive/DOI URLs fully resolve (@banesullivan)
 
@@ -167,6 +166,7 @@ Initial release to PyPI.
 
 [Unreleased]: https://github.com/pyopensci/pyosmeta/compare/v0.1.6...HEAD
 [v1.6]: https://github.com/pyopensci/pyosmeta/compare/v0.1.5...v0.1.6
+[v1.5]: https://github.com/pyopensci/pyosmeta/compare/v0.1.4...v0.1.5
 [v0.2.4]: https://github.com/pyopensci/pyosmeta/compare/v0.2.3...v0.2.4
 [v0.2.3]: https://github.com/pyopensci/pyosmeta/compare/v0.15...v0.2.3
 [v0.2.2]: https://github.com/pyopensci/pyosmeta/compare/v0.15...v0.2.2
