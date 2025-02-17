@@ -169,6 +169,8 @@ Initial release to PyPI.
 [Unreleased]: https://github.com/pyopensci/pyosmeta/compare/v1.6...HEAD
 [v1.6]: https://github.com/pyopensci/pyosmeta/compare/v1.5...v1.6
 [v1.5]: https://github.com/pyopensci/pyosmeta/compare/v1.4...v1.5
+
+<!--- Historical versioning: prior to automation -->
 [v0.2.4]: https://github.com/pyopensci/pyosmeta/compare/v0.2.3...v0.2.4
 [v0.2.3]: https://github.com/pyopensci/pyosmeta/compare/v0.15...v0.2.3
 [v0.2.2]: https://github.com/pyopensci/pyosmeta/compare/v0.15...v0.2.2
