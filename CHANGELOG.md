@@ -8,6 +8,19 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [v1.6] - 2025-02-17
 
+## What's Changed
+
+* [hotfix] handle packages that lack a description on GitHub by @banesullivan in https://github.com/pyOpenSci/pyosMeta/pull/257
+* In CONTRIBUTING.md, add more specifics on configuring API token #194 by @hariprakash619 in https://github.com/pyOpenSci/pyosMeta/pull/255
+* docs: add hariprakash619 as a contributor for doc by @allcontributors in https://github.com/pyOpenSci/pyosMeta/pull/256
+* Reorder badges and add more CI badges in README by @willingc in https://github.com/pyOpenSci/pyosMeta/pull/258
+* Update CHANGELOG.md for 1.6 by @willingc in https://github.com/pyOpenSci/pyosMeta/pull/260
+* Update contributor and review data by @github-actions in https://github.com/pyOpenSci/pyosMeta/pull/251
+* Update contributor and review data by @github-actions in https://github.com/pyOpenSci/pyosMeta/pull/253
+* Update contributor and review data by @github-actions in https://github.com/pyOpenSci/pyosMeta/pull/262
+
+## New Contributors
+* @hariprakash619 made their first contribution in https://github.com/pyOpenSci/pyosMeta/pull/255
 
 ## [v1.5] - 2025-01-14
 
