@@ -332,8 +332,10 @@ class ProcessIssues:
         reviews = {}
         errors = {}
         length_issues = len(issues)
-        for idx,issue in enumerate(issues, start=1):
-            print(f"Grabbing issue {idx} of {length_issues}....")  ### Added progress message
+        for idx, issue in enumerate(issues, start=1):
+            print(
+                f"Grabbing issue {idx} of {length_issues}...."
+            )  ### Added progress message
             print(f"Processing review {issue.title}....")
             try:
                 review = self.parse_issue(issue)
