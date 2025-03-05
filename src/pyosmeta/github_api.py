@@ -186,6 +186,8 @@ class GitHubAPI:
 
         return results
 
+    # TODO: failing here because pyPartMC has a trailing / that needs to be cleaned.
+    # we can add that as a cleanup step to the method i fixed last night.
     def get_repo_meta(
         self, repo_info: dict[str, str]
     ) -> dict[str, Any] | None:
@@ -301,71 +303,6 @@ class GitHubAPI:
                 f"Unexpected HTTP error: {response.status_code} for repository: {repo_info['owner']}/{repo_info['reponame']}"
             )
             return None
-
-    # def get_repo_contribs(self, url: str) -> int | None:
-    #     """
-    #     Returns the count of total contributors to a repository.
-
-    #     Parameters
-    #     ----------
-    #     url : str
-    #         The URL of the repository.
-
-    #     Returns
-    #     -------
-    #     int
-    #         The count of total contributors to the repository.
-
-    #     Notes
-    #     -----
-    #     This method makes a GET call to the GitHub API to retrieve
-    #     total contributors for the specified repository. It then returns the
-    #     count of contributors.
-
-    #     If the repository is not found (status code 404), a warning message is
-    #     logged, and the method returns None.
-    #     """
-
-    #     repo_contribs_url = url + "/contributors"
-
-    #     # Get the url (normally the docs) and repository description
-    #     response = requests.get(
-    #         repo_contribs_url,
-    #         headers={"Authorization": f"token {self.get_token()}"},
-    #     )
-
-    #     # Handle 404 error (Repository not found)
-    #     if response.status_code == 404:
-    #         logging.warning(
-    #             f"Repository not found: {repo_contribs_url}. "
-    #             "Did the repo URL change?"
-    #         )
-    #         return None
-    #     # Return total contributors
-    #     else:
-    #         return len(response.json())
-
-    # def get_last_commit(self, repo: str) -> str:
-    #     """Returns the last commit to the repository.
-
-    #     Parameters
-    #     ----------
-    #     str : string
-    #         A string containing a datetime object representing the datetime of
-    #         the last commit to the repo
-
-    #     Returns
-    #     -------
-    #     str
-    #         String representing the timestamp for the last commit to the repo.
-    #     """
-    #     url = repo + "/commits"
-    #     response = requests.get(
-    #         url, headers={"Authorization": f"token {self.get_token()}"}
-    #     ).json()
-    #     date = response[0]["commit"]["author"]["date"]
-
-    #     return date
 
     def get_user_info(
         self, gh_handle: str, name: Optional[str] = None

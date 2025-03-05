@@ -332,9 +332,9 @@ class ProcessIssues:
         errors = {}
         for issue in issues:
             print(f"Processing review {issue.title}")
-            if "Stingray" in issue.title:
-                print("Stop now!")
-                break
+            # if "Stingray" in issue.title:
+            #     print("Stop now!")
+            #     break
 
             try:
                 review = self.parse_issue(issue)
@@ -377,6 +377,9 @@ class ProcessIssues:
         """
         Returns a dictionary of repository owner and names for each package.
 
+        Currently we don't have API access setup for gitlab. So skip if
+        url contains gitlab
+
         Parameters
         ----------
         review_issues : dict
@@ -391,9 +394,13 @@ class ProcessIssues:
         all_repos = {}
         for a_package in review_issues.keys():
             repo_url = review_issues[a_package].repository_link
+            # for now skip if it's a gitlab repo
+            if "gitlab" in repo_url:
+                continue
             owner, repo = (
                 repo_url.replace("https://github.com/", "")
                 .replace("https://www.github.com/", "")
+                .rstrip("/")
                 .split("/", 1)
             )
 
@@ -421,14 +428,6 @@ class ProcessIssues:
         dict
             Updated review data with GitHub metrics.
         """
-<<<<<<< HEAD
-        pkg_meta = {}
-        # url is the api endpoint for a specific pyos-reviewed package repo
-        for pkg_name, url in endpoints.items():
-            print(f"Processing GitHub metrics {pkg_name}")
-            pkg_meta[pkg_name] = self.process_repo_meta(url)
-=======
->>>>>>> b54790f (Enh: move to graphql for metrics)
 
         for pkg_name, owner_repo in endpoints.items():
             reviews[pkg_name].gh_meta = self.github_api.get_repo_meta(
