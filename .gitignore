@@ -157,3 +157,5 @@ src/pyosmeta/_version.py
 *.pickle
 .token
 token.txt
+
+.bash_profile

@@ -48,19 +48,10 @@ def main():
         print("-" * 20)
 
     # Update gh metrics via api for all packages
-<<<<<<< HEAD
-    print("Getting GitHub metrics for all packages...")
-    repo_endpoints = process_review.get_repo_endpoints(accepted_reviews)
-    all_reviews = process_review.get_gh_metrics(
-        repo_endpoints, accepted_reviews
-    )
-
-=======
     # BUG : contrib count isn't correct - great tables has some and is returning 0
     repo_paths = process_review.get_repo_paths(accepted_reviews)
     all_reviews = process_review.get_gh_metrics(repo_paths, accepted_reviews)
     print("almost there")
->>>>>>> b54790f (Enh: move to graphql for metrics)
     with open("all_reviews.pickle", "wb") as f:
         pickle.dump(all_reviews, f)
 
