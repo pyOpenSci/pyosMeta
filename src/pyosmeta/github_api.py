@@ -186,14 +186,16 @@ class GitHubAPI:
 
         return results
 
-    def get_repo_meta(self, url: str) -> dict[str, Any] | None:
+    def get_repo_meta(
+        self, repo_info: dict[str, str]
+    ) -> dict[str, Any] | None:
         """
-        Get GitHub metrics from the GitHub API for a single repository.
+        Get GitHub metrics from the GitHub GraphQL API for a single repository.
 
         Parameters
         ----------
-        url : str
-            The URL of the repository.
+        repo_info : dict
+            A dictionary containing the owner and repository name.
 
         Returns
         -------
@@ -203,110 +205,167 @@ class GitHubAPI:
 
         Notes
         -----
-        This method makes a GET call to the GitHub API to retrieve metadata
+        This method makes a GraphQL call to the GitHub API to retrieve metadata
         about a pyos reviewed package repository.
 
-        If the repository is not found (status code 404) or access is forbidden
-        (status code 403), this method returns None.
-
+        If the repository is not found or access is forbidden, this method returns None.
         """
 
-        # Get the url (normally the docs) and description of a repo
-        response = requests.get(
-            url, headers={"Authorization": f"token {self.get_token()}"}
+        query = """
+        query($owner: String!, $name: String!) {
+            repository(owner: $owner, name: $name) {
+                name
+                description
+                homepageUrl
+                createdAt
+                stargazers {
+                    totalCount
+                }
+                watchers {
+                    totalCount
+                }
+                issues(states: OPEN) {
+                    totalCount
+                }
+                forks {
+                    totalCount
+                }
+                defaultBranchRef {
+                    target {
+                        ... on Commit {
+                            history(first: 1) {
+                                edges {
+                                    node {
+                                        committedDate
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                collaborators {
+                    totalCount
+                }
+            }
+        }
+        """
+
+        variables = {
+            "owner": repo_info["owner"],
+            "name": repo_info["repo_name"],
+        }
+
+        headers = {"Authorization": f"Bearer {self.get_token()}"}
+
+        response = requests.post(
+            "https://api.github.com/graphql",
+            json={"query": query, "variables": variables},
+            headers=headers,
         )
 
-        # Check if the request was successful (status code 2xx)
-        if response.ok:
-            return response.json()
-
-        # Handle specific HTTP errors
+        if response.status_code == 200:
+            data = response.json()
+            repo_data = data["data"]["repository"]
+            # BUG: always returns 0 Return 0 if no collaborators or get total count
+            contributor_count = (repo_data.get("collaborators") or {}).get(
+                "totalCount", 0
+            )
+            return {
+                "name": repo_data["name"],
+                "description": repo_data["description"],
+                "documentation": repo_data["homepageUrl"],
+                "created_at": repo_data["createdAt"],
+                "stargazers_count": repo_data["stargazers"]["totalCount"],
+                "watchers_count": repo_data["watchers"]["totalCount"],
+                "open_issues_count": repo_data["issues"]["totalCount"],
+                "forks_count": repo_data["forks"]["totalCount"],
+                "last_commit": repo_data["defaultBranchRef"]["target"][
+                    "history"
+                ]["edges"][0]["node"]["committedDate"],
+                "contrib_count": contributor_count,
+            }
         elif response.status_code == 404:
             logging.warning(
-                f"Repository not found: {url}. Did the repo URL change?"
+                f"Repository not found: {repo_info['owner']}/{repo_info['reponame']}. Did the repo URL change?"
             )
             return None
         elif response.status_code == 403:
-            # Construct a single warning message with formatted strings
-            warning_message = (
-                "Oops! You may have hit an API limit for URL: {url}.\n"
+            logging.warning(
+                f"Oops! You may have hit an API limit for repository: {repo_info['owner']}/{repo_info['reponame']}.\n"
                 f"API Response Text: {response.text}\n"
                 f"API Response Headers: {response.headers}"
             )
-            logging.warning(warning_message)
             return None
-
         else:
-            # Log other HTTP errors
             logging.warning(
-                f"Unexpected HTTP error: {response.status_code} URL: {url}"
+                f"Unexpected HTTP error: {response.status_code} for repository: {repo_info['owner']}/{repo_info['reponame']}"
             )
             return None
 
-    def get_repo_contribs(self, url: str) -> int | None:
-        """
-        Returns the count of total contributors to a repository.
+    # def get_repo_contribs(self, url: str) -> int | None:
+    #     """
+    #     Returns the count of total contributors to a repository.
 
-        Parameters
-        ----------
-        url : str
-            The URL of the repository.
+    #     Parameters
+    #     ----------
+    #     url : str
+    #         The URL of the repository.
 
-        Returns
-        -------
-        int
-            The count of total contributors to the repository.
+    #     Returns
+    #     -------
+    #     int
+    #         The count of total contributors to the repository.
 
-        Notes
-        -----
-        This method makes a GET call to the GitHub API to retrieve
-        total contributors for the specified repository. It then returns the
-        count of contributors.
+    #     Notes
+    #     -----
+    #     This method makes a GET call to the GitHub API to retrieve
+    #     total contributors for the specified repository. It then returns the
+    #     count of contributors.
 
-        If the repository is not found (status code 404), a warning message is
-        logged, and the method returns None.
-        """
+    #     If the repository is not found (status code 404), a warning message is
+    #     logged, and the method returns None.
+    #     """
 
-        repo_contribs_url = url + "/contributors"
+    #     repo_contribs_url = url + "/contributors"
 
-        # Get the url (normally the docs) and repository description
-        response = requests.get(
-            repo_contribs_url,
-            headers={"Authorization": f"token {self.get_token()}"},
-        )
+    #     # Get the url (normally the docs) and repository description
+    #     response = requests.get(
+    #         repo_contribs_url,
+    #         headers={"Authorization": f"token {self.get_token()}"},
+    #     )
 
-        # Handle 404 error (Repository not found)
-        if response.status_code == 404:
-            logging.warning(
-                f"Repository not found: {repo_contribs_url}. "
-                "Did the repo URL change?"
-            )
-            return None
-        # Return total contributors
-        else:
-            return len(response.json())
+    #     # Handle 404 error (Repository not found)
+    #     if response.status_code == 404:
+    #         logging.warning(
+    #             f"Repository not found: {repo_contribs_url}. "
+    #             "Did the repo URL change?"
+    #         )
+    #         return None
+    #     # Return total contributors
+    #     else:
+    #         return len(response.json())
 
-    def get_last_commit(self, repo: str) -> str:
-        """Returns the last commit to the repository.
+    # def get_last_commit(self, repo: str) -> str:
+    #     """Returns the last commit to the repository.
 
-        Parameters
-        ----------
-        str : string
-            A string containing a datetime object representing the datetime of
-            the last commit to the repo
+    #     Parameters
+    #     ----------
+    #     str : string
+    #         A string containing a datetime object representing the datetime of
+    #         the last commit to the repo
 
-        Returns
-        -------
-        str
-            String representing the timestamp for the last commit to the repo.
-        """
-        url = repo + "/commits"
-        response = requests.get(
-            url, headers={"Authorization": f"token {self.get_token()}"}
-        ).json()
-        date = response[0]["commit"]["author"]["date"]
+    #     Returns
+    #     -------
+    #     str
+    #         String representing the timestamp for the last commit to the repo.
+    #     """
+    #     url = repo + "/commits"
+    #     response = requests.get(
+    #         url, headers={"Authorization": f"token {self.get_token()}"}
+    #     ).json()
+    #     date = response[0]["commit"]["author"]["date"]
 
-        return date
+    #     return date
 
     def get_user_info(
         self, gh_handle: str, name: Optional[str] = None

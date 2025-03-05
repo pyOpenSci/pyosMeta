@@ -76,9 +76,8 @@ class ProcessIssues:
         """
 
         issues = self.github_api.return_response()
-        # Filter labels according to label select input
+        # Filter issues according to label query value
         labels = self.github_api.labels
-
         filtered_issues = [
             issue
             for issue in issues
@@ -333,6 +332,10 @@ class ProcessIssues:
         errors = {}
         for issue in issues:
             print(f"Processing review {issue.title}")
+            if "Stingray" in issue.title:
+                print("Stop now!")
+                break
+
             try:
                 review = self.parse_issue(issue)
                 reviews[review.package_name] = review
@@ -367,12 +370,12 @@ class ProcessIssues:
             models = models[0]
         return models
 
-    # TODO: decide if this belongs here or in the github obj?
-    def get_repo_endpoints(
+    # TODO: This now returns a dict of owner:repo_name to support graphql
+    def get_repo_paths(
         self, review_issues: dict[str, ReviewModel]
-    ) -> dict[str, str]:
+    ) -> dict[str, dict[str, str]]:
         """
-        Returns a list of repository endpoints
+        Returns a dictionary of repository owner and names for each package.
 
         Parameters
         ----------
@@ -381,37 +384,35 @@ class ProcessIssues:
 
         Returns
         -------
-            Dict
-                Containing pkg_name: endpoint for each review.
-
+        dict
+            Containing pkg_name: {owner: repo} for each review.
         """
 
         all_repos = {}
         for a_package in review_issues.keys():
-            repo = review_issues[a_package].repository_link.strip("/")
-            owner, repo = repo.split("/")[-2:]
-            # TODO: could be simpler code - Remove any link remnants
-            pattern = r"[\(\)\[\]?]"
-            owner = re.sub(pattern, "", owner)
-            repo = re.sub(pattern, "", repo)
-            all_repos[a_package] = (
-                f"https://api.github.com/repos/{owner}/{repo}"
+            repo_url = review_issues[a_package].repository_link
+            owner, repo = (
+                repo_url.replace("https://github.com/", "")
+                .replace("https://www.github.com/", "")
+                .split("/", 1)
             )
+
+            all_repos[a_package] = {"owner": owner, "repo_name": repo}
         return all_repos
 
-    # Rename to process_gh_metrics?
+    # TODO move to github module
     def get_gh_metrics(
         self,
-        endpoints: dict[str, str],
+        endpoints: dict[dict[str, str]],
         reviews: dict[str, ReviewModel],
     ) -> dict[str, ReviewModel]:
         """
-        Get GitHub metrics for each review based on provided endpoints.
+        Get GitHub metrics for all reviews using provided repo name and owner.
 
         Parameters:
         ----------
         endpoints : dict
-            A dictionary mapping package names to their GitHub URLs.
+            A dictionary mapping package names to their owner and repo-names.
         reviews : dict
             A dictionary containing review data.
 
@@ -420,62 +421,21 @@ class ProcessIssues:
         dict
             Updated review data with GitHub metrics.
         """
+<<<<<<< HEAD
         pkg_meta = {}
         # url is the api endpoint for a specific pyos-reviewed package repo
         for pkg_name, url in endpoints.items():
             print(f"Processing GitHub metrics {pkg_name}")
             pkg_meta[pkg_name] = self.process_repo_meta(url)
+=======
+>>>>>>> b54790f (Enh: move to graphql for metrics)
 
-            # These 2 lines both hit the API directly
-            pkg_meta[pkg_name]["contrib_count"] = (
-                self.github_api.get_repo_contribs(url)
+        for pkg_name, owner_repo in endpoints.items():
+            reviews[pkg_name].gh_meta = self.github_api.get_repo_meta(
+                owner_repo
             )
-            pkg_meta[pkg_name]["last_commit"] = (
-                self.github_api.get_last_commit(url)
-            )
-            # Add github meta to review metadata
-            reviews[pkg_name].gh_meta = pkg_meta[pkg_name]
 
         return reviews
-
-    # This is also github related
-    def process_repo_meta(self, url: str) -> dict[str, Any]:
-        """
-        Process metadata from the GitHub API about a single repository.
-
-        Parameters
-        ----------
-        url : str
-            The URL of the repository.
-
-        Returns
-        -------
-        dict[str, Any]
-            A dictionary containing the specified GitHub metrics for the repo.
-
-        Notes
-        -----
-        This method uses our github module to process returned data from a
-        GET call to the GitHub API to retrieve metadata about a package
-        repository. It then extracts the desired metrics from the API response
-        and constructs a dictionary with these metrics.
-
-        The `homepage` metric is renamed to `documentation` in the returned
-        dictionary.
-
-        """
-
-        stats_dict = {}
-        # Returns the raw top-level github API response for the repo
-        gh_repo_response = self.github_api.get_repo_meta(url)
-
-        # Retrieve the metrics that we want to track
-        for astat in self.gh_stats:
-            stats_dict[astat] = gh_repo_response[astat]
-
-        stats_dict["documentation"] = stats_dict.pop("homepage")
-
-        return stats_dict
 
     # This works - i could just make it more generic and remove fmt since it's
     # not used and replace it with a number of values and a test string
