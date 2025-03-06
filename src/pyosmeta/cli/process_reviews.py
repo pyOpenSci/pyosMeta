@@ -38,8 +38,6 @@ def main():
     process_review = ProcessIssues(github_api)
 
     # Get all issues for approved packages - load as dict
-    # TODO: this doesn't have to be in process issues at all. it could fully
-    # Call the github module
     issues = process_review.get_issues()
     accepted_reviews, errors = process_review.parse_issues(issues)
     for url, error in errors.items():
@@ -48,10 +46,10 @@ def main():
         print("-" * 20)
 
     # Update gh metrics via api for all packages
-    # BUG : contrib count isn't correct - great tables has some and is returning 0
+    # Contrib count is only available via rest api
     repo_paths = process_review.get_repo_paths(accepted_reviews)
     all_reviews = github_api.get_gh_metrics(repo_paths, accepted_reviews)
-    print("almost there")
+
     with open("all_reviews.pickle", "wb") as f:
         pickle.dump(all_reviews, f)
 

@@ -83,6 +83,10 @@ class GitHubAPI:
                 "Oops! A GITHUB_TOKEN environment variable wasn't found."
             )
 
+    # TODO: this property right now is tailored for the rest api grabbing
+    # pyopensci issues. Let's see after the refactor if we want to generalize it
+    # for other endpoints like contrib_count or if issues can move totally to
+    # graphql
     @property
     def api_endpoint(self) -> str:
         """Create the API endpoint url
@@ -141,25 +145,25 @@ class GitHubAPI:
                 sleep_time = max(reset_time - time.time(), 0) + 1
                 time.sleep(sleep_time)
 
-    def return_response(self) -> list[dict[str, object]]:
-        """
-        Make a GET request to the Github API endpoint
-        Deserialize json response to list of dicts.
+    def _get_response_rest(self, url: str) -> list[dict[str, Any]]:
+        """Make a GET request to the GitHub REST API.
+        Handles pagination and rate limiting.
 
-        Handles pagination as github has a REST api 100 request max.
+        Parameters
+        ----------
+        url : str
+            The API endpoint URL.
 
         Returns
         -------
-        list
-            List of dict items each containing a review issue
+        list[dict[str, Any]]
+            A list of JSON responses from GitHub API requests.
         """
-
         results = []
-        # This is computed as a property. Reassign here to support pagination
-        # and new urls for each page
-        api_endpoint_url = self.api_endpoint
+        api_endpoint_url = url
+
         try:
-            while True:
+            while api_endpoint_url:
                 response = requests.get(
                     api_endpoint_url,
                     headers={"Authorization": f"token {self.get_token()}"},
@@ -167,21 +171,14 @@ class GitHubAPI:
                 response.raise_for_status()
                 results.extend(response.json())
 
-                # Check if there are more pages to fetch
-                if "next" in response.links:
-                    next_url = response.links["next"]["url"]
-                    api_endpoint_url = next_url
-                else:
-                    break
-
-                # Handle rate limiting
+                # Handle pagination & rate limiting
+                api_endpoint_url = response.links.get("next", {}).get("url")
                 self.handle_rate_limit(response)
 
         except requests.HTTPError as exception:
             if exception.response.status_code == 401:
-                print(
-                    "Oops - your request isn't authorized. Your token may be "
-                    "expired or invalid. Please refresh your token."
+                logging.error(
+                    "Unauthorized request. Your token may be expired or invalid. Please refresh your token."
                 )
             else:
                 raise exception
@@ -215,7 +212,44 @@ class GitHubAPI:
 
         return reviews
 
-    def get_repo_meta(
+    def _get_contrib_count_rest(self, url: str) -> int | None:
+        """
+        Returns the count of total contributors to a repository.
+
+        Uses the rest API because graphql can't access this specific metric
+
+        Parameters
+        ----------
+        url : str
+            The URL of the repository.
+
+        Returns
+        -------
+        int
+            The count of total contributors to the repository.
+
+        Notes
+        -----
+        This method makes a GET call to the GitHub API to retrieve
+        total contributors for the specified repository. It then returns the
+        count of contributors.
+
+        If the repository is not found (status code 404), a warning message is
+        logged, and the method returns None.
+        """
+        # https://api.github.com/repos/{owner}/{repo}/contributors
+        repo_contribs_url = f"https://api.github.com/repos/{url['owner']}/{url['repo_name']}/contributors"
+        contributors = self._get_response_rest(repo_contribs_url)
+
+        if not contributors:
+            logging.warning(
+                f"Repository not found: {repo_contribs_url}. Did the repo URL change?"
+            )
+            return None
+
+        return len(contributors)
+
+    def _get_metrics_graphql(
         self, repo_info: dict[str, str]
     ) -> dict[str, Any] | None:
         """
@@ -295,10 +329,7 @@ class GitHubAPI:
         if response.status_code == 200:
             data = response.json()
             repo_data = data["data"]["repository"]
-            # BUG: always returns 0 Return 0 if no collaborators or get total count
-            contributor_count = (repo_data.get("collaborators") or {}).get(
-                "totalCount", 0
-            )
+
             return {
                 "name": repo_data["name"],
                 "description": repo_data["description"],
@@ -311,25 +342,52 @@ class GitHubAPI:
                 "last_commit": repo_data["defaultBranchRef"]["target"][
                     "history"
                 ]["edges"][0]["node"]["committedDate"],
-                "contrib_count": contributor_count,
             }
         elif response.status_code == 404:
             logging.warning(
-                f"Repository not found: {repo_info['owner']}/{repo_info['reponame']}. Did the repo URL change?"
+                f"Repository not found: {repo_info['owner']}/{repo_info['repo_name']}. Did the repo URL change?"
             )
             return None
         elif response.status_code == 403:
             logging.warning(
-                f"Oops! You may have hit an API limit for repository: {repo_info['owner']}/{repo_info['reponame']}.\n"
+                f"Oops! You may have hit an API limit for repository: {repo_info['owner']}/{repo_info['repo_name']}.\n"
                 f"API Response Text: {response.text}\n"
                 f"API Response Headers: {response.headers}"
             )
             return None
         else:
             logging.warning(
-                f"Unexpected HTTP error: {response.status_code} for repository: {repo_info['owner']}/{repo_info['reponame']}"
+                f"Unexpected HTTP error: {response.status_code} for repository: {repo_info['owner']}/{repo_info['repo_name']}"
             )
             return None
+
+    def get_repo_meta(
+        self, repo_info: dict[str, str]
+    ) -> dict[str, Any] | None:
+        """Get GitHub metrics from the GitHub GraphQL API for a repository.
+
+        Parameters
+        ----------
+        repo_info : dict
+            A dictionary containing the owner and repository name.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            A dictionary containing the specified GitHub metrics for the repository.
+            Returns None if the repository is not found or access is forbidden.
+
+        Notes
+        -----
+        This method makes a GraphQL call to the GitHub API to retrieve metadata
+        about a pyos reviewed package repository.
+
+        If the repository is not found or access is forbidden, it returns None.
+        """
+        metrics = self._get_metrics_graphql(repo_info)
+        metrics["contrib_count"] = self._get_contrib_count_rest(repo_info)
+
+        return metrics
 
     def get_user_info(
         self, gh_handle: str, name: Optional[str] = None
