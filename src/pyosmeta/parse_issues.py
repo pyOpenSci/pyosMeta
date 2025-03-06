@@ -44,19 +44,6 @@ class ProcessIssues:
 
         self.github_api = github_api
 
-    # These are the github metrics to return on a package
-    # It could be simpler to implement this using graphQL
-    gh_stats = [
-        "name",
-        "description",
-        "homepage",
-        "created_at",
-        "stargazers_count",
-        "watchers_count",
-        "open_issues_count",
-        "forks_count",
-    ]
-
     def get_issues(self) -> list[Issue]:
         """
         Call return response in GitHub api object.
@@ -406,35 +393,6 @@ class ProcessIssues:
 
             all_repos[a_package] = {"owner": owner, "repo_name": repo}
         return all_repos
-
-    # TODO move to github module
-    def get_gh_metrics(
-        self,
-        endpoints: dict[dict[str, str]],
-        reviews: dict[str, ReviewModel],
-    ) -> dict[str, ReviewModel]:
-        """
-        Get GitHub metrics for all reviews using provided repo name and owner.
-
-        Parameters:
-        ----------
-        endpoints : dict
-            A dictionary mapping package names to their owner and repo-names.
-        reviews : dict
-            A dictionary containing review data.
-
-        Returns:
-        -------
-        dict
-            Updated review data with GitHub metrics.
-        """
-
-        for pkg_name, owner_repo in endpoints.items():
-            reviews[pkg_name].gh_meta = self.github_api.get_repo_meta(
-                owner_repo
-            )
-
-        return reviews
 
     # This works - i could just make it more generic and remove fmt since it's
     # not used and replace it with a number of values and a test string
