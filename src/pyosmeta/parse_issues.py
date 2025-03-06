@@ -62,7 +62,9 @@ class ProcessIssues:
         need to use an OR as a selector.
         """
 
-        issues = self.github_api.return_response()
+        url = self.github_api.api_endpoint
+        issues = self.github_api._get_response_rest(url)
+
         # Filter issues according to label query value
         labels = self.github_api.labels
         filtered_issues = [
@@ -319,9 +321,6 @@ class ProcessIssues:
         errors = {}
         for issue in issues:
             print(f"Processing review {issue.title}")
-            # if "Stingray" in issue.title:
-            #     print("Stop now!")
-            #     break
 
             try:
                 review = self.parse_issue(issue)
@@ -394,8 +393,6 @@ class ProcessIssues:
             all_repos[a_package] = {"owner": owner, "repo_name": repo}
         return all_repos
 
-    # This works - i could just make it more generic and remove fmt since it's
-    # not used and replace it with a number of values and a test string
     def get_categories(
         self,
         issue_list: list[str],
