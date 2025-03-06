@@ -11,7 +11,6 @@
 [![Publish to PyPI](https://github.com/pyOpenSci/pyosMeta/actions/workflows/publish-pypi.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/publish-pypi.yml)
 [![.github/workflows/test-run-script.yml](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-run-script.yml/badge.svg)](https://github.com/pyOpenSci/pyosMeta/actions/workflows/test-run-script.yml)
 
-
 ## Description
 
 **pyosmeta** provides the tools and scripts used to manage [pyOpenSci](https://pyopensci.org)'s contributor and peer
@@ -25,18 +24,17 @@ This repo contains a small module and several CLI scripts, including:
 
 _Since pyOpenSci uses this tool for its website, we expect this package to have infrequent releases._
 
-
 ## Installation
 
 Using pip:
 
-```
+```console
 pip install pyosmeta
 ```
 
 Using conda:
 
-```
+```console
 conda install pyosmeta
 ```
 
