@@ -18,6 +18,8 @@ from typing import Any, Optional, Union
 import requests
 from dotenv import load_dotenv
 
+from pyosmeta.models import ReviewModel
+
 
 @dataclass
 class GitHubAPI:
@@ -186,8 +188,33 @@ class GitHubAPI:
 
         return results
 
-    # TODO: failing here because pyPartMC has a trailing / that needs to be cleaned.
-    # we can add that as a cleanup step to the method i fixed last night.
+    def get_gh_metrics(
+        self,
+        endpoints: dict[dict[str, str]],
+        reviews: dict[str, ReviewModel],
+    ) -> dict[str, ReviewModel]:
+        """
+        Get GitHub metrics for all reviews using provided repo name and owner.
+        Does not work on GitLab currently
+
+        Parameters:
+        ----------
+        endpoints : dict
+            A dictionary mapping package names to their owner and repo-names.
+        reviews : dict
+            A dictionary containing review data.
+
+        Returns:
+        -------
+        dict
+            Updated review data with GitHub metrics.
+        """
+
+        for pkg_name, owner_repo in endpoints.items():
+            reviews[pkg_name].gh_meta = self.get_repo_meta(owner_repo)
+
+        return reviews
+
     def get_repo_meta(
         self, repo_info: dict[str, str]
     ) -> dict[str, Any] | None:

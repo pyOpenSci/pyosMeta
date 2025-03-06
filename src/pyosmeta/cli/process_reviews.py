@@ -50,7 +50,7 @@ def main():
     # Update gh metrics via api for all packages
     # BUG : contrib count isn't correct - great tables has some and is returning 0
     repo_paths = process_review.get_repo_paths(accepted_reviews)
-    all_reviews = process_review.get_gh_metrics(repo_paths, accepted_reviews)
+    all_reviews = github_api.get_gh_metrics(repo_paths, accepted_reviews)
     print("almost there")
     with open("all_reviews.pickle", "wb") as f:
         pickle.dump(all_reviews, f)
