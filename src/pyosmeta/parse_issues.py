@@ -291,7 +291,7 @@ class ProcessIssues:
                 ],
             )
 
-        # Finalize review model before casting
+        # Finalize & cleanup review model before casting
         model = self._postprocess_meta(model, body)
         model = self._postprocess_labels(model)
 
