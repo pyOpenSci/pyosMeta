@@ -26,6 +26,7 @@ import pickle
 
 from pyosmeta import ProcessIssues
 from pyosmeta.github_api import GitHubAPI
+from pyosmeta.logging import logger
 
 
 def main():
@@ -42,13 +43,15 @@ def main():
     # Call the github module
     issues = process_review.get_issues()
     accepted_reviews, errors = process_review.parse_issues(issues)
-    for url, error in errors.items():
-        print(f"Error in review at url: {url}")
-        print(error)
-        print("-" * 20)
+    if errors:
+        logger.error("Errors found when parsing reviews (printed to stdout):")
+        for url, error in errors.items():
+            print(f"Error in review at url: {url}")
+            print(error)
+            print("-" * 20)
 
     # Update gh metrics via api for all packages
-    print("Getting GitHub metrics for all packages...")
+    logger.info("Getting GitHub metrics for all packages...")
     repo_endpoints = process_review.get_repo_endpoints(accepted_reviews)
     all_reviews = process_review.get_gh_metrics(
         repo_endpoints, accepted_reviews
