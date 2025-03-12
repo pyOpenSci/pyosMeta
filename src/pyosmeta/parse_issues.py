@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, List, Union
 
 from pydantic import ValidationError
+from tqdm import tqdm
 
 from pyosmeta.models import ReviewModel, ReviewUser
 from pyosmeta.models.github import Issue, Labels, LabelType
@@ -331,8 +332,8 @@ class ProcessIssues:
 
         reviews = {}
         errors = {}
-        for issue in issues:
-            print(f"Processing review {issue.title}")
+        for issue in tqdm(issues, desc="Processing reviews"):
+            tqdm.write(f"Processing review {issue.title}")
             try:
                 review = self.parse_issue(issue)
                 reviews[review.package_name] = review
@@ -422,8 +423,8 @@ class ProcessIssues:
         """
         pkg_meta = {}
         # url is the api endpoint for a specific pyos-reviewed package repo
-        for pkg_name, url in endpoints.items():
-            print(f"Processing GitHub metrics {pkg_name}")
+        for pkg_name, url in tqdm(endpoints.items()):
+            tqdm.write(f"Processing GitHub metrics {pkg_name}")
             pkg_meta[pkg_name] = self.process_repo_meta(url)
 
             # These 2 lines both hit the API directly

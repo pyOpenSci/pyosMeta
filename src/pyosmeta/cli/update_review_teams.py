@@ -24,6 +24,7 @@ import os
 from datetime import datetime
 
 from pydantic import ValidationError
+from tqdm import tqdm
 
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
@@ -147,8 +148,10 @@ def main():
 
     contrib_types = process_contribs.contrib_types
 
-    for pkg_name, review in packages.items():
-        logger.info(f"Processing review team for: {pkg_name}")
+    for pkg_name, review in tqdm(
+        packages.items(), desc="Processing review teams"
+    ):
+        tqdm.write(f"Processing review team for: {pkg_name}")
         for role in contrib_types.keys():
             user: list[ReviewUser] | ReviewUser = getattr(review, role)
 
