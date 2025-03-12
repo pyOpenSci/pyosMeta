@@ -9,7 +9,6 @@ available
 numbers, stars and more "health & stability" related metrics
 """
 
-import logging
 import os
 import time
 from dataclasses import dataclass
@@ -17,6 +16,8 @@ from typing import Any, Optional, Union
 
 import requests
 from dotenv import load_dotenv
+
+from .logging import logger
 
 
 @dataclass
@@ -177,9 +178,9 @@ class GitHubAPI:
 
         except requests.HTTPError as exception:
             if exception.response.status_code == 401:
-                print(
+                logger.error(
                     "Oops - your request isn't authorized. Your token may be "
-                    "expired or invalid. Please refresh your token."
+                    "expired or invalid. Please refresh your token.",
                 )
             else:
                 raise exception
@@ -222,7 +223,7 @@ class GitHubAPI:
 
         # Handle specific HTTP errors
         elif response.status_code == 404:
-            logging.warning(
+            logger.warning(
                 f"Repository not found: {url}. Did the repo URL change?"
             )
             return None
@@ -233,12 +234,12 @@ class GitHubAPI:
                 f"API Response Text: {response.text}\n"
                 f"API Response Headers: {response.headers}"
             )
-            logging.warning(warning_message)
+            logger.warning(warning_message)
             return None
 
         else:
             # Log other HTTP errors
-            logging.warning(
+            logger.warning(
                 f"Unexpected HTTP error: {response.status_code} URL: {url}"
             )
             return None
@@ -277,7 +278,7 @@ class GitHubAPI:
 
         # Handle 404 error (Repository not found)
         if response.status_code == 404:
-            logging.warning(
+            logger.warning(
                 f"Repository not found: {repo_contribs_url}. "
                 "Did the repo URL change?"
             )

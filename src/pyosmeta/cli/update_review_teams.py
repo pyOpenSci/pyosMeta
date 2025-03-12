@@ -28,6 +28,7 @@ from pydantic import ValidationError
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
 from pyosmeta.github_api import GitHubAPI
+from pyosmeta.logging import logger
 from pyosmeta.models import PersonModel, ReviewModel, ReviewUser
 from pyosmeta.utils_clean import get_clean_user
 
@@ -106,13 +107,16 @@ def process_user(
     if gh_user not in contribs.keys():
         # If they aren't in the existing contribs.yml data, add them by using
         # their github username and hitting the github api
-        print("Found a new contributor!", gh_user)
+        logger.info(f"Found a new contributor: {gh_user}")
         new_contrib = processor.return_user_info(gh_user)
         new_contrib["date_added"] = datetime.now().strftime("%Y-%m-%d")
         try:
             contribs[gh_user] = PersonModel(**new_contrib)
-        except ValidationError as ve:
-            print(ve)
+        except ValidationError:
+            logger.error(
+                f"Error processing new contributor {gh_user}. Skipping this user.",
+                exc_info=True,
+            )
 
     # Update user the list of contribution types if there are new types to add
     # for instance a new reviewer would have a "Reviewer" contributor type
@@ -144,7 +148,7 @@ def main():
     contrib_types = process_contribs.contrib_types
 
     for pkg_name, review in packages.items():
-        print("Processing review team for:", pkg_name)
+        logger.info(f"Processing review team for: {pkg_name}")
         for role in contrib_types.keys():
             user: list[ReviewUser] | ReviewUser = getattr(review, role)
 
@@ -169,7 +173,9 @@ def main():
                         "Keys in the `contrib_types` map must be a `ReviewUser` or `list[ReviewUser]` in the `ReviewModel`"
                     )
             else:
-                print(f"I can't find a username for {role}. Moving on.")
+                logger.warning(
+                    f"I can't find a username for {role} under {pkg_name}. Moving on."
+                )
 
     # Export to yaml
     contribs_ls = [model.model_dump() for model in contribs.values()]

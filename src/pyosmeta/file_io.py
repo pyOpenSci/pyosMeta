@@ -5,6 +5,8 @@ from typing import Dict, List, Union
 import ruamel.yaml
 from ruamel.yaml import YAML
 
+from .logging import logger
+
 
 def load_pickle(filename):
     """Opens a pickle"""
@@ -84,8 +86,8 @@ def open_yml_file(file_path: str) -> dict:
         with urllib.request.urlopen(file_path) as f:
             yaml = YAML(typ="safe", pure=True)
             return yaml.load(f)
-    except urllib.error.URLError as url_error:
-        print("Oops - can find the url", file_path, url_error)
+    except urllib.error.URLError:
+        logger.error(f"Oops - can find the url: {file_path}", exc_info=True)
 
 
 def export_yaml(filename: str, data_list: list):
