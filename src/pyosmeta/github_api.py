@@ -137,6 +137,7 @@ class GitHubAPI:
         If the remaining requests are exhausted, it calculates the time
         until the rate limit resets and sleeps accordingly.
         """
+        print("hello there")
 
         if "X-RateLimit-Remaining" in response.headers:
             remaining_requests = int(response.headers["X-RateLimit-Remaining"])
