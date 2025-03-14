@@ -83,10 +83,7 @@ class GitHubAPI:
                 "Oops! A GITHUB_TOKEN environment variable wasn't found."
             )
 
-    # TODO: this property right now is tailored for the rest api grabbing
-    # pyopensci issues. Let's see after the refactor if we want to generalize it
-    # for other endpoints like contrib_count or if issues can move totally to
-    # graphql
+
     @property
     def api_endpoint(self) -> str:
         """Create the API endpoint url
