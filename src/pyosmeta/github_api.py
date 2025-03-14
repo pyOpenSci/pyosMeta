@@ -83,7 +83,6 @@ class GitHubAPI:
                 "Oops! A GITHUB_TOKEN environment variable wasn't found."
             )
 
-
     @property
     def api_endpoint(self) -> str:
         """Create the API endpoint url
