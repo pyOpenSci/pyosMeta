@@ -44,6 +44,8 @@ def main():
         print(f"Error in review at url: {url}")
         print(error)
         print("-" * 20)
+    if len(errors):
+        raise RuntimeError("Errors in parsing reviews, see printout above")
 
     # Update gh metrics via api for all packages
     # Contrib count is only available via rest api
