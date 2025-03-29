@@ -120,3 +120,16 @@ def test_parse_labels(issue_list, process_issues):
         issue.labels = labels
         review = process_issues.parse_issue(issue)
         assert review.labels == ["test", "another_label"]
+
+
+def test_missing_community_partnerships(process_issues, data_file):
+    """
+    Test handling of issues with a missing "## Community Partnerships" section.
+
+    This is a smoke test to ensure graceful handling of this case.
+    """
+    review = data_file("reviews/missing_community_partnerships.txt", True)
+    with pytest.warns(
+        UserWarning, match="## Community Partnerships not found in the list"
+    ):
+        review = process_issues.parse_issue(review)

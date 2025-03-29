@@ -45,19 +45,6 @@ class ProcessIssues:
 
         self.github_api = github_api
 
-    # These are the github metrics to return on a package
-    # It could be simpler to implement this using graphQL
-    gh_stats = [
-        "name",
-        "description",
-        "homepage",
-        "created_at",
-        "stargazers_count",
-        "watchers_count",
-        "open_issues_count",
-        "forks_count",
-    ]
-
     def get_issues(self) -> list[Issue]:
         """
         Call return response in GitHub api object.
@@ -76,10 +63,11 @@ class ProcessIssues:
         need to use an OR as a selector.
         """
 
-        issues = self.github_api.return_response()
-        # Filter labels according to label select input
-        labels = self.github_api.labels
+        url = self.github_api.api_endpoint
+        issues = self.github_api._get_response_rest(url)
 
+        # Filter issues according to label query value
+        labels = self.github_api.labels
         filtered_issues = [
             issue
             for issue in issues
@@ -304,7 +292,7 @@ class ProcessIssues:
                 ],
             )
 
-        # Finalize review model before casting
+        # Finalize & cleanup review model before casting
         model = self._postprocess_meta(model, body)
         model = self._postprocess_labels(model)
 
@@ -368,12 +356,15 @@ class ProcessIssues:
             models = models[0]
         return models
 
-    # TODO: decide if this belongs here or in the github obj?
-    def get_repo_endpoints(
+    # TODO: This now returns a dict of owner:repo_name to support graphql
+    def get_repo_paths(
         self, review_issues: dict[str, ReviewModel]
-    ) -> dict[str, str]:
+    ) -> dict[str, dict[str, str]]:
         """
-        Returns a list of repository endpoints
+        Returns a dictionary of repository owner and names for each package.
+
+        Currently we don't have API access setup for gitlab. So skip if
+        url contains gitlab
 
         Parameters
         ----------
@@ -382,104 +373,26 @@ class ProcessIssues:
 
         Returns
         -------
-            Dict
-                Containing pkg_name: endpoint for each review.
-
+        dict
+            Containing pkg_name: {owner: repo} for each review.
         """
 
         all_repos = {}
         for a_package in review_issues.keys():
-            repo = review_issues[a_package].repository_link.strip("/")
-            owner, repo = repo.split("/")[-2:]
-            # TODO: could be simpler code - Remove any link remnants
-            pattern = r"[\(\)\[\]?]"
-            owner = re.sub(pattern, "", owner)
-            repo = re.sub(pattern, "", repo)
-            all_repos[a_package] = (
-                f"https://api.github.com/repos/{owner}/{repo}"
+            repo_url = review_issues[a_package].repository_link
+            # for now skip if it's a gitlab repo
+            if "gitlab" in repo_url:
+                continue
+            owner, repo = (
+                repo_url.replace("https://github.com/", "")
+                .replace("https://www.github.com/", "")
+                .rstrip("/")
+                .split("/", 1)
             )
+
+            all_repos[a_package] = {"owner": owner, "repo_name": repo}
         return all_repos
 
-    # Rename to process_gh_metrics?
-    def get_gh_metrics(
-        self,
-        endpoints: dict[str, str],
-        reviews: dict[str, ReviewModel],
-    ) -> dict[str, ReviewModel]:
-        """
-        Get GitHub metrics for each review based on provided endpoints.
-
-        Parameters:
-        ----------
-        endpoints : dict
-            A dictionary mapping package names to their GitHub URLs.
-        reviews : dict
-            A dictionary containing review data.
-
-        Returns:
-        -------
-        dict
-            Updated review data with GitHub metrics.
-        """
-        pkg_meta = {}
-        # url is the api endpoint for a specific pyos-reviewed package repo
-        for pkg_name, url in tqdm(endpoints.items()):
-            tqdm.write(f"Processing GitHub metrics {pkg_name}")
-            pkg_meta[pkg_name] = self.process_repo_meta(url)
-
-            # These 2 lines both hit the API directly
-            pkg_meta[pkg_name]["contrib_count"] = (
-                self.github_api.get_repo_contribs(url)
-            )
-            pkg_meta[pkg_name]["last_commit"] = (
-                self.github_api.get_last_commit(url)
-            )
-            # Add github meta to review metadata
-            reviews[pkg_name].gh_meta = pkg_meta[pkg_name]
-
-        return reviews
-
-    # This is also github related
-    def process_repo_meta(self, url: str) -> dict[str, Any]:
-        """
-        Process metadata from the GitHub API about a single repository.
-
-        Parameters
-        ----------
-        url : str
-            The URL of the repository.
-
-        Returns
-        -------
-        dict[str, Any]
-            A dictionary containing the specified GitHub metrics for the repo.
-
-        Notes
-        -----
-        This method uses our github module to process returned data from a
-        GET call to the GitHub API to retrieve metadata about a package
-        repository. It then extracts the desired metrics from the API response
-        and constructs a dictionary with these metrics.
-
-        The `homepage` metric is renamed to `documentation` in the returned
-        dictionary.
-
-        """
-
-        stats_dict = {}
-        # Returns the raw top-level github API response for the repo
-        gh_repo_response = self.github_api.get_repo_meta(url)
-
-        # Retrieve the metrics that we want to track
-        for astat in self.gh_stats:
-            stats_dict[astat] = gh_repo_response[astat]
-
-        stats_dict["documentation"] = stats_dict.pop("homepage")
-
-        return stats_dict
-
-    # This works - i could just make it more generic and remove fmt since it's
-    # not used and replace it with a number of values and a test string
     def get_categories(
         self,
         issue_list: list[str],

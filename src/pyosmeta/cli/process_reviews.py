@@ -39,8 +39,6 @@ def main():
     process_review = ProcessIssues(github_api)
 
     # Get all issues for approved packages - load as dict
-    # TODO: this doesn't have to be in process issues at all. it could fully
-    # Call the github module
     issues = process_review.get_issues()
     accepted_reviews, errors = process_review.parse_issues(issues)
     if errors:
@@ -49,13 +47,13 @@ def main():
             print(f"Error in review at url: {url}")
             print(error)
             print("-" * 20)
+        raise RuntimeError("Errors in parsing reviews, see printout above")
 
     # Update gh metrics via api for all packages
+    # Contrib count is only available via rest api
     logger.info("Getting GitHub metrics for all packages...")
-    repo_endpoints = process_review.get_repo_endpoints(accepted_reviews)
-    all_reviews = process_review.get_gh_metrics(
-        repo_endpoints, accepted_reviews
-    )
+    repo_paths = process_review.get_repo_paths(accepted_reviews)
+    all_reviews = github_api.get_gh_metrics(repo_paths, accepted_reviews)
 
     with open("all_reviews.pickle", "wb") as f:
         pickle.dump(all_reviews, f)
