@@ -12,9 +12,11 @@
 # To run on all files: pre-commit run --all-files
 
 ci:
-  # pyosMeta disables autofixing of PRs to simplify new contributor experience and cleaner git history
-  autofix_prs: false
-  # Frequency of hook updates
+  autofix_prs: true
+  #skip: [flake8, end-of-file-fixer]
+  autofix_commit_msg: |
+    '[pre-commit.ci 🤖] Apply code format tools to PR'
+  # Update hook versions every quarter (so we don't get hit with weekly update pr's)
   autoupdate_schedule: quarterly
 
 repos:
