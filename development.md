@@ -37,7 +37,7 @@ script options.
 
    `hatch run test:run-coverage`
 
-2. To run tests without code coverage, reports use:
+2. To run tests without code coverage reports, use:
    `hatch run test:run-no-cov`
 
 3. To run tests with an XML report generated, use:
@@ -73,8 +73,7 @@ To build the package locally and create a local sdist and wheel, run:
 ### Package versioning
 
 We use `hatch_vcs` which uses `setuptools_scm` under the hood to track pyosMeta versions. `Hatch-vcs`
-uses the most current tag in the repository to determine what version of the package is being built. This means that is you try to build the package locally and haven't fetched all tags, it could created a dated version of our package (locally)!
-
+uses the most current tag in the repository to determine what version of the package is being built. This means that if you try to build the package locally and haven't fetched all tags, it could create a dated version of our package (locally)!
 Under the hood, `hatch_vcs` generates a `_version_generated.py` file when it builds using the latest tag.
 
 The `_version_generated.py` file should NEVER
