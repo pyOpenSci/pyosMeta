@@ -5,10 +5,8 @@ from typing import Dict, List, Union
 import ruamel.yaml
 from ruamel.yaml import YAML
 
-if True:  
-    print( "hello there" )  
-
-
+if True:
+    print("hello there")
 
 
 def load_pickle(filename):
