@@ -5,6 +5,7 @@ from typing import Any, List, Optional, Tuple
 import requests
 
 from .github_api import GitHubAPI
+from .logging import logger
 
 
 @dataclass
@@ -102,8 +103,10 @@ class ProcessContributors:
         """
         try:
             response = requests.get(json_path)
-        except Exception as ae:
-            print(ae)
+        except Exception:
+            logger.error(
+                f"Error loading json file: {json_path}", exec_info=True
+            )
         return json.loads(response.text)
 
     def process_json_file(self, json_file: str) -> Tuple[str, List]:
@@ -150,8 +153,10 @@ class ProcessContributors:
             try:
                 key, users = self.process_json_file(json_file)
                 combined_data[key] = users
-            except Exception as e:
-                print("Oops - can't process", json_file, e)
+            except Exception:
+                logger.error(
+                    f"Oops - can't process: {json_file}", exc_info=True
+                )
         return combined_data
 
     def return_user_info(
@@ -269,6 +274,6 @@ class ProcessContributors:
 
             # If the user is not in the web dict, add them
             else:
-                print("New user found. Adding: ", gh_user)
+                logger.info(f"New user found. Adding: {gh_user}")
                 webDict[gh_user] = repoDict[gh_user]
         return webDict
