@@ -33,7 +33,7 @@ repos:
 
   # Spelling hook
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         exclude_types:
@@ -46,7 +46,7 @@ repos:
   # Linting and formatting for Python code (see pyproject.toml for config)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.8.6
+    rev: v0.11.4
     hooks:
       # Run the linter.
       - id: ruff
@@ -56,6 +56,6 @@ repos:
 
   # Ensure GitHub workflows match the expected schema.
   - repo: https://github.com/sirosen/check-jsonschema
-    rev: 0.30.0
+    rev: 0.32.1
     hooks:
       - id: check-github-workflows
