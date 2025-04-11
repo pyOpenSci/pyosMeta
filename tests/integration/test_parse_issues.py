@@ -10,7 +10,6 @@ def test_parse_issue_header(process_issues, issue_list):
     """Should return a dict, should return 2 keys in the dict"""
 
     reviews, errors = process_issues.parse_issues(issue_list)
-    print(reviews)
     assert len(reviews.keys()) == 2
     assert list(reviews.keys())[0] == "sunpy"
 

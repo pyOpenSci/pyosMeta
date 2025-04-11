@@ -10,6 +10,8 @@ from typing import Any
 import doi
 import requests
 
+from .logging import logger
+
 
 def get_clean_user(username: str) -> str:
     """Cleans a GitHub username provided in a review issue by removing any
@@ -61,8 +63,10 @@ def clean_date(source_date: str | None) -> datetime | str:
                 .date()
                 .strftime("%Y-%m-%d")
             )
-        except TypeError as t_error:
-            print("Oops - missing data. Setting date to missing", t_error)
+        except TypeError:
+            logger.error(
+                "Oops - missing date. Setting date to 'missing'", exc_info=True
+            )
             return "missing"
 
 
