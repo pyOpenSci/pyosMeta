@@ -628,6 +628,7 @@
     - peer-review-guide
     - reviewer
   packages_eic:
+    - montepy
     - stingray
     - thztools
   packages_editor:
@@ -2772,7 +2773,7 @@
   mastodon:
   orcidid:
   partners:
-  website: https://weiji14.github.io
+  website:
   board: false
   contributor_type:
     - maintainer
@@ -4294,6 +4295,7 @@
     - automata
     - harmonize-wq
     - martini
+    - petrofit
     - plot_phylo
     - sunpy
     - zodipy
@@ -5582,7 +5584,7 @@
   mastodon:
   orcidid:
   partners:
-  website: https://www.cadair.com
+  website:
   board: false
   contributor_type:
     - maintainer
@@ -6060,6 +6062,7 @@
     - peer-review
   packages_eic:
   packages_editor:
+    - petrofit
     - zodipy
   packages_submitted:
   packages_reviewed:
@@ -6652,7 +6655,7 @@
   mastodon:
   orcidid:
   partners:
-  website: https://www.stsci.edu/
+  website:
   board: false
   contributor_type:
     - package-guide
@@ -7194,12 +7197,14 @@
   contributor_type:
     - maintainer
     - peer-review
+    - reviewer
     - submitting-author
   packages_eic:
   packages_editor:
   packages_submitted:
     - martini
   packages_reviewed:
+    - petrofit
   location:
   email: kyle.a.oman@durham.ac.uk
 - name: Phil Dong
@@ -7618,6 +7623,7 @@
   contributor_type:
     - community
     - package-guide
+    - web-contrib
   packages_eic:
   packages_editor:
   packages_submitted:
@@ -7785,8 +7791,11 @@
   website:
   board: false
   contributor_type:
+    - editor
+    - peer-review
   packages_eic:
   packages_editor:
+    - montepy
   packages_submitted:
   packages_reviewed:
   location:
@@ -8073,6 +8082,7 @@
   board: false
   contributor_type:
     - maintainer
+    - package-guide
     - peer-review
     - submitting-author
   packages_eic:
@@ -8219,6 +8229,7 @@
   board: false
   contributor_type:
     - peer-review
+    - peer-review-guide
     - reviewer
   packages_eic:
   packages_editor:
@@ -8525,9 +8536,9 @@
   bio: LSST Discovery Alliance Postdoctoral Fellow. Finance committee and voting
       member @astropy.
   organization: Max Planck Institute for Astronomy
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8554,9 +8565,9 @@
   sort:
   bio:
   organization: Minnesota State University Moorhead
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8583,9 +8594,9 @@
   sort:
   bio: Astronomy, Software, & Other Things
   organization: NOIRLab
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8613,9 +8624,9 @@
   sort:
   bio:
   organization:
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8642,9 +8653,9 @@
   sort:
   bio:
   organization:
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8671,9 +8682,9 @@
   sort:
   bio: Researcher at the National Centre for Atmospheric Science (UK)
   organization: National Centre for Atmospheric Science, University of Manchester
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8700,9 +8711,9 @@
   sort:
   bio:
   organization:
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8729,9 +8740,9 @@
   sort:
   bio: researching clouds in the cloud
   organization: agh.edu.pl
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8759,9 +8770,9 @@
   sort:
   bio:
   organization:
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8789,9 +8800,9 @@
   bio: Research Scientist in the Department of Climate, Meteorology & Atmospheric
       Sciences at the University of Illinois Urbana-Champaign.
   organization: University of Illinois Urbana-Champaign
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8818,9 +8829,9 @@
   sort:
   bio:
   organization: University of Illinois at Urbana-Champaign
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8847,9 +8858,9 @@
   sort:
   bio: Professor of Mechanical Science and Engineering
   organization: University of Illinois at Urbana-Champaign
-  date_added: '2025-02-18'
+  date_added: '2025-02-19'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8869,3 +8880,238 @@
   packages_reviewed:
   location: Urbana, Illinois, USA
   email: mwest@illinois.edu
+- name: Agriya Khetarpal
+  github_username: agriyakhetarpal
+  github_image_id: 74401230
+  title:
+  sort:
+  bio: sentient stochastic parrot. @pyodide • @jupyterlite • @pybamm-team • @scientific-python
+  organization: Quansight
+  date_added: '2025-02-28'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter: agriyakhetarpal
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - community
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location:
+  email:
+- name: Nadia Dencheva
+  github_username: nden
+  github_image_id: 1110361
+  title:
+  sort:
+  bio:
+  organization: Space Telescope Science Institute
+  date_added: '2025-02-28'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - petrofit
+  location:
+  email:
+- name: Robel Geda
+  github_username: robelgeda
+  github_image_id: 10345916
+  title:
+  sort:
+  bio: Simulations and Visualizations.P.C Sameer A. Khan.
+  organization: Princeton University
+  date_added: '2025-02-28'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://robelgeda.com
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - petrofit
+  packages_reviewed:
+  location:
+  email: robel@robel.io
+- name: Steve Crawford
+  github_username: crawfordsm
+  github_image_id: 1107188
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2025-02-28'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://crawfordsm.github.io/
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - petrofit
+  packages_reviewed:
+  location: Baltimore, MD
+  email: crawfordsm@gmail.com
+- name: Madicken Munk
+  github_username: munkm
+  github_image_id: 6745434
+  title:
+  sort:
+  bio: Group Leader @arfc, member of @data-exp-lab, @scientific-python, and @yt-project
+  organization: '@NCSA'
+  date_added: '2025-03-20'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://munkm.github.io
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - montepy
+  location: University of Illinois at Urbana-Champaign
+  email:
+- name: Joanna Piper Morgan
+  github_username: jpmorgan98
+  github_image_id: 67020956
+  title:
+  sort:
+  bio: PhD Candidate at Oregon State University focused on radiation transport on
+      GPUs
+  organization: Oregon State University
+  date_added: '2025-03-20'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://jpmorgan98.github.io/
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - montepy
+  location: Corvallis, OR
+  email:
+- name: Micah Gale
+  github_username: MicahGale
+  github_image_id: 12405772
+  title:
+  sort:
+  bio: Nuclear Engineer, PhD Student, aspiring Rustacean; interested in Computational
+      Reactor Physics, and other less useful things. Member of @cnerg.
+  organization: '@idaholab'
+  date_added: '2025-03-20'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - montepy
+  packages_reviewed:
+  location: Madison, Wisconsin
+  email: mdgale@wisc.edu
+- name: Travis L.
+  github_username: tjlaboss
+  github_image_id: 19986691
+  title:
+  sort:
+  bio: Neutronics analysis and reactor physics automation.Engineer at @idaholab
+      andPh.D student with @anovak-lab
+  organization: Idaho National Laboratory
+  date_added: '2025-03-20'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - montepy
+  packages_reviewed:
+  location:
+  email:
