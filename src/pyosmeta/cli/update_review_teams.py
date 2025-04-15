@@ -25,6 +25,7 @@ from datetime import datetime
 
 from pydantic import ValidationError
 from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
@@ -151,34 +152,39 @@ def main():
     for pkg_name, review in tqdm(
         packages.items(), desc="Processing review teams"
     ):
-        tqdm.write(f"Processing review team for: {pkg_name}")
-        for role in contrib_types.keys():
-            user: list[ReviewUser] | ReviewUser = getattr(review, role)
+        with logging_redirect_tqdm():
+            tqdm.write(f"Processing review team for: {pkg_name}")
+            for role in contrib_types.keys():
+                user: list[ReviewUser] | ReviewUser = getattr(review, role)
 
-            # Eic is a newer field, so in some instances it will be empty
-            # if it's empty log a message noting the data are missing
-            if user:
-                # Handle lists or single users separately
-                if isinstance(user, list):
-                    for i, a_user in enumerate(user):
-                        a_user, contribs = process_user(
-                            a_user, role, pkg_name, contribs, process_contribs
+                # Eic is a newer field, so in some instances it will be empty
+                # if it's empty log a message noting the data are missing
+                if user:
+                    # Handle lists or single users separately
+                    if isinstance(user, list):
+                        for i, a_user in enumerate(user):
+                            a_user, contribs = process_user(
+                                a_user,
+                                role,
+                                pkg_name,
+                                contribs,
+                                process_contribs,
+                            )
+                            # Update individual user in reference to issue list
+                            user[i] = a_user
+                    elif isinstance(user, ReviewUser):
+                        user, contribs = process_user(
+                            user, role, pkg_name, contribs, process_contribs
                         )
-                        # Update individual user in reference to issue list
-                        user[i] = a_user
-                elif isinstance(user, ReviewUser):
-                    user, contribs = process_user(
-                        user, role, pkg_name, contribs, process_contribs
-                    )
-                    setattr(review, role, user)
+                        setattr(review, role, user)
+                    else:
+                        raise TypeError(
+                            "Keys in the `contrib_types` map must be a `ReviewUser` or `list[ReviewUser]` in the `ReviewModel`"
+                        )
                 else:
-                    raise TypeError(
-                        "Keys in the `contrib_types` map must be a `ReviewUser` or `list[ReviewUser]` in the `ReviewModel`"
+                    logger.warning(
+                        f"I can't find a username for {role} under {pkg_name}. Moving on."
                     )
-            else:
-                logger.warning(
-                    f"I can't find a username for {role} under {pkg_name}. Moving on."
-                )
 
     # Export to yaml
     contribs_ls = [model.model_dump() for model in contribs.values()]

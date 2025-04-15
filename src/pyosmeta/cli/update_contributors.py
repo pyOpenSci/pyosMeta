@@ -15,6 +15,7 @@ from datetime import datetime
 
 from pydantic import ValidationError
 from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import create_paths, load_pickle, open_yml_file
@@ -69,10 +70,11 @@ def main():
     for a_contrib in tqdm(web_contribs, desc="Processing all-contribs"):
         username = a_contrib["github_username"]
         tqdm.write(f"Processing {username}")
-        try:
-            all_contribs[username.lower()] = PersonModel(**a_contrib)
-        except ValidationError:
-            logger.error(f"Error processing {username}", exc_info=True)
+        with logging_redirect_tqdm():
+            try:
+                all_contribs[username.lower()] = PersonModel(**a_contrib)
+            except ValidationError:
+                logger.error(f"Error processing {username}", exc_info=True)
 
     # Create a list of all contributors across repositories
     github_api = GitHubAPI()

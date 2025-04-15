@@ -5,6 +5,7 @@ from typing import Any, List, Union
 
 from pydantic import ValidationError
 from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from pyosmeta.models import ReviewModel, ReviewUser
 from pyosmeta.models.github import Issue, Labels, LabelType
@@ -322,13 +323,18 @@ class ProcessIssues:
         errors = {}
         for issue in tqdm(issues, desc="Processing reviews"):
             tqdm.write(f"Processing review {issue.title}")
-            try:
-                review = self.parse_issue(issue)
-                reviews[review.package_name] = review
-            except ValidationError as e:
-                errors[str(issue.url)] = "\n".join(
-                    traceback.format_exception(e)
-                )
+            with logging_redirect_tqdm():
+                try:
+                    review = self.parse_issue(issue)
+                    reviews[review.package_name] = review
+                except ValidationError as e:
+                    logger.error(
+                        f"Error processing review {issue.title}. Skipping this review.",
+                        exc_info=True,
+                    )
+                    errors[str(issue.url)] = "\n".join(
+                        traceback.format_exception(e)
+                    )
 
         return reviews, errors
 
