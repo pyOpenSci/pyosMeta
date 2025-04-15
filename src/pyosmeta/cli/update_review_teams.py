@@ -156,7 +156,7 @@ def main():
             user: list[ReviewUser] | ReviewUser = getattr(review, role)
 
             # Eic is a newer field, so in some instances it will be empty
-            # if it's empty print a message noting the data are missing
+            # if it's empty log a message noting the data are missing
             if user:
                 # Handle lists or single users separately
                 if isinstance(user, list):

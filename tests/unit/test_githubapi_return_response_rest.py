@@ -30,7 +30,6 @@ class TestGitHubAPI:
 
     def test_single_page_response(self):
         """Test a successful API response with a single page (no pagination)."""
-        print("hi")
         # print(self.mock_get.call_args)
         result = self.api._get_response_rest(
             "https://api.github.com/repos/test"
