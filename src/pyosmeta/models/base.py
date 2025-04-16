@@ -17,6 +17,7 @@ from pydantic import (
     field_validator,
 )
 
+from pyosmeta.logging import logger
 from pyosmeta.models.github import Labels
 from pyosmeta.utils_clean import (
     check_url,
@@ -58,15 +59,19 @@ class UrlValidatorMixin:
             return url  # Returns empty string if url is empty
         else:
             if url.startswith("http://"):
-                print(f"{url} 'http://' replacing w 'https://'")
+                logger.warning(
+                    f"Oops, http protocol for {url}, changing to https"
+                )
                 url = url.replace("http://", "https://")
             elif not url.startswith("http"):
-                print("Oops, missing http")
+                logger.warning(
+                    "Oops, missing http protocol for {url}, adding it"
+                )
                 url = "https://" + url
         if check_url(url=url):
             return url
         else:  # pragma: no cover
-            print(f"Oops, url `{url}` is not valid, removing it")
+            logger.warning(f"Oops, url `{url}` is not valid, removing it")
             return None
 
 

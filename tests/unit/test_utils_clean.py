@@ -99,5 +99,4 @@ def test_clean_date_accepted_key(input_dict, expected_output):
     ],
 )
 def test_get_clean_user(input_username, expected_output):
-    print(input_username)
     assert get_clean_user(input_username) == expected_output

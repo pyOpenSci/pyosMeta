@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import Mock, patch
 
 import pytest
@@ -30,7 +31,6 @@ class TestGitHubAPI:
 
     def test_single_page_response(self):
         """Test a successful API response with a single page (no pagination)."""
-        print("hi")
         # print(self.mock_get.call_args)
         result = self.api._get_response_rest(
             "https://api.github.com/repos/test"
@@ -85,19 +85,19 @@ class TestGitHubAPI:
             self.mock_get.return_value
         )
 
-    def test_unauthorized_request(self):
+    def test_unauthorized_request(self, caplog):
         """Test handling of an unauthorized (401) response."""
         self.mock_get.return_value.status_code = 401
         self.mock_get.return_value.raise_for_status.side_effect = (
             requests.HTTPError(response=self.mock_get.return_value)
         )
 
-        with patch("logging.error") as mock_log:
+        with caplog.at_level(logging.WARNING):
             result = self.api._get_response_rest(
                 "https://api.github.com/repos/test"
             )
             assert result == []
-            mock_log.assert_called_once()
+            assert "Unauthorized request." in caplog.text
 
     def test_general_http_error(self):
         """Test handling of a general HTTP error (e.g., 500)."""

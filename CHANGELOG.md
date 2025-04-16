@@ -6,6 +6,9 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Use a consistent logger for informational/debug outputs. Using print statements can make it tough to track down which line of code emitted the message and using the `warnings` module will suppress recurring warnings.
+* Added `tqdm` as a dependency to improve progress monitoring when running data processing scripts (@banesullivan)
+
 ## [v1.6] - 2025-02-17
 
 ## What's Changed

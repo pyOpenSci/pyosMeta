@@ -9,7 +9,6 @@ available
 numbers, stars and more "health & stability" related metrics
 """
 
-import logging
 import os
 import time
 from dataclasses import dataclass
@@ -19,6 +18,8 @@ import requests
 from dotenv import load_dotenv
 
 from pyosmeta.models import ReviewModel
+
+from .logging import logger
 
 
 @dataclass
@@ -172,7 +173,7 @@ class GitHubAPI:
 
         except requests.HTTPError as exception:
             if exception.response.status_code == 401:
-                logging.error(
+                logger.error(
                     "Unauthorized request. Your token may be expired or invalid. Please refresh your token."
                 )
             else:
@@ -237,7 +238,7 @@ class GitHubAPI:
         contributors = self._get_response_rest(repo_contribs_url)
 
         if not contributors:
-            logging.warning(
+            logger.warning(
                 f"Repository not found: {repo_contribs_url}. Did the repo URL change?"
             )
             return None
@@ -339,19 +340,19 @@ class GitHubAPI:
                 ]["edges"][0]["node"]["committedDate"],
             }
         elif response.status_code == 404:
-            logging.warning(
+            logger.warning(
                 f"Repository not found: {repo_info['owner']}/{repo_info['repo_name']}. Did the repo URL change?"
             )
             return None
         elif response.status_code == 403:
-            logging.warning(
+            logger.warning(
                 f"Oops! You may have hit an API limit for repository: {repo_info['owner']}/{repo_info['repo_name']}.\n"
                 f"API Response Text: {response.text}\n"
                 f"API Response Headers: {response.headers}"
             )
             return None
         else:
-            logging.warning(
+            logger.warning(
                 f"Unexpected HTTP error: {response.status_code} for repository: {repo_info['owner']}/{repo_info['repo_name']}"
             )
             return None
