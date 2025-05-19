@@ -15,7 +15,7 @@
 
 **pyosmeta** provides the tools and scripts used to manage [pyOpenSci](https://pyopensci.org)'s contributor and peer
 review metadata.
-This repo contains a small module and several CLI scripts, including:
+This repo contains several modules and several CLI scripts, including:
 
 - `parse-history`
 - `update-contributors`
@@ -41,6 +41,29 @@ conda install pyosmeta
 ## Usage
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+This repo contains several modules and several CLI scripts, including:
+
+- `parse-history`
+  - This script:
+    1. gets a list of all contributors
+    2. parses through the commit history (locally) to figure out when they were added to the contributor.yml file
+    3. then it adds a date_Added key for that person
+      This will allow us to ensure the yaml file retains order when users are
+      highlighted as "new" and also for diff's in git.
+- `update-contributors`
+  - This script parses through and updates the existing contributor list stored in pyopensci.github.io repo in the _data/contributors.yml file.
+  - That's used to populate the [community page](https://www.pyopensci.org/our-community/), and to update our [metrics page](https://www.pyopensci.org/metrics/).
+- `update-reviews`
+  - This script parses metadata from and issue and adds it to a .yml file for the website. It also grabs some of the package metadata such as stars, last commit, etc.
+  - It outputs a `packages.yml` file with all packages with accepted reviews; information related to the review; basic package stats; and partner information.
+- `update-review-teams`
+  - This script parses through our packages.yml and contributors.yml.
+  - It:
+    1. Updates reviewer, editor and maintainer data in the contributor.yml file to ensure all packages they supported are listed there.
+    1b: And that they have a listing as peer-review under contributor type
+    2. Finally it looks to see if we are missing review participants from the review issues in the contributor file and updates that file.
+  - **Warning**: This script assumes that update_contributors and update_reviews has been run. Rather than hit any api's it just updates information from the issues.
 
 _Note: this section will be rewritten to be more user focused._
 
