@@ -6,8 +6,26 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
-* Use a consistent logger for informational/debug outputs. Using print statements can make it tough to track down which line of code emitted the message and using the `warnings` module will suppress recurring warnings.
+## [v1.7] - 2025-05-19
+
+### Added
 * Added `tqdm` as a dependency to improve progress monitoring when running data processing scripts (@banesullivan)
+* Test missing community partnerships section (@banesullivan, #268)
+* enh: use graphql to consolidate api calls by (@lwasser, #267)
+* Consistent logging by @banesullivan in https://github.com/pyOpenSci/pyosMeta/pull/270
+* enh(ci): Add zizmor to `pre-commit-config.yaml` (@klmcadams, #283)
+* enh(docs): Docstrings to docs (@mrgah, #281)
+
+### Fixed
+* Use a consistent logger for informational/debug outputs. Using print statements can make it tough to track down which line of code emitted the message and using the `warnings` module will suppress recurring warnings (@banesullivan)
+* Fix: update deprecated sigstore action by (@lwasser, #265)
+* Remove duplicate "Add help-wanted issues to help wanted board" job by (@banesullivan, #269)
+* Update reviews script fail on error (@banesullivan, #272)
+* Only use pre-commit ci autofix on automated PRs (@banesullivan, #275)
+* enh(docs): update pyosmeta release workflow docs (@lwasser, #278)
+
+## Thank you!! New Contributors to this release ✨
+@klmcadams, @mrgah
 
 ## [v1.6] - 2025-02-17
 
