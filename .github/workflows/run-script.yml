@@ -1,12 +1,8 @@
 on:
   workflow_call:
-    inputs:
-      script_name_with_args:
-        required: true
-        type: string
 
 jobs:
-  run_script_job:
+  run_update_contributors:
     runs-on: ubuntu-latest
     steps:
       # TODO: consider replacing python/pip/update-web-metadata installs with docker image
@@ -21,7 +17,10 @@ jobs:
 
       - name: Check out the code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
       - name: Run script from update-web-metadata repo
         env:
          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: ${{ inputs.script_name_with_args }}
+        run: update-contributors

@@ -5,12 +5,18 @@ on:
   schedule:
     # Runs on the 1 and 15 of each month at 00:00 UTC (see https://crontab.guru)
     - cron: "0 0 1,15 * *"
+
+permissions: {}
+
 jobs:
   run-meta:
     if: github.repository_owner == 'pyopensci'
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
+        with:
+          persist-credentials: false
+
         uses: actions/checkout@v4
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -31,7 +37,7 @@ jobs:
           update-review-teams
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e  # v7.0.8
         with:
           add-paths: |
             _data/contributors.yml

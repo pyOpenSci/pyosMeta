@@ -1,8 +1,9 @@
 on: push
 
+permissions: {}
+
 jobs:
   test_run_script_job:
     uses: ./.github/workflows/run-script.yml
-    with:
-      script_name_with_args: update-contributors
-    secrets: inherit
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
