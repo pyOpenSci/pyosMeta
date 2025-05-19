@@ -26,5 +26,5 @@ jobs:
 
       - name: Run script from update-web-metadata repo
         env:
-         GITHUB_TOKEN: ${{ secrets.gh_token }}
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: update-contributors
