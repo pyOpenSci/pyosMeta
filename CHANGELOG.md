@@ -8,7 +8,7 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [v1.7] - 2025-05-19
 
-### Added 
+### Added
 * Added `tqdm` as a dependency to improve progress monitoring when running data processing scripts (@banesullivan)
 * Test missing community partnerships section (@banesullivan, #268)
 * enh: use graphql to consolidate api calls by (@lwasser, #267)
@@ -25,7 +25,7 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 * enh(docs): update pyosmeta release workflow docs (@lwasser, #278)
 
 ## Thank you!! New Contributors to this release ✨
-@klmcadams, @mrgah 
+@klmcadams, @mrgah
 
 ## [v1.6] - 2025-02-17
 
