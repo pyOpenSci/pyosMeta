@@ -1,7 +1,7 @@
 on:
   workflow_call:
     secrets:
-      github_token:
+      gh_token:
         description: 'The GitHub token used to run the update-contributors script'
         required: true
 
@@ -26,5 +26,5 @@ jobs:
 
       - name: Run script from update-web-metadata repo
         env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.gh_token }}
         run: update-contributors
