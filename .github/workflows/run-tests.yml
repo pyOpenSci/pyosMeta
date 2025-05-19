@@ -9,11 +9,10 @@ on:
     # Runs on Mon and Thu of each week at 00:00 UTC (see https://crontab.guru)
     - cron: "0 0 * * 1,4"
 
+permissions: {}
+
 jobs:
   build:
-    permissions:
-      contents: write  # this permission is mandatory for modifying GitHub Releases
-      id-token: write  # this permission is mandatory for PyPI publishing and sigstore
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
