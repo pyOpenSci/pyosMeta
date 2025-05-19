@@ -6,4 +6,4 @@ jobs:
   test_run_script_job:
     uses: ./.github/workflows/run-script.yml
     secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      github_token: ${{ secrets.GITHUB_TOKEN }}
