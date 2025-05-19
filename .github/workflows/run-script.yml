@@ -1,5 +1,9 @@
 on:
   workflow_call:
+    secrets:
+      github_token:
+        description: 'The GitHub token used to run the update-contributors script'
+        required: true
 
 jobs:
   run_update_contributors:
