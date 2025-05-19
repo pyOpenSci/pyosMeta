@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+
+permissions: {}
+
 jobs:
   # setup build separate from publish
   # See https://github.com/pypa/gh-action-pypi-publish/issues/217#issuecomment-1965727093
@@ -21,6 +24,7 @@ jobs:
           # This fetch element is only important if you are use SCM based
           # versioning (that looks at git tags to gather the version)
           fetch-depth: 100
+          persist-credentials: false
 
       # Need the tags so that setuptools-scm can form a valid version number
       - name: Fetch git tags
@@ -69,7 +73,7 @@ jobs:
       - name: Publish package to PyPI
         # Only publish to real PyPI on release
         if: github.event_name == 'release'
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc  # v1.12.4
   sign-files:
     name: >-
       Sign the Python 🐍 distribution 📦 with Sigstore
@@ -89,7 +93,7 @@ jobs:
         name: python-package-distributions
         path: dist/
     - name: Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@v3.0.0
+      uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46  # v3.0.0
       with:
         inputs: >-
           ./dist/*.tar.gz
@@ -100,7 +104,7 @@ jobs:
       # Upload to GitHub Release using the `gh` CLI.
       # `dist/` contains the built packages, and the
       # sigstore-produced signatures and certificates.
-      run: >-
+      run: |
         gh release upload
-        '${{ github.ref_name }}' dist/**
+        '${GITHUB_REF_NAME}' dist/**
         --repo '${{ github.repository }}'

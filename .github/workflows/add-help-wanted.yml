@@ -5,9 +5,14 @@ on:
     types:
       - labeled
 
+permissions: {}
+
 jobs:
   add-help-wanted:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Add issue to project
         id: add-to-project
