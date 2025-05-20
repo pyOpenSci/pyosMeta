@@ -103,6 +103,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/mrgah"><img src="https://avatars.githubusercontent.com/u/11444003?v=4?s=100" width="100px;" alt="mrgah"/><br /><sub><b>mrgah</b></sub></a><br /><a href="https://github.com/pyOpenSci/pyosMeta/commits?author=mrgah" title="Code">💻</a> <a href="https://github.com/pyOpenSci/pyosMeta/pulls?q=is%3Apr+reviewed-by%3Amrgah" title="Reviewed Pull Requests">👀</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/klmcadams"><img src="https://avatars.githubusercontent.com/u/58492561?v=4?s=100" width="100px;" alt="Kerry McAdams"/><br /><sub><b>Kerry McAdams</b></sub></a><br /><a href="https://github.com/pyOpenSci/pyosMeta/commits?author=klmcadams" title="Code">💻</a> <a href="https://github.com/pyOpenSci/pyosMeta/pulls?q=is%3Apr+reviewed-by%3Aklmcadams" title="Reviewed Pull Requests">👀</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/chenghlee"><img src="https://avatars.githubusercontent.com/u/3485949?v=4?s=100" width="100px;" alt="Cheng H. Lee"/><br /><sub><b>Cheng H. Lee</b></sub></a><br /><a href="https://github.com/pyOpenSci/pyosMeta/pulls?q=is%3Apr+reviewed-by%3Achenghlee" title="Reviewed Pull Requests">👀</a></td>
+    </tr>
   </tbody>
 </table>
 
