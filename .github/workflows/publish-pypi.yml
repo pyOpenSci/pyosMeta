@@ -72,4 +72,4 @@ jobs:
       - name: Publish package to PyPI
         # Only publish to PyPI on release
         if: github.event_name == 'release'
-        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
