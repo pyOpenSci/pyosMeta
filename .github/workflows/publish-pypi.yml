@@ -64,47 +64,12 @@ jobs:
     permissions:
       id-token: write  # this permission is mandatory for pypi publishing
     steps:
-      # Version 4 doesn't support github enterprise yet
       - name: Download all the dists
         uses: actions/download-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
       - name: Publish package to PyPI
-        # Only publish to real PyPI on release
+        # Only publish to PyPI on release
         if: github.event_name == 'release'
-        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc  # v1.12.4
-  sign-files:
-    name: >-
-      Sign the Python 🐍 distribution 📦 with Sigstore
-      and upload them to GitHub Release
-    # Only sign on release
-    if: github.repository_owner == 'pyopensci' && github.event_name == 'release'
-    needs:
-    - publish
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write  # this permission is mandatory for modifying GitHub Releases
-      id-token: write  # this permission is mandatory for sigstore
-    steps:
-    - name: Download all the dists
-      uses: actions/download-artifact@v4
-      with:
-        name: python-package-distributions
-        path: dist/
-    - name: Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46  # v3.0.0
-      with:
-        inputs: >-
-          ./dist/*.tar.gz
-          ./dist/*.whl
-    - name: Upload artifact signatures to GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      # Upload to GitHub Release using the `gh` CLI.
-      # `dist/` contains the built packages, and the
-      # sigstore-produced signatures and certificates.
-      run: >-
-        gh release upload
-        "$GITHUB_REF_NAME" dist/**
-        --repo '${{ github.repository }}'
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
