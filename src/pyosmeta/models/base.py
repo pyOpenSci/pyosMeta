@@ -254,8 +254,8 @@ class ReviewModel(BaseModel):
     repository_link: str = Field(..., alias="repository_link_(if_existing)")
     version_submitted: Optional[str] = None
     categories: Optional[list[str]] = None
-    editor: ReviewUser | None = None
-    eic: ReviewUser | None = None
+    editor: ReviewUser | list[ReviewUser] | None = None
+    eic: ReviewUser | list[ReviewUser] | None = None
     reviewers: list[ReviewUser] = Field(default_factory=list)
     archive: str | None = None
     version_accepted: str | None = None
