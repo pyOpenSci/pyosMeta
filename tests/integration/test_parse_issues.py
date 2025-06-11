@@ -134,3 +134,12 @@ def test_missing_community_partnerships(caplog, process_issues, data_file):
     with caplog.at_level(logging.WARNING):
         review = process_issues.parse_issue(review)
     assert "## Community Partnerships not found in the list" in caplog.text
+
+
+def test_multiple_editors_and_eic(process_issues, data_file):
+    """
+    Test handling of issues with multiple editors and EICs.
+    """
+    review = data_file("reviews/multiple_editors.txt", True)
+    review = process_issues.parse_issue(review)
+    assert review.package_name == "fake_package"
