@@ -6,10 +6,11 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Fix: support multiple editors and EiCs (@banesullivan, #290)
+
 ## [v1.7.1] - 2025-05-20
 
 * Fix: remove sigstore from pypi publish workflow (@lwasser, #286)
-* Fix: support multiple editors and EiCs (@banesullivan, #290)
 
 ## [v1.7] - 2025-05-19
 
