@@ -49,7 +49,7 @@ def main():
         "pyosmeta",
         "handbook",
         "software-submission",
-        "peer-review-metrics",
+        "metrics",
         "pyosPackage",
         "pyos-sphinx-theme",
         "lessons",
