@@ -38,6 +38,9 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e  # v7.0.8
         with:
+          # Custom token needed to trigger PR checks, as GITHUB_TOKEN won't
+          # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs
+          token: ${{ secrets.PYOS_PR_TOKEN }}
           add-paths: |
             _data/contributors.yml
             _data/packages.yml
@@ -49,7 +52,3 @@ jobs:
           title: Update contributor and review data
           labels: |
             pre-commit.ci autofix
-        env:
-          # Custom token needed to trigger PR checks, as GITHUB_TOKEN won't
-          # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs
-          GITHUB_TOKEN: ${{ secrets.PYOS_PR_TOKEN }}

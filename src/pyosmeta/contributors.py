@@ -83,13 +83,28 @@ class ProcessContributors:
             Contribution type.
         """
 
-        if "software-peer-review" in json_file:
+        if any(
+            key in json_file
+            for key in ["software-submission", "software-peer-review"]
+        ):
+            # TODO: change this to programs - peer review
             contrib_type = "peer-review-guide"
-        elif "python-package-guide" in json_file:
+        elif any(
+            key in json_file
+            for key in [
+                "python-package-guide",
+                "pyosPackage",
+                "pyos-package-template",
+            ]
+        ):
+            # TODO consider change this to python-packaging
             contrib_type = "package-guide"
+        # TODO: technically packaging guide is open-education too
+        elif "lessons" in json_file:
+            contrib_type = "open-education"
         elif "pyopensci.github.io" in json_file:
             contrib_type = "web-contrib"
-        elif "update-web-metadata" in json_file:
+        elif "pyosMeta" in json_file or "metrics" in json_file:
             contrib_type = "code-contrib"
         else:
             contrib_type = "community"

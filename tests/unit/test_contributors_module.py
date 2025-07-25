@@ -35,8 +35,7 @@ def test_check_contrib_type(process_contributors):
         == "web-contrib"
     )
     assert (
-        process_contributors.check_contrib_type("update-web-metadata")
-        == "code-contrib"
+        process_contributors.check_contrib_type("pyosMeta") == "code-contrib"
     )
     assert process_contributors.check_contrib_type("other") == "community"
 
