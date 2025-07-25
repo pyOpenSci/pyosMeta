@@ -9,7 +9,7 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 ## [v1.7.2] - 2025-05-20
 
 * Fix: support multiple editors and EiCs (@banesullivan, #290)
-* Fix: bug in contributor collecton, incorrect repo names (@lwasser, #296)
+* Fix: bug in contributor collection, incorrect repo names (@lwasser, #296)
 
 ## Contributors to this release ✨
 @banesullivan, @lwasser
