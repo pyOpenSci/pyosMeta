@@ -166,7 +166,6 @@ class ProcessContributors:
         for json_file in self.json_files:
             # Process the JSON file and add the data to the combined dictionary
             try:
-                # Steven is still in the list here
                 key, users = self.process_json_file(json_file)
                 combined_data[key] = users
             except Exception:

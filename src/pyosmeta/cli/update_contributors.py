@@ -42,18 +42,18 @@ def main():
         update_all = True
 
     repos = [
-        # "python-package-guide",
-        # "software-peer-review",
-        # "pyopensci.github.io",
-        # "software-review",
-        # "pyosmeta",
-        # "handbook",
-        # "software-submission",
+        "python-package-guide",
+        "software-peer-review",
+        "pyopensci.github.io",
+        "software-review",
+        "pyosmeta",
+        "handbook",
+        "software-submission",
         "metrics",
         "pyosPackage",
         "pyos-sphinx-theme",
         "lessons",
-        # "pyos-package-template",
+        "pyos-package-template",
     ]
     json_files = create_paths(repos)
 
