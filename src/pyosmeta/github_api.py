@@ -326,7 +326,7 @@ class GitHubAPI:
             data = response.json()
             repo_data = data["data"]["repository"]
 
-            if repo_data is None:
+            if not repo_data:
                 logger.warning(
                     f"Repository metrics not able to be retrieved (it may not be on GitHub?): {repo_info['owner']}/{repo_info['repo_name']}."
                 )
