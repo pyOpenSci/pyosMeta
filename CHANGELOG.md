@@ -6,6 +6,14 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+## [v1.7.3] - 2025-08-07
+
+* Fix: gracefully fail when collecting repository metrics outside of GitHub (@banesullivan, #300)
+
+### Contributors to this release ✨
+
+@banesullivan
+
 ## [v1.7.2] - 2025-05-20
 
 * Fix: support multiple editors and EiCs (@banesullivan, #290)
