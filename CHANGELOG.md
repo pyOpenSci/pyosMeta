@@ -11,7 +11,8 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 * Fix: support multiple editors and EiCs (@banesullivan, #290)
 * Fix: bug in contributor collection, incorrect repo names (@lwasser, #296)
 
-## Contributors to this release ✨
+### Contributors to this release ✨
+
 @banesullivan, @lwasser
 
 ## [v1.7.1] - 2025-05-20
@@ -38,13 +39,13 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 * Only use pre-commit ci autofix on automated PRs (@banesullivan, #275)
 * enh(docs): update pyosmeta release workflow docs (@lwasser, #278)
 
-## Thank you!! New Contributors to this release ✨
+### Thank you!! New Contributors to this release ✨
 
 @klmcadams, @mrgah
 
 ## [v1.6] - 2025-02-17
 
-## What's Changed
+### What's Changed
 
 * [hotfix] handle packages that lack a description on GitHub by @banesullivan in <https://github.com/pyOpenSci/pyosMeta/pull/257>
 * In CONTRIBUTING.md, add more specifics on configuring API token #194 by @hariprakash619 in <https://github.com/pyOpenSci/pyosMeta/pull/255>
@@ -55,7 +56,7 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 * Update contributor and review data by @github-actions in <https://github.com/pyOpenSci/pyosMeta/pull/253>
 * Update contributor and review data by @github-actions in <https://github.com/pyOpenSci/pyosMeta/pull/262>
 
-## New Contributors
+### New Contributors
 
 * @hariprakash619 made their first contribution in <https://github.com/pyOpenSci/pyosMeta/pull/255>
 
@@ -136,13 +137,13 @@ makes our CI more robust thanks to (@blink1073)
 
 This is a small patch that fixes a bug in the code discovered by @pllim and adds ruff thanks to @blink1073
 
-## What's Changed
+### What's Changed
 
 * Adopt ruff by @blink1073 in <https://github.com/pyOpenSci/pyosMeta/pull/164>
 * Fix undeclared fix_indent by @pllim in <https://github.com/pyOpenSci/pyosMeta/pull/166>
 * Test cli on pull requests by @blink1073 in <https://github.com/pyOpenSci/pyosMeta/pull/170>
 
-## New Contributors
+### New Contributors
 
 * @pllim made their first contribution in <https://github.com/pyOpenSci/pyosMeta/pull/166>
 
