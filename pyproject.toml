@@ -58,6 +58,7 @@ parse-history = "pyosmeta.cli.parse_history:main"
 update-contributors = "pyosmeta.cli.update_contributors:main"
 update-reviews = "pyosmeta.cli.process_reviews:main"
 update-review-teams = "pyosmeta.cli.update_review_teams:main"
+fetch-rss-feed = "pyosmeta.cli.fetch_rss_feed:main"
 
 [tool.coverage.run]
 branch = true
