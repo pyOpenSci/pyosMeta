@@ -54,7 +54,7 @@ jobs:
   publish:
     name: >-
       Publish Python 🐍 distribution 📦 to PyPI
-    if: github.repository_owner == 'pyopensci'
+    if: github.repository_owner == 'pyopensci' && github.event_name == 'release'
     needs:
       - build
     runs-on: ubuntu-latest
