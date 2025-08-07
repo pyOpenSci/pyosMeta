@@ -326,6 +326,12 @@ class GitHubAPI:
             data = response.json()
             repo_data = data["data"]["repository"]
 
+            if not repo_data:
+                logger.warning(
+                    f"Repository metrics not able to be retrieved (it may not be on GitHub?): {repo_info['owner']}/{repo_info['repo_name']}."
+                )
+                return None
+
             return {
                 "name": repo_data["name"],
                 "description": repo_data["description"],
@@ -381,7 +387,8 @@ class GitHubAPI:
         If the repository is not found or access is forbidden, it returns None.
         """
         metrics = self._get_metrics_graphql(repo_info)
-        metrics["contrib_count"] = self._get_contrib_count_rest(repo_info)
+        if metrics is not None:
+            metrics["contrib_count"] = self._get_contrib_count_rest(repo_info)
 
         return metrics
 
