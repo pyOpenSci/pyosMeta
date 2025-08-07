@@ -9,6 +9,7 @@ from typing import Any
 
 import doi
 import requests
+import unidecode
 
 from .logging import logger
 
@@ -213,3 +214,9 @@ def clean_archive(archive):
         return None
     else:
         raise ValueError(f"Invalid archive URL: {archive}")
+
+
+def slugify(text: str) -> str:
+    """Convert a long title/text into a slug suitable for filenames/URLs."""
+    text = unidecode.unidecode(text).lower()
+    return re.sub(r"[\W_]+", "-", text)

@@ -1,14 +1,8 @@
-import re
 from pathlib import Path
 
 import feedparser
-import unidecode
 
-
-def slugify(text: str) -> str:
-    """Convert a long title/text into a slug suitable for filenames/URLs."""
-    text = unidecode.unidecode(text).lower()
-    return re.sub(r"[\W_]+", "-", text)
+from .utils_clean import slugify
 
 
 def parse_rss_feed(url: str) -> list[dict]:
