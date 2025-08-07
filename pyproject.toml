@@ -24,12 +24,14 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
+    "feedparser",
     "pydantic>=2.0",
     "python-doi",
     "python-dotenv",
     "requests",
     "ruamel-yaml>=0.17.21",
     "tqdm",
+    "unidecode"
 ]
 # This is metadata that pip reads to understand what Python versions your package supports
 requires-python = ">=3.10"
