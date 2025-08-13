@@ -175,3 +175,11 @@ def data_file() -> Callable[[Optional[str], bool], Union[str, Path]]:
             return path
 
     return _data_file
+
+
+@pytest.fixture
+def rss_feed_url(httpserver):
+    """Serve a local RSS feed for testing."""
+    path = DATA_DIR / "tutorials.rss"
+    httpserver.serve_content(path.read_text())
+    return httpserver.url
