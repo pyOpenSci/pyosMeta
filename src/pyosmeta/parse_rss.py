@@ -43,7 +43,7 @@ def fetch_rss_feed_as_stubs(url: str) -> dict[str, str]:
             continue
         filename = f"{i:02d}-{slugify(title)}.md"
         content = make_md_stub(
-            index=i + 1,
+            index=i,
             title=title,
             summary=item.get("summary", ""),
             link=item.get("link", "#"),
