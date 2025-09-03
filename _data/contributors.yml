@@ -34,6 +34,7 @@
     - submitting-author
   packages_eic:
   packages_editor:
+    - cynetdiff
     - errdapy
     - nbless
     - pandera
@@ -44,36 +45,6 @@
   packages_reviewed:
   location: United States
   email: leah@pyopensci.org
-- name: Tracy Teal
-  github_username: tracykteal
-  github_image_id: 889238
-  title:
-    - Board chair
-    - Executive Council
-  sort: 2
-  bio:
-  organization:
-  date_added: '2022-11-09'
-  deia_advisory: false
-  editorial_board: false
-  emeritus_editor: false
-  advisory: false
-  emeritus_advisory: false
-  twitter:
-  mastodon:
-  orcidid:
-  partners:
-  website:
-  board: true
-  contributor_type:
-    - leadership
-    - web-contrib
-  packages_eic:
-  packages_editor:
-  packages_submitted:
-  packages_reviewed:
-  location:
-  email: tkteal@gmail.com
 - name: Karen Cranston
   github_username: kcranston
   github_image_id: 312034
@@ -102,6 +73,63 @@
   packages_reviewed:
   location: Ottawa, ON
   email: karen.cranston@gmail.com
+- name: April Johnson
+  github_username: aprilmj
+  github_image_id: 147750733
+  title: Executive Council
+  sort: 3
+  bio:
+  organization:
+  date_added: '2022-11-09'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://www.apriljohnson.io/
+  board: true
+  contributor_type:
+    - leadership
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location:
+  email:
+- name: Tracy Teal
+  github_username: tracykteal
+  github_image_id: 889238
+  title:
+    - Emeritus Board chair
+    - Emeritus Executive Council
+  sort:
+  bio:
+  organization:
+  date_added: '2022-11-09'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: true
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - leadership
+    - web-contrib
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location:
+  email: tkteal@gmail.com
 - name: Carol Willing
   github_username: willingc
   github_image_id: 2680980
@@ -608,7 +636,7 @@
   github_username: cmarmo
   github_image_id: 1662261
   title:
-    - Editor in Chief
+    - Emeritus Editor in Chief
     - Editor
     - Peer review triage
   sort: 1
@@ -789,6 +817,7 @@
     - reviewer
     - web-contrib
   packages_eic:
+    - cynetdiff
     - great tables
     - pooltool
     - pypartmc
@@ -1142,6 +1171,7 @@
   github_username: HaoZeke
   github_image_id: 4336207
   title:
+    - Editor
   sort:
   bio:
   organization: '@Quansight-Labs, @TheochemUI'
@@ -1745,6 +1775,7 @@
   packages_eic:
   packages_editor:
     - automata
+    - cynetdiff
   packages_submitted:
   packages_reviewed:
     - python-graphblas
@@ -4305,7 +4336,6 @@
   title:
     - Emeritus Editor in Chief
     - Editor
-    - Peer review triage
   sort: 2
   bio:
   organization: '@rstudio'
@@ -4348,12 +4378,14 @@
   github_username: eliotwrobson
   github_image_id: 1345068
   title:
-  sort:
+    - Editor
+    - Editor in Chief
+  sort: 1
   bio: I'm just this guy, you know?
   organization: UIUC
   date_added: '2023-09-11'
   deia_advisory: false
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -4373,6 +4405,7 @@
   packages_editor:
   packages_submitted:
     - automata
+    - cynetdiff
   packages_reviewed:
     - pooltool
   location: Urbana, IL
@@ -5292,7 +5325,7 @@
   organization:
   date_added: '2023-12-14'
   deia_advisory: false
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -6359,6 +6392,7 @@
   packages_editor:
   packages_submitted:
   packages_reviewed:
+    - greopy
     - zodipy
   location: Greenbelt, MD
   email: leo.singer@ligo.org
@@ -6809,7 +6843,7 @@
   mastodon:
   orcidid:
   partners:
-  website: https://flpm.dev
+  website:
   board: false
   contributor_type:
     - community
@@ -7317,6 +7351,7 @@
   github_username: NimaSarajpoor
   github_image_id: 38519522
   title:
+    - Editor
   sort: 2
   bio: Data Scientist  | OSS Contributor  | Philomath
   organization:
@@ -7661,7 +7696,7 @@
   organization: '@ark-info-sys'
   date_added: '2024-08-15'
   deia_advisory: false
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -8141,12 +8176,14 @@
     - open-education
     - package-guide
     - peer-review
+    - reviewer
     - submitting-author
   packages_eic:
   packages_editor:
   packages_submitted:
     - thztools
   packages_reviewed:
+    - piva
   location:
   email:
 - name: Guglielmo Mastroserio
@@ -8269,12 +8306,13 @@
   github_username: ab93
   github_image_id: 3485425
   title:
+    - Editor
   sort:
   bio: Data Scientist | Machine Learning Engineer
   organization: Intuit
   date_added: '2024-12-13'
   deia_advisory: false
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -9299,12 +9337,13 @@
   github_username: JuliMillan
   github_image_id: 66881995
   title:
+    - Editor
   sort:
   bio: Biology, data science and open science
   organization:
   date_added: '2025-05-30'
   deia_advisory: false
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -9554,12 +9593,13 @@
   github_username: crhea93
   github_image_id: 34322936
   title:
+    - Editor
   sort:
   bio: Graduate student at Université de Montréal studying astrophysics.
   organization:
   date_added: '2025-06-16'
   deia_advisory: false
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -9570,9 +9610,12 @@
   website:
   board: false
   contributor_type:
+    - editor
+    - peer-review
     - peer-review-guide
   packages_eic:
   packages_editor:
+    - piva
   packages_submitted:
   packages_reviewed:
   location: Montreal, QC, CANADA
@@ -9974,10 +10017,10 @@
 - name: Mandy Moore
   github_username: therubyrep
   github_image_id: 2262962
-  title:
-  sort:
+  title: Communications Lead
+  sort: 4
   bio: Independent social media marketer and audio and video production expert
-  organization:
+  organization: pyOpenSci
   date_added: '2025-07-25'
   deia_advisory: false
   editorial_board: false
@@ -10297,3 +10340,298 @@
   packages_reviewed:
   location:
   email:
+- name: Tim Dawson
+  github_username: TimothyEDawson
+  github_image_id: 142453358
+  title:
+  sort:
+  bio: Combustion Group Leader at CFD Research Corporation.
+  organization: CFD Research Corporation
+  date_added: '2025-08-07'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - web-contrib
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location:
+  email: tim.dawson@cfd-research.com
+- name: James J Balamuta
+  github_username: coatless
+  github_image_id: 833642
+  title:
+  sort:
+  bio: 'omnipresent explorer of the unknown, fashionably caffeinated informatics
+      phd, amorous cavalier. design, build, analyze. #rstats #python @tmsalab'
+  organization:
+  date_added: '2025-08-07'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter: axiomsofxyz
+  mastodon:
+  orcidid:
+  partners:
+  website: https://thecoatlessprofessor.com
+  board: false
+  contributor_type:
+    - eic
+    - peer-review
+  packages_eic:
+    - greopy
+    - piva
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location: United States
+  email:
+- name: Arthur Eigenbrot
+  github_username: eigenbrot
+  github_image_id: 2183757
+  title:
+  sort:
+  bio:
+  organization: National Solar Observatory
+  date_added: '2025-08-07'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - piva
+  location:
+  email:
+- name: Wojtek Pudelko
+  github_username: pudeIko
+  github_image_id: 37271202
+  title:
+  sort:
+  bio:
+  organization: University of Zürich
+  date_added: '2025-08-07'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - piva
+  packages_reviewed:
+  location: Zürich, Switzerland
+  email:
+- name: Sanjana Kandi
+  github_username: KandiSanjana
+  github_image_id: 62292708
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2025-08-07'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - greopy
+  location: Seattle
+  email:
+- name: Jonas Eschle
+  github_username: jonas-eschle
+  github_image_id: 17454848
+  title:
+    - Editor
+  sort:
+  bio: Large scale statistics, machine learning and software engineering in
+      High Energy Physics
+  organization: CERN
+  date_added: '2025-08-07'
+  deia_advisory: false
+  editorial_board: true
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - editor
+    - peer-review
+  packages_eic:
+  packages_editor:
+    - greopy
+  packages_submitted:
+  packages_reviewed:
+  location: Geneva, Switzerland
+  email: jonas.eschle@cern.ch
+- name:
+  github_username: irideselby
+  github_image_id: 172918893
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2025-08-07'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - greopy
+  packages_reviewed:
+  location:
+  email:
+- name: Kai Striega
+  github_username: Kai-Striega
+  github_image_id: 30074037
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2025-08-22'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://kaistriega.com/about/
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - cynetdiff
+  location:
+  email:
+- name: SQ
+  github_username: jeremyzhangsq
+  github_image_id: 32925891
+  title:
+  sort:
+  bio: Research Fellow in SoC@NUS
+  organization: SoC@NUS
+  date_added: '2025-08-22'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://www.comp.nus.edu.sg/~s-zhang/
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - cynetdiff
+  location: Singapore
+  email:
+- name: Abhishek Umrawal
+  github_username: abhishekumrawal
+  github_image_id: 7496935
+  title:
+  sort:
+  bio: Tch. Asst. Prof. of ECE at Illinois | Ph.D. from Purdue | AI & ML
+      Researcher
+  organization: University of Illinois Urbana-Champaign
+  date_added: '2025-08-22'
+  deia_advisory: false
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - cynetdiff
+  packages_reviewed:
+  location: Urbana, IL
+  email: abhishekumrawal@gmail.com
