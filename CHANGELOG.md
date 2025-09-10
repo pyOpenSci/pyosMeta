@@ -6,6 +6,10 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+## [v1.7.5] - 2025-09-10
+
+* Bug fix: remove an extra newline character that prevents Jekyll from building pages from RSS feed stubs (@banesullivan, #306)
+
 ## [v1.7.4] - 2025-09-10
 
 * RSS feed parser that will generate Markdown stub files (@banesullivan, #301)
