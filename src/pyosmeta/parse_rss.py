@@ -16,8 +16,7 @@ def parse_rss_feed(url: str) -> list[dict]:
 
 def make_md_stub(index: int, title: str, summary: str, link: str) -> str:
     """Create a Markdown stub for an entry."""
-    return f'''
----
+    return f'''---
 title: "{index}. {title}"
 excerpt: "
   {summary}"
