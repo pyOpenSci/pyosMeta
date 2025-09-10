@@ -6,6 +6,12 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* RSS feed parser that will generate Markdown stub files (@banesullivan, #301)
+* Two new dependencies:
+  * `feedparser`: a utility library for fetching and parsing RSS feeds. This saves us from having to write quite a lot of fetching/parsing logic.
+  * `unidecode`: comes with a new utility function to easily slugify long title strings.
+  * `click`: for adding arguments to command line scripts
+
 ## [v1.7.3] - 2025-08-07
 
 * Fix: gracefully fail when collecting repository metrics outside of GitHub (@banesullivan, #300)
