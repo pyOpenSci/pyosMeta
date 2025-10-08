@@ -256,7 +256,7 @@ class ReviewModel(BaseModel):
     categories: Optional[list[str]] = None
     editor: ReviewUser | list[ReviewUser] | None = None
     eic: ReviewUser | list[ReviewUser] | None = None
-    reviewers: list[ReviewUser] = Field(default_factory=list)
+    reviewers: list[ReviewUser] | None = None
     archive: str | None = None
     version_accepted: str | None = None
     date_accepted: str | None = Field(
