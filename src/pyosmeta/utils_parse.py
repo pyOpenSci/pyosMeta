@@ -45,5 +45,6 @@ def parse_user_names(username: str) -> ReviewUser | None:
             "github_username": clean_name(names[0]),
             "name": "",
         }
-
+    if (parsed["github_username"] == "") and (parsed["name"] == ""):
+        return None
     return ReviewUser(**parsed)
