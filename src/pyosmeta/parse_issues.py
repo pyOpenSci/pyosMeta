@@ -340,7 +340,7 @@ class ProcessIssues:
 
     def get_contributor_data(
         self, line: str
-    ) -> Union[ReviewUser, List[ReviewUser]]:
+    ) -> Union[ReviewUser, List[ReviewUser], None]:
         """Parse names for various review roles from issue metadata.
 
         Parameters
@@ -360,6 +360,8 @@ class ProcessIssues:
         models = [model for model in models if model is not None]
         if len(models) == 1:
             models = models[0]
+        if len(models) == 0:
+            return None
         return models
 
     # TODO: This now returns a dict of owner:repo_name to support graphql
