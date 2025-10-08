@@ -5,7 +5,13 @@
 
 version: 2
 updates:
-  - package-ecosystem: "" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  # Enable Dependabot to keep GitHub Actions up to date
+  # This will update pinned commit SHAs to the latest versions
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
       interval: "monthly"
+    # Keep commit message style consistent
+    commit-message:
+      prefix: "chore"
+      include: "scope"
