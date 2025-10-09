@@ -358,10 +358,10 @@ class ProcessIssues:
         users = line.split(",")
         models = [parse_user_names(username=user) for user in users]
         models = [model for model in models if model is not None]
-        if len(models) == 1:
-            models = models[0]
         if len(models) == 0:
             return None
+        if len(models) == 1:
+            models = models[0]
         return models
 
     # TODO: This now returns a dict of owner:repo_name to support graphql
