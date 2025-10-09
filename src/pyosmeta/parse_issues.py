@@ -250,7 +250,7 @@ class ProcessIssues:
         # add other conditions here for special processing of fields..
         #   pass
         else:
-            return val
+            return val.strip("*").strip("__")  # remove markdown formatting
 
     def parse_issue(self, issue: Issue | str) -> ReviewModel:
         """
