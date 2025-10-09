@@ -74,7 +74,7 @@ def clean_date(source_date: str | None) -> datetime | str:
 def clean_name(source_name: str) -> str:
     """Remove unwanted characters from a name."""
 
-    unwanted = ["(", ")", "@"]
+    unwanted = ["(", ")", "@", "*"]
     for char in unwanted:
         source_name = source_name.replace(char, "")
 
