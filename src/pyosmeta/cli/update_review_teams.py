@@ -119,6 +119,7 @@ def process_user(
                 f"Error processing new contributor {gh_user}. Skipping this user.",
                 exc_info=True,
             )
+            return user, contribs
 
     # Update user the list of contribution types if there are new types to add
     # for instance a new reviewer would have a "Reviewer" contributor type
