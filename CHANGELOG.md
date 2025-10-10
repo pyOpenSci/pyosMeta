@@ -6,6 +6,10 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+## [v1.7.6] - 2025-10-10
+* Bug fix: handle markdown styling in issue template for package submission
+* Feature: allow empty reviewers for in issue template for package submission
+
 ## [v1.7.5] - 2025-09-10
 
 * Bug fix: remove an extra newline character that prevents Jekyll from building pages from RSS feed stubs (@banesullivan, #306)
