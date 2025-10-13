@@ -250,7 +250,7 @@ class ProcessIssues:
         # add other conditions here for special processing of fields..
         #   pass
         else:
-            return val
+            return val.strip("*").strip("__")  # remove markdown formatting
 
     def parse_issue(self, issue: Issue | str) -> ReviewModel:
         """
@@ -340,7 +340,7 @@ class ProcessIssues:
 
     def get_contributor_data(
         self, line: str
-    ) -> Union[ReviewUser, List[ReviewUser]]:
+    ) -> Union[ReviewUser, List[ReviewUser], None]:
         """Parse names for various review roles from issue metadata.
 
         Parameters
@@ -358,6 +358,8 @@ class ProcessIssues:
         users = line.split(",")
         models = [parse_user_names(username=user) for user in users]
         models = [model for model in models if model is not None]
+        if len(models) == 0:
+            return None
         if len(models) == 1:
             models = models[0]
         return models
