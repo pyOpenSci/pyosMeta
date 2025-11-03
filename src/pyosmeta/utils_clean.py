@@ -7,9 +7,9 @@ import re
 from datetime import datetime
 from typing import Any
 
-import doi
 import requests
 import unidecode
+from requests.exceptions import HTTPError
 
 from .logging import logger
 
@@ -147,13 +147,19 @@ def check_url(url: str) -> bool:
 
     try:
         response = requests.get(url, timeout=30)
-        return response.status_code == 200
+        response.raise_for_status()
+        return True
     except Exception:  # pragma: no cover
         return False
 
 
 def is_doi(archive) -> str | None:
     """Check if the DOI is valid and return the DOI link.
+
+    We check that the DOI can be resolved by
+    `official means <http://www.doi.org/factsheets/DOIProxy.html>`_. If so, we
+    return the resolved URL, otherwise, we return ``None`` (which means the
+    DOI is invalid).
 
     Parameters
     ----------
@@ -166,10 +172,32 @@ def is_doi(archive) -> str | None:
         The DOI link in the form `https://doi.org/10.1234/zenodo.12345678` or `None`
         if the DOI is invalid.
     """
+    # If archive is a URL, extract the DOI record
+    if archive.startswith("http"):
+        match = re.search(
+            r"https?://(?:dx\.)?doi\.org/(10\.\d{4,9}/[-._;()/:A-Z0-9]+)",
+            archive,
+            re.IGNORECASE,
+        )
+        doi = match.group(1) if match else archive
+    else:
+        doi = archive
+    url = f"https://doi.org/api/handles/{doi}"
+
     try:
-        return doi.validate_doi(archive)
-    except ValueError:
-        pass
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        result = response.json()
+    except HTTPError:
+        # HTTP 404: DOI not found'
+        return None
+    else:
+        urls = [
+            v["data"]["value"]
+            for v in result["values"]
+            if v.get("type") == "URL"
+        ]
+        return urls[0] if urls else None
 
 
 def clean_archive(archive):
@@ -186,7 +214,7 @@ def clean_archive(archive):
     If the archive link is a URL, it will be returned as is with a check that
     it resolves but is not required to be a valid DOI. If the archive link is
     a DOI, it will be validated and returned as a URL in the form
-    `https://doi.org/10.1234/zenodo.12345678` using the `python-doi` package.
+    `https://doi.org/10.1234/zenodo.12345678`.
 
     """
     archive = archive.strip()  # Remove leading/trailing whitespace
