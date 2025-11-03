@@ -143,3 +143,21 @@ def test_multiple_editors_and_eic(process_issues, data_file):
     review = data_file("reviews/multiple_editors.txt", True)
     review = process_issues.parse_issue(review)
     assert review.package_name == "fake_package"
+
+
+def test_repository_host_github(process_issues, data_file):
+    """
+    Test handling of submissions with GitHub repository hosts.
+    """
+    review = data_file("reviews/github_submission.txt", True)
+    review = process_issues.parse_issue(review)
+    assert review.repository_host == "github"
+
+
+def test_repository_host_gitlab(process_issues, data_file):
+    """
+    Test handling of submissions with GitLab repository hosts.
+    """
+    review = data_file("reviews/gitlab_submission.txt", True)
+    review = process_issues.parse_issue(review)
+    assert review.repository_host == "gitlab"

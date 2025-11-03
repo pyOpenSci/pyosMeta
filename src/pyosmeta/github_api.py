@@ -18,6 +18,7 @@ import requests
 from dotenv import load_dotenv
 
 from pyosmeta.models import ReviewModel
+from pyosmeta.models.base import RepositoryHost
 
 from .logging import logger
 
@@ -181,7 +182,7 @@ class GitHubAPI:
 
         return results
 
-    def get_gh_metrics(
+    def get_metrics(
         self,
         endpoints: dict[dict[str, str]],
         reviews: dict[str, ReviewModel],
@@ -204,7 +205,13 @@ class GitHubAPI:
         """
 
         for pkg_name, owner_repo in endpoints.items():
-            reviews[pkg_name].gh_meta = self.get_repo_meta(owner_repo)
+            review = reviews[pkg_name]
+            if review.repository_host == RepositoryHost.github:
+                reviews[pkg_name].gh_meta = self.get_repo_meta_github(
+                    owner_repo
+                )
+            else:
+                logger.warning(f"Unsupported repository host for {pkg_name}: {review.repository_host}")
 
         return reviews
 
@@ -363,7 +370,7 @@ class GitHubAPI:
             )
             return None
 
-    def get_repo_meta(
+    def get_repo_meta_github(
         self, repo_info: dict[str, str]
     ) -> dict[str, Any] | None:
         """Get GitHub metrics from the GitHub GraphQL API for a repository.
@@ -391,6 +398,11 @@ class GitHubAPI:
             metrics["contrib_count"] = self._get_contrib_count_rest(repo_info)
 
         return metrics
+
+    def get_repo_meta_gitlab(
+        self, repo_info: dict[str, str]
+    ) -> dict[str, Any] | None:
+        raise NotImplementedError
 
     def get_user_info(
         self, gh_handle: str, name: Optional[str] = None

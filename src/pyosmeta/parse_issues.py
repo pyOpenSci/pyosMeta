@@ -8,6 +8,7 @@ from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from pyosmeta.models import ReviewModel, ReviewUser
+from pyosmeta.models.base import RepositoryHost
 from pyosmeta.models.github import Issue, Labels, LabelType
 
 from .github_api import GitHubAPI
@@ -388,16 +389,8 @@ class ProcessIssues:
         all_repos = {}
         for a_package in review_issues.keys():
             repo_url = review_issues[a_package].repository_link
-            # for now skip if it's a gitlab repo
-            if "gitlab" in repo_url:
-                continue
-            owner, repo = (
-                repo_url.replace("https://github.com/", "")
-                .replace("https://www.github.com/", "")
-                .rstrip("/")
-                .split("/", 1)
-            )
-
+            host: RepositoryHost = review_issues[a_package].repository_host
+            owner, repo = host.parse_url(repo_url)
             all_repos[a_package] = {"owner": owner, "repo_name": repo}
         return all_repos
 
