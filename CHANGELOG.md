@@ -6,6 +6,8 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Feature: allow non-GitHub repository hosts and establish a pattern for collecting repository metrics (@banesullivan, #325)
+
 ## [v1.7.6] - 2025-10-10
 * Bug fix: handle markdown styling in issue template for package submission
 * Feature: allow empty reviewers for in issue template for package submission
