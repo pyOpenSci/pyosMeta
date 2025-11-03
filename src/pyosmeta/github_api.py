@@ -211,7 +211,9 @@ class GitHubAPI:
                     owner_repo
                 )
             else:
-                logger.warning(f"Unsupported repository host for {pkg_name}: {review.repository_host}")
+                logger.warning(
+                    f"Unsupported repository host for {pkg_name}: {review.repository_host}"
+                )
 
         return reviews
 
