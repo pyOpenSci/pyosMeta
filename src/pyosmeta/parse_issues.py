@@ -389,7 +389,7 @@ class ProcessIssues:
         all_repos = {}
         for a_package in review_issues.keys():
             repo_url = review_issues[a_package].repository_link
-            host: RepositoryHost = review_issues[a_package].repository_host
+            host = RepositoryHost(review_issues[a_package].repository_host)
             owner, repo = host.parse_url(repo_url)
             all_repos[a_package] = {"owner": owner, "repo_name": repo}
         return all_repos
