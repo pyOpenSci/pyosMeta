@@ -15,6 +15,7 @@ from pydantic import (
     Field,
     field_serializer,
     field_validator,
+    model_validator,
 )
 
 from pyosmeta.logging import logger
@@ -30,6 +31,56 @@ from pyosmeta.utils_clean import (
 class Partnerships(str, Enum):
     astropy = "astropy"
     pangeo = "pangeo"
+
+
+class RepositoryHost(str, Enum):
+    other = "other"
+    github = "github"
+    gitlab = "gitlab"
+    codeberg = "codeberg"
+
+    @classmethod
+    def from_url(cls, url: str) -> "RepositoryHost":
+        """Determine the repository host from a given URL.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the repository.
+
+        Returns
+        -------
+        RepositoryHost
+            The corresponding RepositoryHost enum value.
+        """
+        if "github.com" in url:
+            return cls.github
+        elif "gitlab.com" in url:
+            return cls.gitlab
+        elif "codeberg.org" in url:
+            return cls.codeberg
+        else:
+            return cls.other
+
+    def parse_url(self, url: str) -> tuple[str, str]:
+        """Parse the URL to extract the repository host name.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the repository.
+
+        Returns
+        -------
+        tuple[str, str]
+            The owner and repository name.
+        """
+        match = re.match(r"https?://[^/]+/([^/]+)/([^/]+)", url)
+        if match:
+            owner, repo = match.group(1), match.group(2)
+            return owner, repo
+        else:
+            raise ValueError(f"Could not parse owner/repo from URL: {url}")
 
 
 class UrlValidatorMixin:
@@ -252,6 +303,7 @@ class ReviewModel(BaseModel):
     all_current_maintainers: list[ReviewUser] = Field(default_factory=list)
     # Support presubmissions with an alias
     repository_link: str = Field(..., alias="repository_link_(if_existing)")
+    repository_host: RepositoryHost = Field(default=None)
     version_submitted: Optional[str] = None
     categories: Optional[list[str]] = None
     editor: ReviewUser | list[ReviewUser] | None = None
@@ -272,6 +324,15 @@ class ReviewModel(BaseModel):
     gh_meta: Optional[GhMeta] = None
     labels: list[str] = Field(default_factory=list)
     active: bool = True  # To indicate if package is maintained or archived
+
+    @model_validator(mode="after")
+    def set_repository_host_from_link(self):
+        """Set repository_host based on repository_link if not already set."""
+        if self.repository_host is None and self.repository_link:
+            self.repository_host = RepositoryHost.from_url(
+                self.repository_link
+            )
+        return self
 
     @field_validator(
         "date_accepted",
@@ -388,6 +449,7 @@ class ReviewModel(BaseModel):
             return item
 
     @field_validator("labels", mode="before")
+    @classmethod
     def extract_label(cls, labels: list[str | Labels]) -> list[str]:
         """
         Get just the ``name`` from the Labels model, if given

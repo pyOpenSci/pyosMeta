@@ -53,7 +53,7 @@ def main():
     # Contrib count is only available via rest api
     logger.info("Getting GitHub metrics for all packages...")
     repo_paths = process_review.get_repo_paths(accepted_reviews)
-    all_reviews = github_api.get_gh_metrics(repo_paths, accepted_reviews)
+    all_reviews = github_api.get_metrics(repo_paths, accepted_reviews)
 
     with open("all_reviews.pickle", "wb") as f:
         pickle.dump(all_reviews, f)
