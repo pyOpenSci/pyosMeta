@@ -8,16 +8,21 @@ from .utils_clean import slugify
 def parse_rss_feed(url: str) -> list[dict]:
     """Fetch and parse an RSS feed from a URL."""
     parsed_feed = feedparser.parse(url)
+    # Return in reverse order to ensure oldest first
     return [
         {key: entry.get(key) for key in entry.keys()}
-        for entry in parsed_feed.entries
+        for entry in reversed(parsed_feed.entries)
     ]
 
 
 def make_md_stub(index: int, title: str, summary: str, link: str) -> str:
     """Create a Markdown stub for an entry."""
+    if len(title) > 50:
+        display_title = title[:33].strip() + "..."
+    else:
+        display_title = title
     return f'''---
-title: "{index}. {title}"
+title: "{index}. {display_title}"
 excerpt: "
   {summary}"
 link:  {link}
