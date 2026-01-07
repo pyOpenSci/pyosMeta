@@ -22,7 +22,7 @@ ci:
 repos:
   # Out of the box hooks for pre-commit https://github.com/pre-commit/pre-commit-hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       # Makes sure files end in a newline and only a newline.
       - id: end-of-file-fixer
@@ -46,7 +46,7 @@ repos:
   # Linting and formatting for Python code (see pyproject.toml for config)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.12.2
+    rev: v0.14.10
     hooks:
       # Run the linter.
       - id: ruff
@@ -56,12 +56,12 @@ repos:
 
   # Ensure GitHub workflows match the expected schema.
   - repo: https://github.com/sirosen/check-jsonschema
-    rev: 0.33.2
+    rev: 0.36.0
     hooks:
       - id: check-github-workflows
 
   # Find common security issues in GitHub Actions workflows
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.11.0
+    rev: v1.19.0
     hooks:
       - id: zizmor
