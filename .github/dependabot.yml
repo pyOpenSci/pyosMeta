@@ -5,6 +5,8 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 1
     labels:
       - security
       - dependency-update
