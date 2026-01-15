@@ -13,3 +13,7 @@ updates:
       include: "scope"
     open-pull-requests-limit: 5
     rebase-strategy: auto
+    groups:
+      actions:
+        patterns:
+          - "*"
