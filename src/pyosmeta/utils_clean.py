@@ -234,7 +234,8 @@ def clean_archive(archive):
             archive = archive.replace("http://", "https://")
         # Validate that the URL resolves
         if not check_url(archive):
-            raise ValueError(f"Invalid archive URL (not resolving): {archive}")
+            logger.warning(f"Invalid archive URL (not resolving): {archive}")
+            # raise ValueError(f"Invalid archive URL (not resolving): {archive}")
         return archive
     elif archive.lower() == "n/a":
         return None
