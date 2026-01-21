@@ -6,9 +6,13 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+## [v1.7.7] - 2026-01-21
+
+* Bug fix: bypass URL validation errors due to flaky responses for DOIs and failed builds downstream (@banesullivan, #341)
 * Feature: allow non-GitHub repository hosts and establish a pattern for collecting repository metrics (@banesullivan, #325)
 
 ## [v1.7.6] - 2025-10-10
+
 * Bug fix: handle markdown styling in issue template for package submission
 * Feature: allow empty reviewers for in issue template for package submission
 
