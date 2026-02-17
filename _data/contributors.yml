@@ -9013,7 +9013,7 @@
   mastodon:
   orcidid:
   partners:
-  website:
+  website: https://lagrange.mechse.illinois.edu/mwest
   board: false
   contributor_type:
     - maintainer
@@ -9456,7 +9456,7 @@
   mastodon:
   orcidid:
   partners:
-  website: https://www.neonscience.org/data-collection/airborne-remote-sensing
+  website:
   board: false
   contributor_type:
     - maintainer
@@ -9659,6 +9659,7 @@
   website:
   board: false
   contributor_type:
+    - code-contrib
     - editor
     - peer-review
     - peer-review-guide
