@@ -209,6 +209,8 @@ class ProcessIssues:
         meta["partners"] = self.get_categories(
             body, "## Community Partnerships", 3, keyed=True
         )
+        genai = self.get_genai_disclosure(body)
+        meta.update(genai)
         if "joss_doi" in meta:
             # Normalize the JOSS archive field. Some issues use `JOSS DOI` others `JOSS`
             meta["joss"] = meta.pop("joss_doi")
@@ -393,6 +395,77 @@ class ProcessIssues:
             owner, repo = host.parse_url(repo_url)
             all_repos[a_package] = {"owner": owner, "repo_name": repo}
         return all_repos
+
+    def get_genai_disclosure(self, issue_list: list[str]) -> dict[str, Any]:
+        """Parse the Development Best Practices & GenerativeAI Use Disclosure
+        section from the issue body.
+
+        Extracts whether GenAI was used (checkbox), the listed tools/frameworks,
+        and the description of nature/scope of support. Returns all None if the
+        section is absent (e.g. older submissions).
+
+        Parameters
+        ----------
+        issue_list : list[str]
+            The issue body split into lines (after the first ---).
+
+        Returns
+        -------
+        dict
+            Keys: genai_used (bool or None), genai_tools (str or None),
+            genai_scope (str or None).
+        """
+        result = {
+            "genai_used": None,
+            "genai_tools": None,
+            "genai_scope": None,
+        }
+        section_index = None
+        for i, line in enumerate(issue_list):
+            if "## " in line and (
+                "Development Best Practices" in line or "GenerativeAI" in line
+            ):
+                section_index = i
+                break
+        if section_index is None:
+            return result
+
+        # Find the "Generative AI tools were used" checkbox in this section
+        genai_checkbox = "Generative AI tools were used"
+        for i in range(section_index + 1, len(issue_list)):
+            line = issue_list[i]
+            if line.strip().startswith("## "):
+                break
+            if genai_checkbox in line:
+                result["genai_used"] = bool(re.search(r"-\s*\[[xX]\]", line))
+                break
+
+        def _collect_after_subheading(needle: str) -> str | None:
+            idx = None
+            for i, line in enumerate(issue_list):
+                if "### " in line and needle in line:
+                    idx = i
+                    break
+            if idx is None:
+                return None
+            lines = []
+            for i in range(idx + 1, len(issue_list)):
+                line = issue_list[i]
+                if line.strip().startswith("### ") or line.strip().startswith(
+                    "## "
+                ):
+                    break
+                lines.append(line)
+            text = "\n".join(lines).strip()
+            return text if text else None
+
+        result["genai_tools"] = _collect_after_subheading(
+            "Please list the tools"
+        )
+        result["genai_scope"] = _collect_after_subheading(
+            "Describe the nature and scope"
+        )
+        return result
 
     def get_categories(
         self,
