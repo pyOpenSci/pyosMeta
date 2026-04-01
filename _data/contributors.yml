@@ -1202,7 +1202,7 @@
   mastodon:
   orcidid:
   partners:
-  website: https://rgoswami.me
+  website:
   board: false
   contributor_type:
     - peer-review
@@ -8216,7 +8216,7 @@
   mastodon:
   orcidid:
   partners:
-  website: https://www.sfu.ca/lux/author/j.-steven-dodge/
+  website:
   board: false
   contributor_type:
     - community
@@ -11446,9 +11446,9 @@
   sort:
   bio:
   organization: UPEC
-  date_added: '2026-03-15'
+  date_added: '2026-03-16'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
