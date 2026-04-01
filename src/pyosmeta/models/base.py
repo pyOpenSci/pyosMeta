@@ -324,6 +324,11 @@ class ReviewModel(BaseModel):
     gh_meta: Optional[GhMeta] = None
     labels: list[str] = Field(default_factory=list)
     active: bool = True  # To indicate if package is maintained or archived
+    # Generative AI disclosure (from "Development Best Practices & GenerativeAI
+    # Use Disclosure" section; None when section is absent)
+    genai_used: Optional[bool] = None
+    genai_tools: Optional[str] = None
+    genai_scope: Optional[str] = None
 
     @model_validator(mode="after")
     def set_repository_host_from_link(self):

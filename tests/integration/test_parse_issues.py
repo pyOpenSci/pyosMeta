@@ -161,3 +161,34 @@ def test_repository_host_gitlab(process_issues, data_file):
     review = data_file("reviews/gitlab_submission.txt", True)
     review = process_issues.parse_issue(review)
     assert review.repository_host == "gitlab"
+
+
+def test_parse_submission_with_genai_section(process_issues, data_file):
+    """
+    Integration test: full template ingest with the Development Best Practices
+    & GenerativeAI Use Disclosure section (real fixture data).
+
+    Ensures that adding the GenAI section to the submission template does not
+    break parsing, and that genai_used, genai_tools, and genai_scope are
+    extracted correctly alongside categories and partners.
+    """
+    body = data_file("reviews/submission_with_genai_section.txt", True)
+    review = process_issues.parse_issue(body)
+
+    assert review.package_name == "genai_test_package"
+    assert review.genai_used is True
+    assert review.genai_tools is not None
+    assert "Cursor" in review.genai_tools
+    assert "Copilot" in review.genai_tools
+    assert review.genai_scope is not None
+    assert "autocomplete" in review.genai_scope
+    assert "documentation" in review.genai_scope
+
+    # Scope and Community Partnerships still parse correctly after GenAI section
+    assert review.categories is not None
+    assert "data-processing-munging" in review.categories
+    assert review.partners is not None
+    partner_values = [
+        p.value if hasattr(p, "value") else p for p in (review.partners or [])
+    ]
+    assert "astropy" in partner_values
