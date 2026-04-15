@@ -39,6 +39,11 @@ readme = "README.md"
 license = { text = "MIT" }
 
 [project.optional-dependencies]
+docs = [
+    "pydata-sphinx-theme",
+    "sphinx",
+    "sphinx-autosummary-accessors",
+]
 dev = [
     "black",
     "flake8",
