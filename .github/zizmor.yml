@@ -1,0 +1,6 @@
+rules:
+  secrets-outside-env:
+    ignore:
+      - add-help-wanted.yml:23:29
+      - run-tests.yml:44:22
+      - test-update-contribs.yml:43:22
