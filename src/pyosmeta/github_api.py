@@ -243,7 +243,8 @@ class GitHubAPI:
         logged, and the method returns None.
         """
         # https://api.github.com/repos/{owner}/{repo}/contributors
-        repo_contribs_url = f"https://api.github.com/repos/{url['owner']}/{url['repo_name']}/contributors"
+        # Add per_page=100 to get maximum contributors per page and reduce API calls
+        repo_contribs_url = f"https://api.github.com/repos/{url['owner']}/{url['repo_name']}/contributors?per_page=100"
         contributors = self._get_response_rest(repo_contribs_url)
 
         if not contributors:
