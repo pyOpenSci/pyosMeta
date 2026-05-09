@@ -61,7 +61,7 @@ repos:
       - id: check-github-workflows
 
   # Find common security issues in GitHub Actions workflows
-  - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.23.1
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.24.1
     hooks:
       - id: zizmor

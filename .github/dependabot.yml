@@ -1,21 +1,22 @@
 version: 2
 
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: monthly
-    cooldown:
-      default-days: 7
-    labels:
-      - security
-      - dependency-update
-    commit-message:
-      prefix: "chore: bump GitHub Actions"
-      include: "scope"
-    open-pull-requests-limit: 5
-    rebase-strategy: auto
+      interval: weekly
     groups:
       actions:
-        patterns:
-          - "*"
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      python:
+        patterns: ["*"]
+    commit-message:
+      prefix: "deps"
