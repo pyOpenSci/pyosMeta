@@ -439,10 +439,18 @@ class ReviewModel(BaseModel):
                 cleaned_cats.append(category)
         return cleaned_cats
 
-    @field_validator("all_current_maintainers", mode="before")
+    @field_validator("all_current_maintainers", "reviewers", mode="before")
     @classmethod
     def listify(cls, item: Any):
-        """Make a field that's expected to be plural so before any validation"""
+        """Wrap a plural user field in a list when a single user is given.
+
+        ``get_contributor_data`` collapses a single parsed user to a bare
+        ``ReviewUser`` (correct for single-value roles like the submitting
+        author), so list-typed roles such as reviewers must be re-wrapped.
+        ``None`` is left untouched so optional fields stay unset.
+        """
+        if item is None:
+            return item
         if not isinstance(item, list):
             return [item]
         else:

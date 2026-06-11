@@ -34,6 +34,13 @@ def test_parse_issue_header(process_issues, issue_list):
                 ReviewUser(name="", github_username="fakereviewer3"),
             ],
         ),
+        # Expedited reviews can have a single reviewer (pyOpenSci/pyosMeta#362)
+        (
+            "reviews/reviewer_single.txt",
+            [
+                ReviewUser(name="", github_username="fakereviewer1"),
+            ],
+        ),
     ],
 )
 def test_parse_reviewers(file, expected, process_issues, data_file):
