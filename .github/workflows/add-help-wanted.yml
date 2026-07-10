@@ -7,12 +7,17 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   add-help-wanted:
+    name: Add issue to help-wanted project board
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      issues: write
+      contents: read           # minimum baseline
+      issues: write            # required to read issue labels for the action
     steps:
       - name: Add issue to project
         id: add-to-project
