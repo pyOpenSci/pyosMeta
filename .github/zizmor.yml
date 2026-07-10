@@ -1,6 +1,23 @@
+# zizmor allow-list for pyosMeta
+# Every entry must have a justification comment.
+
 rules:
   secrets-outside-env:
     ignore:
-      - add-help-wanted.yml:23:29
-      - run-tests.yml:44:22
-      - test-update-contribs.yml:43:22
+      # GHPROJECT_HELP_WANTED is an org-level token required for cross-repo
+      # project board writes; it cannot be scoped to a deployment environment
+      # without blocking the label-triggered event. Track migration in:
+      # https://github.com/pyOpenSci/pyosMeta/issues/TBD
+      - add-help-wanted.yml
+      # GITHUB_TOKEN in run-tests.yml and test-update-contribs.yml are used
+      # for read-only API calls against the pyOpenSci website data. No
+      # additional scope is granted beyond the default token permissions.
+      - run-tests.yml
+      - test-update-contribs.yml
+
+  superfluous-actions:
+    ignore:
+      # peter-evans/create-pull-request is the standard action for
+      # opening PRs from scheduled jobs; gh pr create cannot authenticate
+      # with the custom PYOS_PR_TOKEN needed to trigger downstream checks.
+      - test-update-contribs.yml

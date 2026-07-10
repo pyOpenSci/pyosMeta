@@ -1,9 +1,16 @@
+name: Test run-script workflow
+
 on: push
 
 permissions: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   test_run_script_job:
+    name: Test run-script
     uses: ./.github/workflows/run-script.yml
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}

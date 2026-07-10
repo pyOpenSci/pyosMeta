@@ -8,23 +8,34 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   run-meta:
+    name: Update contributor and review data
     if: github.repository_owner == 'pyopensci'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write          # create-pull-request writes back to repo
+      pull-requests: write     # create-pull-request opens a PR
     steps:
       - name: Check out the code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
       - name: Setup Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 #v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.10"
+
       - name: Upgrade pip
         run: |
           # install pip=>20.1 to use "pip cache dir"
           python -m pip install --upgrade pip wheel
+
       - name: Install pyosmeta and run update contribs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,7 +47,7 @@ jobs:
           update-review-teams
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           # Custom token needed to trigger PR checks, as GITHUB_TOKEN won't
           # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs
