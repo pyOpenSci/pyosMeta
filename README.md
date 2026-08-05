@@ -52,7 +52,7 @@ This repo contains several modules and several CLI scripts, including:
       This will allow us to ensure the yaml file retains order when users are
       highlighted as "new" and also for diff's in git.
 - `update-contributors`
-  - This script parses through and updates the existing contributor list stored in pyopensci.github.io repo in the _data/contributors.yml file.
+  - This script parses through and updates the existing contributor list stored in pyopensci.github.io repo in the data/contributors.yml file.
   - That's used to populate the [community page](https://www.pyopensci.org/our-community/), and to update our [metrics page](https://www.pyopensci.org/metrics/).
 - `update-reviews`
   - This script parses metadata from and issue and adds it to a .yml file for the website. It also grabs some of the package metadata such as stars, last commit, etc.

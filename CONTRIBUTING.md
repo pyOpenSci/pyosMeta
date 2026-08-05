@@ -14,9 +14,14 @@ Each script is available through the command line via entry points specified in 
 
 ## update-contributors script
 
-To run:
+To run you can use:
 
 `uv run update-contributors`
+
+if needed, 1--update update_all1 flag will update the contributor profile information, including name, using whatever information is available on their public GitHub account (website, location, organization, Twitter, etc). It will also check that the website in their profile works; if not, remove it so it doesn't fail the website's CI tests.
+
+This flag will rarely need to be used.
+
 `uv run update-contributors --update update_all`
 
 This script parses data from all-contributors bot `.json`
@@ -47,7 +52,7 @@ Running this script:
    who aren't always making explicit code contributions (and thus might not have commits). These contributors are
    reviewing guidebooks, participating in peer review, and performing other important tasks that are critical to
    pyOpenSci's mission. pyOpenSci acknowledges all contributions, regardless of volume or size.
-2. Updates the existing [contributors.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml)
+2. Updates the existing [contributors.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/contributors.yml)
    file found in the website repo with new contributors and the contributor role (package guides, code workflows, peer review, etc).
    If you run the script using `--update update_all`, it will also use the GitHub API to update the users' metadata from their GitHub profile.
 
@@ -120,8 +125,8 @@ To run:
 
 This final script uses the two pickle files to update information. It returns two output files:
 
-1. `_data/contributors.yml`
-2. `_data/packages.yml`
+1. `data/contributors.yml`
+2. `data/packages.yml`
 
 Both are stored in the `data/` directory, mirroring the pyOpenSci website's directory structure (see our website repo here)[https://www.github.com/pyopensci/pyopensci.github.io).
 
@@ -132,8 +137,8 @@ actions located here](https://github.com/pyOpenSci/pyopensci.github.io/tree/main
 
 ### Data that these scripts update / maintain
 
-* [website contributors.yml file](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml)
-* [website packages.yml file is here](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/packages.yml).
+* [website contributors.yml file](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/contributors.yml)
+* [website packages.yml file is here](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/packages.yml).
 
 ## Rate limiting
 

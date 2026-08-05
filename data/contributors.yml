@@ -421,7 +421,7 @@
   mastodon:
   orcidid:
   partners:
-  website: https://www.leouieda.com
+  website:
   board: false
   contributor_type:
     - leadership
@@ -1037,7 +1037,8 @@
   github_username: kysolvik
   github_image_id: 24379590
   title:
-  sort:
+    - Editor in Chief Team
+  sort: 1
   bio:
   organization:
   date_added: '2023-02-24'
@@ -3952,7 +3953,9 @@
     - astrodata
     - galfitools
     - martini
+    - milespy
     - pyautogalaxy
+    - solar-wavelength-calibration
     - stingray
   packages_submitted:
   packages_reviewed:
@@ -6600,18 +6603,48 @@
     - xnemogcm
   location: Gothenburg, Sweden
   email: c.rollo@outlook.com
+- name: Alexander Hasson
+  github_username: ahasson
+  github_image_id: 22514526
+  title:
+    - Editor
+  sort:
+  bio:
+  organization:
+  date_added: '2026-06-11'
+  deia_advisory: false
+  editorial_board: true
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid: 0000-0003-0815-9203
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - editor
+    - peer-review
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location:
+  email: alexander.hasson@gtc.ox.ac.uk
 - name: Romain Caneill
   github_username: rcaneill
   github_image_id: 18579092
   title:
+    - Editor
   sort:
   bio: Doctor in Physical Oceanography. Studying sea ice, ocean stratif,
-      buoyancy fluxes, nonlinear EOS, with numerical modelling (NextSIM, NEMO)
-      and observations.
+      buoyancy fluxes, nonlinear EOS, with numerical modelling (NEMO) and
+      observations.
   organization: Institut des Géosciences de l'Environnement
   date_added: '2024-05-07'
   deia_advisory: false
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -6622,10 +6655,12 @@
   website: https://romaincaneill.fr
   board: false
   contributor_type:
+    - editor
     - maintainer
     - peer-review
     - reviewer
     - submitting-author
+    - web-contrib
   packages_eic:
   packages_editor:
   packages_submitted:
@@ -6793,6 +6828,7 @@
   website:
   board: false
   contributor_type:
+    - open-education
     - package-guide
     - web-contrib
   packages_eic:
@@ -9429,6 +9465,7 @@
   packages_eic:
   packages_editor:
     - neonutilities
+    - nsevdx
   packages_submitted:
   packages_reviewed:
   location: La Plata, Argentina
@@ -9667,7 +9704,8 @@
   github_image_id: 34322936
   title:
     - Editor
-  sort: 2
+    - Editor in Chief Team
+  sort: 1
   bio: Graduate student at Université de Montréal studying astrophysics.
   organization:
   date_added: '2025-06-16'
@@ -9680,7 +9718,7 @@
   mastodon:
   orcidid:
   partners:
-  website:
+  website: https://crhea93.github.io/
   board: false
   contributor_type:
     - code-contrib
@@ -9692,11 +9730,16 @@
     - web-contrib
   packages_eic:
     - c4dynamics
+    - milespy
+    - nsevdx
+    - pyhctsa
+    - solar-wavelength-calibration
   packages_editor:
     - astropy
     - blockingpy
     - c4dynamics
     - piva
+    - pyhctsa
     - swiftgalaxy
   packages_submitted:
   packages_reviewed:
@@ -10514,11 +10557,14 @@
   website:
   board: false
   contributor_type:
+    - maintainer
     - peer-review
     - reviewer
+    - submitting-author
   packages_eic:
   packages_editor:
   packages_submitted:
+    - solar-wavelength-calibration
   packages_reviewed:
     - piva
   location:
@@ -11125,7 +11171,7 @@
   organization:
   date_added: '2025-10-17'
   deia_advisory: false
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -11143,6 +11189,7 @@
   packages_submitted:
   packages_reviewed:
     - blockingpy
+    - nsevdx
   location: Seattle, WA
   email: akrita.ag@gmail.com
 - name: Tymoteusz Strojny
@@ -11383,6 +11430,7 @@
   packages_reviewed:
     - astropy
     - c4dynamics
+    - nsevdx
   location: Bay Area
   email:
 - name:
@@ -11628,7 +11676,7 @@
   organization: STScI
   date_added: '2026-06-15'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -11655,7 +11703,7 @@
   organization: '@facebook'
   date_added: '2026-06-15'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -11682,7 +11730,7 @@
   organization: University of Exeter
   date_added: '2026-06-15'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -11696,6 +11744,7 @@
     - maintainer
     - peer-review
     - submitting-author
+    - web-contrib
   packages_eic:
   packages_editor:
   packages_submitted:
@@ -11712,7 +11761,7 @@
   organization:
   date_added: '2026-06-15'
   deia_advisory: false
-  editorial_board:
+  editorial_board: false
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -11732,4 +11781,329 @@
     - c4dynamics
   packages_reviewed:
   location: Israel
+  email:
+- name: Shauna Gordon-McKeon
+  github_username: shaunagm
+  github_image_id: 1179362
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://www.shaunagm.net
+  board: false
+  contributor_type:
+    - web-contrib
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location:
+  email:
+- name:
+  github_username: johoelken
+  github_image_id: 225843429
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - solar-wavelength-calibration
+  location:
+  email:
+- name: Hannu Parviainen
+  github_username: hpparvi
+  github_image_id: 327523
+  title:
+  sort:
+  bio: Ramón y Cajal Fellow studying exoplanets in the Instituto de
+      Astrofísica de Canarias.
+  organization: Instituto de Astrofísica de Canarias (IAC)
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - solar-wavelength-calibration
+  location: La Laguna, Tenerife, Spain
+  email: hpparvi@gmail.com
+- name: Kristen Larson
+  github_username: krislars
+  github_image_id: 6710382
+  title:
+  sort:
+  bio: Formerly at Western Washington University, now at the National Solar
+      Observatory.
+  organization:
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - solar-wavelength-calibration
+  packages_reviewed:
+  location: Denver, CO
+  email: krislars@gmail.com
+- name: Fraser Watson
+  github_username: fraserwatson
+  github_image_id: 10841545
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - solar-wavelength-calibration
+  packages_reviewed:
+  location:
+  email:
+- name: Alysa Derks
+  github_username: A-Derks
+  github_image_id: 72944965
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - solar-wavelength-calibration
+  packages_reviewed:
+    - milespy
+  location:
+  email:
+- name: Joshua Moore
+  github_username: joshuabmoore
+  github_image_id: 102399896
+  title:
+  sort:
+  bio: USYD PhD candidate
+  organization: '@DynamicsAndNeuralSystems'
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://jmoo2880@sydney.edu.au
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - pyhctsa
+  packages_reviewed:
+  location: School of Physics, The University of Sydney
+  email:
+- name: Ben Fulcher
+  github_username: benfulcher
+  github_image_id: 4446070
+  title:
+  sort:
+  bio: I use methods from physics and statistics to understand the structure
+      and dynamics of complex systems like the brain
+  organization: '@DynamicsAndNeuralSystems'
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter: bendfulcher
+  mastodon:
+  orcidid:
+  partners:
+  website: https://www.benfulcher.com
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - pyhctsa
+  packages_reviewed:
+  location: Sydney, Australia
+  email:
+- name: Nischal Kafle
+  github_username: Nischalcs50
+  github_image_id: 70331795
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://nischalcs50.github.io/
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - nsevdx
+  packages_reviewed:
+  location:
+  email:
+- name: Ricky O'Steen
+  github_username: rosteen
+  github_image_id: 39831871
+  title:
+  sort:
+  bio:
+  organization: STScI
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - milespy
+  location:
+  email:
+- name: Isaac Alonso
+  github_username: isaac-aa
+  github_image_id: 19895420
+  title:
+  sort:
+  bio: PhD in Astrophysics | Research Software Engineer
+  organization: Instituto de Astrofísica de Canarias
+  date_added: '2026-08-05'
+  deia_advisory: false
+  editorial_board:
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - milespy
+  packages_reviewed:
+  location:
   email:

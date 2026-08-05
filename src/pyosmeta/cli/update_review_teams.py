@@ -20,13 +20,13 @@ To run: update_reviewers
 
 """
 
-import os
 from datetime import datetime
 
 from pydantic import ValidationError
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
+from pyosmeta.constants import CONTRIBUTORS_REL_PATH, PACKAGES_REL_PATH
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import clean_export_yml, load_pickle
 from pyosmeta.github_api import GitHubAPI
@@ -45,7 +45,7 @@ def process_user(
     """Updates a ReviewUser which represents software review participant
 
     The contributor entry looks something like this:
-    https://github.com/pyOpenSci/pyopensci.github.io/blob/main/_data/contributors.yml
+    https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/contributors.yml
     - name: First Last
         github_username: ghid
         github_image_id: 7649194
@@ -191,8 +191,8 @@ def main():
     contribs_ls = [model.model_dump() for model in contribs.values()]
     pkgs_ls = [model.model_dump() for model in packages.values()]
 
-    clean_export_yml(contribs_ls, os.path.join("_data", "contributors.yml"))
-    clean_export_yml(pkgs_ls, os.path.join("_data", "packages.yml"))
+    clean_export_yml(contribs_ls, CONTRIBUTORS_REL_PATH)
+    clean_export_yml(pkgs_ls, PACKAGES_REL_PATH)
 
 
 if __name__ == "__main__":

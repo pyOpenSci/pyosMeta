@@ -18,16 +18,12 @@ import pickle
 
 import git
 
+from pyosmeta.constants import CONTRIBUTORS_RAW_URL, CONTRIBUTORS_REL_PATH
 from pyosmeta.file_io import open_yml_file
 
 
 def main():
-    base_url = "https://raw.githubusercontent.com/pyOpenSci/"
-    web_yaml_path = (
-        base_url + "pyopensci.github.io/main/_data/contributors.yml"
-    )
-
-    web_contribs = open_yml_file(web_yaml_path)
+    web_contribs = open_yml_file(CONTRIBUTORS_RAW_URL)
 
     def find_name(name: str, a_list: dict[str, str]) -> str:
         for data in a_list:
@@ -38,7 +34,7 @@ def main():
         "/Users/leahawasser/Documents/GitHub/pyos/", "pyopensci.github.io"
     )
 
-    file_path = os.path.join("_data", "contributors.yml")
+    file_path = CONTRIBUTORS_REL_PATH
 
     if not os.path.isfile(os.path.join(repo_path, file_path)):
         raise ValueError(

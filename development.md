@@ -22,11 +22,22 @@ This creates a `.venv` in the repo, installs `pyosmeta` in editable mode, and in
 
 ### Setup a token to authenticate with the GitHub API
 
-Most of the CLI scripts call the GitHub API, so you'll need a token:
+Most of the CLI scripts call the GitHub API, so you'll need a token to interface with the GitHub API:
 
 1. [Create a fine-grained personal access token](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens) with "Repository Access" set to "Public Repositories (read-only)". No other configuration needed.
 2. Duplicate the `.env-default` file and rename the copy to `.env`.
 3. Assign your token to the `GITHUB_TOKEN` variable in the `.env` file.
+
+pyosMeta reads `GITHUB_TOKEN` from the `.env` file (via `python-dotenv`), so you don't need to export it in your shell's config file. If you ever do need to set it as a shell environment variable instead, first figure out what shell you're using:
+
+```console
+echo $SHELL
+```
+
+- If it returns `/bin/zsh`, open your config file with `code ~/.zshrc` and add `export GITHUB_TOKEN=your-token-here`.
+- If it returns `/bin/bash`, open your config file with `code ~/.bash_profile` and add `export GITHUB_TOKEN=your-token-here`.
+
+Restart your terminal (or run `source ~/.zshrc` / `source ~/.bash_profile`) for the change to take effect.
 
 ### Run the CLI scripts
 

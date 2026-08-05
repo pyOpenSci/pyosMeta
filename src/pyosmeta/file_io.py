@@ -5,6 +5,7 @@ from typing import Dict, List, Union
 import ruamel.yaml
 from ruamel.yaml import YAML
 
+from .constants import RAW_BASE_URL
 from .logging import logger
 
 
@@ -47,12 +48,11 @@ def create_paths(repos: Union[list[str], str]) -> Union[list[str], str]:
     Union[List[str], str]
         A list of URLs if `repos` is a list, or a single URL if `repos` is a string.
     """
-    base_url = "https://raw.githubusercontent.com/pyOpenSci/"
     end_url = "/main/.all-contributorsrc"
     if isinstance(repos, list):
-        all_paths = [base_url + repo + end_url for repo in repos]
+        all_paths = [RAW_BASE_URL + repo + end_url for repo in repos]
     else:
-        all_paths = base_url + repos + end_url
+        all_paths = RAW_BASE_URL + repos + end_url
 
     return all_paths
 
