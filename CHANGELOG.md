@@ -6,6 +6,15 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Feature: make paths in the package a constant defined in one place (@lwasser, #377)
+* Fix: rename `_data` to `data` to match the current pyopensci.github.io structure (@InessaPawson, #368)
+* Fix: typos and voice consistency in development docs (@lwasser, #373)
+* Fix: handle issues with a single reviewer in update-contribs (@banesullivan, #362)
+* Chore(ci): harden workflows, pin actions, add zizmor + dependabot cooldown (@banesullivan, #363)
+* Chore: update and pin actions across GitHub workflows (@willingc, #356)
+* Docs: revise security policy and reporting instructions (@willingc, #357)
+* Docs: add initial Sphinx docs structure (@Aniketsy, #353)
+
 ## [v1.7.7] - 2026-01-21
 
 * Bug fix: bypass URL validation errors due to flaky responses for DOIs and failed builds downstream (@banesullivan, #341)
