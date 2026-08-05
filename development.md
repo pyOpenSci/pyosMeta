@@ -1,34 +1,54 @@
 # Development Guide
 
-If you are working on pyosMeta development, you can use Hatch to simplify the setup of a pyosMeta development environment and execute development tasks.
+To work on pyosMeta, you'll use [uv](https://docs.astral.sh/uv/) to set up the development environment and run the package's CLI scripts.
 
-All of the hatch environment and script settings are defined in our project's pyproject.toml file.
+You'll use Hatch for running tests and for building/publishing releases. pyosMeta's test scripts and versioning are defined via Hatch (see [Running tests](#running-tests) and [pyosMeta build](#pyosmeta-build) below).
 
 ## Setup a development environment
 
-### Install hatch
+### Install uv
 
-1. Follow the [hatch installation instructions](https://www.pyopensci.org/python-package-guide/tutorials/get-to-know-hatch.html#install-hatch).
-2. Open a new terminal and run `hatch --version` to verify that `hatch` is available.
+Follow the [uv installation instructions](https://docs.astral.sh/uv/getting-started/installation/), then open a new terminal and run `uv --version` to verify it's available.
 
-### Open a local dev environment using hatch
+### Create the environment and install dependencies
 
-In a terminal, enter:
+From the repo root, run:
 
-`hatch shell`
+```console
+uv sync --extra dev
+```
 
-You will now have an activated virtual environment.
+This creates a `.venv` in the repo, installs `pyosmeta` in editable mode, and installs the `dev` dependencies (pytest, black, flake8, pre-commit, etc.) defined in `pyproject.toml`.
 
-[To learn more about working with Hatch environments, check out this tutorial](https://hatch.pypa.io/dev/tutorials/environment/basic-usage/)
-which explains how hatch uses environments.
+### Setup a token to authenticate with the GitHub API
 
-To deactivate an environment, enter:
+Most of the CLI scripts call the GitHub API, so you'll need a token:
 
-`deactivate`
+1. [Create a fine-grained personal access token](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens) with "Repository Access" set to "Public Repositories (read-only)". No other configuration needed.
+2. Duplicate the `.env-default` file and rename the copy to `.env`.
+3. Assign your token to the `GITHUB_TOKEN` variable in the `.env` file.
+
+### Run the CLI scripts
+
+Use `uv run` to execute any of the package's CLI entry points without manually activating the virtual environment:
+
+```console
+uv run update-contributors
+uv run update-reviews
+uv run update-review-teams
+uv run parse-history
+uv run fetch-rss-feed
+```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for what each script does and the flags it accepts (e.g. `uv run update-contributors --update update_all`).
+
+If you'd rather activate the virtual environment directly, run `source .venv/bin/activate`, then call the scripts directly (e.g. `update-contributors`). To deactivate, run `deactivate`.
 
 ## Running tests
 
-We use Hatch scripts to automate workflows. 🚀
+To run tests, you need to [install hatch](https://www.pyopensci.org/python-package-guide/tutorials/get-to-know-hatch.html#install-hatch) alongside uv.
+
+Hatch scripts automate the test workflows. 🚀
 
 To run tests, there is a single hatch environment that can be used with one of three
 script options.
@@ -43,15 +63,13 @@ script options.
 3. To run tests with an XML report generated, use:
    `hatch run test:run-report`
 
-   The hatch run-report script is the script used in our CI test action.
+   The `run-report` script is the one used in the CI test action.
 
-
-When you run a hatch command, Hatch will search for an existing environment. If it doesn't exist, it will create it using the instructions provided in our pyproject.toml file. It will automatically install pyosMeta in development mode in that environment.
+When you run a Hatch command, Hatch will search for an existing environment. If it doesn't exist, it will create it using the instructions provided in the `pyproject.toml` file. It will automatically install pyosMeta in development mode in that environment.
 
 ### Modify test scripts
 
-You can look at this section in our
-pyproject.toml file to modify how scripts are run:
+If you need to modify or update test scripts, go to the `[tool.hatch.envs.test.scripts]` table in the `pyproject.toml` file to see the available scripts and their definitions.
 
 ```toml
 [tool.hatch.envs.test.scripts]
@@ -62,26 +80,26 @@ run-report = "run-coverage --cov-report=xml:coverage.xml"
 
 ## pyosMeta build
 
-pyosMeta uses hatchling as its build backend.
+pyosMeta uses `hatchling` as its build backend.
 
 ### Build a local package
 
-To build the package locally and create a local sdist and wheel, run:
+To build the package locally and create a local `sdist` and `wheel`, run:
 
 `hatch build`
 
 ### Package versioning
 
-We use `hatch_vcs` which uses `setuptools_scm` under the hood to track pyosMeta versions. `Hatch-vcs`
-uses the most current tag in the repository to determine what version of the package is being built. This means that if you try to build the package locally and haven't fetched all tags, it could create a dated version of our package (locally)!
-Under the hood, `hatch_vcs` generates a `_version_generated.py` file when it builds using the latest tag.
+pyosMeta uses `hatch-vcs`, which uses `setuptools_scm` under the hood to track versions. `hatch-vcs`
+uses the most current git tag in the repository to determine what version of the package is being built. This means that if you try to build the package locally and haven't fetched all tags, it could create a dated version of the package (locally)!
+Under the hood, `hatch-vcs` generates a `_version_generated.py` file when it builds using the latest tag.
 
 The `_version_generated.py` file should NEVER
-be committed to version control. It should be ignored via our `.gitignore` file
+be committed to version control. It should be ignored via the `.gitignore` file.
 
 When you run `hatch build`, Hatch will:
 
-1. Create a `dist` directory with the wheel and the package sdist tarball. You can see the version of `pyosMeta` in the name of those files:
+1. Create a `dist` directory with the wheel and the package `sdist` tarball. You can see the version of `pyosMeta` in the name of those files:
 
 ```console
 dist/
@@ -89,7 +107,7 @@ dist/
    pyosmeta-1.0.0.post27.tar.gz
 ```
 
-2. Invoke build to call `setuptools_scm` (via Hatch-vcs) to create a `_version_generated.py` file in the pyosMeta package directory:
+1. Invoke build to call `setuptools_scm` (via `hatch-vcs`) to create a `_version_generated.py` file in the pyosMeta package directory:
 
 ```console
 pyosmeta/
@@ -97,11 +115,10 @@ pyosmeta/
         _version_generated.py
 ```
 
-
-Our release workflow is automated and can be triggered and run using the
+The release workflow is automated and can be triggered and run using the
 GitHub.com interface.
 
-We follow [semantic version](https://semver.org/) best practices for our release workflow as follows:
+pyosMeta's release workflow follows [semantic versioning](https://semver.org/) best practices:
 
 - MAJOR version when you make incompatible API changes
 - MINOR version when you add functionality in a backward-compatible manner
@@ -110,22 +127,22 @@ We follow [semantic version](https://semver.org/) best practices for our release
 ### How to make a release to PyPI
 
 ```{note}
-The build workflow explained below will run on every merge to the main branch of pyosMeta to ensure that our distribution files are still valid.
+The build workflow explained below will run on every merge to the main branch of pyosMeta to ensure that the distribution files are still valid.
 ```
 
 To make a release:
 
-- ✔️ 1. Determine with the other maintainers what release version we are moving to.
+- ✔️ 1. Determine with the other maintainers what release version you are moving to.
 - ✔️ 2. Create a new **pull request** that does the following:
 
   - Organizes the `CHANGELOG.md` unreleased items into added, fixed, and changed sections
   - Lists contributors to this release using GitHub handles
   - Adds the version number of that specific release.
 
-Below is an example of the changelog changes when
-we bumped to version 1.0 of pyosMeta.
+Below is an example of the changelog changes made when
+pyosMeta was bumped to version 1.0.
 
-```
+```text
 ## Unreleased
 
 ## [v1.4] - 2024-11-22
@@ -159,16 +176,14 @@ This is the ONLY manual step in the release workflow. Be sure to create the corr
 
 Copy the updated changelog information into the release body or use the <kbd>Generate Release Notes</kbd> button to generate release notes automatically.
 
-- ✔️ 5. Hit `publish release`
+- ✔️ 5. Hit `Publish release`
 
 When you publish the release, a GitHub action will be enabled that builds the wheel and SDist.
 
 ![Animated gif showing what the publish to pypi release workflow looks like](images/release.gif)
 
-- ✔️ 6. Authorize the deploy step of the build: The final step is to authorize the deployment to PyPI. Our build uses a GitHub environment called `PyPI` that is connected to our pyosMeta PyPI account using PyPI's trusted publisher workflow. Only our core maintenance team can authorize an action to run using this environment.
+- ✔️ 6. Authorize the deploy step of the build: The final step is to authorize the deployment to PyPI. pyosMeta's build uses a GitHub environment called `PyPI` that is connected to the pyosMeta PyPI account using PyPI's trusted publisher workflow. Only the core maintenance team can authorize an action to run using this environment.
 
 ![Once you have created a release, as a maintainer, you can approve the automated deployment process for `pyosMeta` by going to the actions tab and clicking on the current publish-pypi.yml workflow run.](/images/release-deploy.gif)
-
-![](/images/release-deploy.gif)
 
 Congratulations! You've just created a pyosMeta release.
