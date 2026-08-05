@@ -6,7 +6,10 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Fix: permissions issue in reusable workflow
+
 ## [v1.7.9] - 2026-08-05
+
 * Feature: make paths in the package a constant defined in one place (@lwasser, #377)
 * Fix: rename `_data` to `data` to match the current pyopensci.github.io structure (@InessaPawson, #368)
 * Fix: typos and voice consistency in development docs (@lwasser, #373)

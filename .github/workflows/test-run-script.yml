@@ -12,5 +12,7 @@ jobs:
   test_run_script_job:
     name: Test run-script
     uses: ./.github/workflows/run-script.yml
+    permissions:
+      contents: read
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
