@@ -2,7 +2,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from pyosmeta.constants import REPO_CONTRIB_TYPES
 from pyosmeta.contributors import ProcessContributors
+from pyosmeta.file_io import create_paths
 from pyosmeta.github_api import GitHubAPI
 
 
@@ -38,6 +40,17 @@ def test_check_contrib_type(process_contributors):
         process_contributors.check_contrib_type("pyosMeta") == "code-contrib"
     )
     assert process_contributors.check_contrib_type("other") == "community"
+
+
+def test_check_contrib_type_matches_all_contrib_repos(process_contributors):
+    """Every URL built via create_paths() for a repo in REPO_CONTRIB_TYPES
+    must classify back to that repo's mapped contrib_type. This guards
+    against repo-name casing/typo drift between the URL-building list and
+    the classification mapping (e.g. the historical "pyosmeta" vs
+    "pyosMeta" mismatch)."""
+    for repo, expected_type in REPO_CONTRIB_TYPES.items():
+        url = create_paths(repo)
+        assert process_contributors.check_contrib_type(url) == expected_type
 
 
 @patch("requests.get")

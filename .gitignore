@@ -159,3 +159,4 @@ src/pyosmeta/_version.py
 token.txt
 
 .bash_profile
+.cursor/
