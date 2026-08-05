@@ -22,11 +22,23 @@ To run:
 This script parses data from all-contributors bot `.json`
 files in the following repos:
 
-* [software-submission repo](https://github.com/pyOpenSci/software-submission) where peer review happens
-* [python-package-guide repo](https://github.com/pyOpenSci/python-package-guide)
-* [peer review guide repo](https://github.com/pyOpenSci/software-peer-review)
-* [pyopensci.github.io (website) repo](https://github.com/pyOpenSci/pyopensci.github.io)
-* [update-package-meta repo](https://github.com/pyOpenSci/update-web-metadata) *(this repo)*
+* [python-package-guide](https://github.com/pyOpenSci/python-package-guide)
+* [software-peer-review](https://github.com/pyOpenSci/software-peer-review) (peer review guide)
+* [pyopensci.github.io](https://github.com/pyOpenSci/pyopensci.github.io) (website)
+* [software-review](https://github.com/pyOpenSci/software-review)
+* [pyosMeta](https://github.com/pyOpenSci/pyosMeta) *(this repo)*
+* [handbook](https://github.com/pyOpenSci/handbook)
+* [software-submission](https://github.com/pyOpenSci/software-submission) where peer review happens
+* [metrics](https://github.com/pyOpenSci/metrics)
+* [pyosPackage](https://github.com/pyOpenSci/pyosPackage)
+* [pyos-sphinx-theme](https://github.com/pyOpenSci/pyos-sphinx-theme)
+* [lessons](https://github.com/pyOpenSci/lessons)
+* [pyos-package-template](https://github.com/pyOpenSci/pyos-package-template)
+
+This list is defined in the `repos` variable in
+[`update_contributors.py`](./src/pyosmeta/cli/update_contributors.py), which
+is the source of truth. Update the list there first, and then update this
+doc to match.
 
 Running this script:
 
