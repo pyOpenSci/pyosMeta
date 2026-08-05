@@ -245,7 +245,8 @@
       "contributions": [
         "review",
         "code",
-        "infra"
+        "infra",
+        "bug"
       ]
     }
   ],
