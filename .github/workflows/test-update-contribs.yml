@@ -53,8 +53,8 @@ jobs:
           # https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs
           token: ${{ secrets.PYOS_PR_TOKEN }}
           add-paths: |
-            _data/contributors.yml
-            _data/packages.yml
+            data/contributors.yml
+            data/packages.yml
           author: Leah <leah@pyopensci.org>
           base: main
           branch: contribs

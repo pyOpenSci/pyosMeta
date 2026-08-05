@@ -1,6 +1,6 @@
 """
 A CLI script that parses through our existing contributor list stored
-in pyopensci.github.io repo in the _data/contributors.yml file.
+in pyopensci.github.io repo in the data/contributors.yml file.
 
 This script should respect if a persons's name is in the contributor file,
 then it should be able to retain that name as their desired name (they can update
@@ -17,6 +17,7 @@ from pydantic import ValidationError
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
+from pyosmeta.constants import CONTRIBUTORS_RAW_URL
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import create_paths, load_pickle, open_yml_file
 from pyosmeta.github_api import GitHubAPI
@@ -58,12 +59,7 @@ def main():
     json_files = create_paths(repos)
 
     # Get existing contribs from pyopensci.github.io repo (website data)
-    base_url = "https://raw.githubusercontent.com/pyOpenSci/"
-    web_yaml_path = (
-        base_url + "pyopensci.github.io/main/_data/contributors.yml"
-    )
-
-    web_contribs = open_yml_file(web_yaml_path)
+    web_contribs = open_yml_file(CONTRIBUTORS_RAW_URL)
 
     # Populate all existing contribs into model objects
     all_contribs = {}
