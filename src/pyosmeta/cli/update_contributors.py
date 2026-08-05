@@ -17,7 +17,7 @@ from pydantic import ValidationError
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-from pyosmeta.constants import CONTRIBUTORS_RAW_URL
+from pyosmeta.constants import CONTRIB_REPOS, CONTRIBUTORS_RAW_URL
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.file_io import create_paths, load_pickle, open_yml_file
 from pyosmeta.github_api import GitHubAPI
@@ -42,21 +42,7 @@ def main():
     if update_value:
         update_all = True
 
-    repos = [
-        "python-package-guide",
-        "software-peer-review",
-        "pyopensci.github.io",
-        "software-review",
-        "pyosmeta",
-        "handbook",
-        "software-submission",
-        "metrics",
-        "pyosPackage",
-        "pyos-sphinx-theme",
-        "lessons",
-        "pyos-package-template",
-    ]
-    json_files = create_paths(repos)
+    json_files = create_paths(CONTRIB_REPOS)
 
     # Get existing contribs from pyopensci.github.io repo (website data)
     web_contribs = open_yml_file(CONTRIBUTORS_RAW_URL)

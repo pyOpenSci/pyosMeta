@@ -4,6 +4,7 @@ from typing import Any, List, Optional, Tuple
 
 import requests
 
+from .constants import REPO_CONTRIB_TYPES
 from .github_api import GitHubAPI
 from .logging import logger
 
@@ -83,32 +84,10 @@ class ProcessContributors:
             Contribution type.
         """
 
-        if any(
-            key in json_file
-            for key in ["software-submission", "software-peer-review"]
-        ):
-            # TODO: change this to programs - peer review
-            contrib_type = "peer-review-guide"
-        elif any(
-            key in json_file
-            for key in [
-                "python-package-guide",
-                "pyosPackage",
-                "pyos-package-template",
-            ]
-        ):
-            # TODO consider change this to python-packaging
-            contrib_type = "package-guide"
-        # TODO: technically packaging guide is open-education too
-        elif "lessons" in json_file:
-            contrib_type = "open-education"
-        elif "pyopensci.github.io" in json_file:
-            contrib_type = "web-contrib"
-        elif "pyosMeta" in json_file or "metrics" in json_file:
-            contrib_type = "code-contrib"
-        else:
-            contrib_type = "community"
-        return contrib_type
+        for repo, contrib_type in REPO_CONTRIB_TYPES.items():
+            if repo in json_file:
+                return contrib_type
+        return "community"
 
     # Possibly github it is a get request but it says json path
     def load_json(self, json_path: str) -> dict:
