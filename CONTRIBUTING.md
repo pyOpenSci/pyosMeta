@@ -111,7 +111,7 @@ This final script uses the two pickle files to update information. It returns tw
 1. `_data/contributors.yml`
 2. `_data/packages.yml`
 
-Both are stored in the `data/` directory, mirroring the pyOpenSci website's directory structure.
+Both are stored in the `data/` directory, mirroring the pyOpenSci website's directory structure (see our website repo here)[https://www.github.com/pyopensci/pyopensci.github.io).
 
 ## How these scripts are used at pyOpenSci
 
