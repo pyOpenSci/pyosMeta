@@ -38,6 +38,7 @@ class RepositoryHost(str, Enum):
     github = "github"
     gitlab = "gitlab"
     codeberg = "codeberg"
+    bitbucket = "bitbucket"
 
     @classmethod
     def from_url(cls, url: str) -> "RepositoryHost":
@@ -59,6 +60,8 @@ class RepositoryHost(str, Enum):
             return cls.gitlab
         elif "codeberg.org" in url:
             return cls.codeberg
+        elif "bitbucket.org" in url:
+            return cls.bitbucket
         else:
             return cls.other
 

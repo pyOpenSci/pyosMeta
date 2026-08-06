@@ -254,7 +254,15 @@ class GitHubAPI:
                 continue
 
             previous_meta = existing_gh_meta.get(pkg_name.lower())
-            new_meta = self.get_repo_meta_github(owner_repo)
+            try:
+                new_meta = self.get_repo_meta_github(owner_repo)
+            except Exception:
+                logger.warning(
+                    f"Unexpected error fetching GitHub metrics for {pkg_name}. "
+                    "Treating this package as a failed fetch.",
+                    exc_info=True,
+                )
+                new_meta = None
 
             if new_meta is not None:
                 reviews[pkg_name].gh_meta = new_meta
@@ -493,7 +501,7 @@ class GitHubAPI:
     def get_repo_meta_github(
         self, repo_info: dict[str, str]
     ) -> dict[str, Any] | None:
-        """Get GitHub metrics from the GitHub GraphQL API for a repository.
+        """Get GitHub metadata for a repository, REST-first.
 
         Parameters
         ----------
@@ -508,12 +516,18 @@ class GitHubAPI:
 
         Notes
         -----
-        This method makes a GraphQL call to the GitHub API to retrieve metadata
-        about a pyos reviewed package repository.
+        REST (`_get_metrics_rest`) is the primary and only source used here
+        for repository metadata, so this works with a general token without
+        requiring org membership or elevated permissions. Contributor count
+        is fetched separately via `_get_contrib_count_rest`, since it isn't
+        part of the main repo metadata endpoint.
+
+        `_get_metrics_graphql` is kept temporarily as deprecated, non-critical
+        code (see implementation plan Step 6) and is no longer called here.
 
         If the repository is not found or access is forbidden, it returns None.
         """
-        metrics = self._get_metrics_graphql(repo_info)
+        metrics = self._get_metrics_rest(repo_info)
         if metrics is not None:
             metrics["contrib_count"] = self._get_contrib_count_rest(repo_info)
 

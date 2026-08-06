@@ -117,6 +117,27 @@ class TestGetMetrics:
 
         assert reviews["sunpy"].gh_meta is None
 
+    def test_unexpected_exception_does_not_stop_the_batch(
+        self, mocker, review, endpoints, old_meta
+    ):
+        """An unexpected exception (e.g. a network error) from
+        get_repo_meta_github for one package must not crash the batch -
+        it should be treated like a failed fetch, falling back to
+        previously saved metrics."""
+        github_api = GitHubAPI()
+        mocker.patch.object(
+            github_api,
+            "get_repo_meta_github",
+            side_effect=RuntimeError("boom"),
+        )
+
+        reviews = github_api.get_metrics(
+            endpoints, {"sunpy": review}, {"sunpy": old_meta}
+        )
+
+        assert reviews["sunpy"].gh_meta is not None
+        assert reviews["sunpy"].gh_meta.stargazers_count == 500
+
     def test_skips_non_github_hosts(self, mocker, endpoints, old_meta):
         """Non-GitHub repos should be skipped without touching gh_meta."""
         review = ReviewModel(

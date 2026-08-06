@@ -189,7 +189,9 @@ def test_gh_meta_field_mapping_matches_model_fields():
     assert required_fields == model_fields
     assert required_fields == mapped_fields.union({"contrib_count"})
     assert mapping["last_commit_source"] == "pushed_at"
-    assert mapping["contrib_source"] == "GET /repos/{owner}/{repo}/contributors"
+    assert (
+        mapping["contrib_source"] == "GET /repos/{owner}/{repo}/contributors"
+    )
 
 
 @pytest.fixture
@@ -233,7 +235,9 @@ def test_get_metrics_rest_successful(mocker, rest_repo_response):
     }
 
 
-def test_get_metrics_rest_normalizes_empty_homepage(mocker, rest_repo_response):
+def test_get_metrics_rest_normalizes_empty_homepage(
+    mocker, rest_repo_response
+):
     """Test that an empty-string homepage is normalized to None."""
     rest_repo_response["homepage"] = ""
     mock_response = mocker.Mock()
@@ -300,3 +304,55 @@ def test_get_metrics_rest_unexpected_error(mocker, caplog):
 
     assert metrics is None
     assert "Unexpected HTTP error" in caplog.text
+
+
+def test_get_repo_meta_github_is_rest_first(mocker):
+    """Test that get_repo_meta_github uses REST for metadata (not GraphQL)
+    and merges in contrib_count from the separate contributors call."""
+    github_api = GitHubAPI()
+    rest_metrics = {
+        "name": "pyosmeta",
+        "description": "A package for pyOS metadata.",
+        "documentation": None,
+        "created_at": "2020-01-01T00:00:00Z",
+        "stargazers_count": 42,
+        "watchers_count": 42,
+        "open_issues_count": 3,
+        "forks_count": 5,
+        "last_commit": "2024-06-01T00:00:00Z",
+    }
+    mock_rest = mocker.patch.object(
+        github_api, "_get_metrics_rest", return_value=dict(rest_metrics)
+    )
+    mock_graphql = mocker.patch.object(github_api, "_get_metrics_graphql")
+    mock_contrib = mocker.patch.object(
+        github_api, "_get_contrib_count_rest", return_value=7
+    )
+
+    metrics = github_api.get_repo_meta_github(
+        {"owner": "pyopensci", "repo_name": "pyosmeta"}
+    )
+
+    mock_rest.assert_called_once_with(
+        {"owner": "pyopensci", "repo_name": "pyosmeta"}
+    )
+    mock_graphql.assert_not_called()
+    mock_contrib.assert_called_once_with(
+        {"owner": "pyopensci", "repo_name": "pyosmeta"}
+    )
+    assert metrics == {**rest_metrics, "contrib_count": 7}
+
+
+def test_get_repo_meta_github_returns_none_when_rest_fails(mocker):
+    """Test that a failed REST fetch returns None without calling the
+    contributors endpoint."""
+    github_api = GitHubAPI()
+    mocker.patch.object(github_api, "_get_metrics_rest", return_value=None)
+    mock_contrib = mocker.patch.object(github_api, "_get_contrib_count_rest")
+
+    metrics = github_api.get_repo_meta_github(
+        {"owner": "pyopensci", "repo_name": "pyosmeta"}
+    )
+
+    assert metrics is None
+    mock_contrib.assert_not_called()

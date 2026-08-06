@@ -104,6 +104,7 @@ def main():
     # Contrib count is only available via rest api
     logger.info("Getting GitHub metrics for all packages...")
     repo_paths = process_review.get_repo_paths(accepted_reviews)
+    # Grab existing gh metadata from the packages.yml file in the website repo
     existing_gh_meta = get_existing_gh_meta()
     all_reviews = github_api.get_metrics(
         repo_paths, accepted_reviews, existing_gh_meta
