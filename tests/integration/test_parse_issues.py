@@ -135,12 +135,15 @@ def test_missing_community_partnerships(caplog, process_issues, data_file):
     """
     Test handling of issues with a missing "## Community Partnerships" section.
 
-    This is a smoke test to ensure graceful handling of this case.
+    This section is optional (a newer template field many older reviews
+    lack), so a missing section should be handled gracefully and silently -
+    no warning logged.
     """
     review = data_file("reviews/missing_community_partnerships.txt", True)
     with caplog.at_level(logging.WARNING):
         review = process_issues.parse_issue(review)
-    assert "## Community Partnerships not found in the list" in caplog.text
+    assert review.partners is None
+    assert "## Community Partnerships not found in the list" not in caplog.text
 
 
 def test_multiple_editors_and_eic(process_issues, data_file):
