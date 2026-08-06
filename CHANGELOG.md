@@ -6,7 +6,8 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
-* Fix: permissions issue in reusable workflow
+* Fix: handle GitHub API errors, ensure metadata are overwritten, use REST API for metadata and stop the run early (@lwasser, #384)
+* Fix: permissions issue in reusable workflow (@lwasser, #382)
 
 ## [v1.7.9] - 2026-08-05
 

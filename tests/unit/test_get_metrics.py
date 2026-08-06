@@ -1,6 +1,6 @@
 import pytest
 
-from pyosmeta.github_api import GitHubAPI
+from pyosmeta.github_api import GitHubAPI, GitHubAPIError
 from pyosmeta.models import ReviewModel
 from pyosmeta.models.base import GhMeta
 
@@ -137,6 +137,61 @@ class TestGetMetrics:
 
         assert reviews["sunpy"].gh_meta is not None
         assert reviews["sunpy"].gh_meta.stargazers_count == 500
+
+    def test_fatal_error_falls_back_for_current_package(
+        self, mocker, review, endpoints, old_meta
+    ):
+        """A GitHubAPIError (401 or rate-limit-exhausted 403) for a
+        package must not crash the batch - it should fall back to
+        previously saved metrics, just like any other failed fetch."""
+        github_api = GitHubAPI()
+        mocker.patch.object(
+            github_api,
+            "get_repo_meta_github",
+            side_effect=GitHubAPIError("401 Unauthorized"),
+        )
+
+        reviews = github_api.get_metrics(
+            endpoints, {"sunpy": review}, {"sunpy": old_meta}
+        )
+
+        assert reviews["sunpy"].gh_meta is not None
+        assert reviews["sunpy"].gh_meta.stargazers_count == 500
+
+    def test_fatal_error_stops_remaining_packages_from_being_fetched(
+        self, mocker, old_meta
+    ):
+        """Once a GitHubAPIError occurs, no further API calls should be
+        made for remaining packages - they should go straight to fallback
+        (or stay empty if nothing was saved)."""
+        endpoints = {
+            "sunpy": {"owner": "sunpy", "repo_name": "sunpy"},
+            "other-pkg": {"owner": "other", "repo_name": "other-pkg"},
+        }
+        reviews_input = {
+            "sunpy": ReviewModel(
+                package_name="sunpy",
+                repository_link="https://github.com/sunpy/sunpy",
+            ),
+            "other-pkg": ReviewModel(
+                package_name="other-pkg",
+                repository_link="https://github.com/other/other-pkg",
+            ),
+        }
+        github_api = GitHubAPI()
+        mock_fetch = mocker.patch.object(
+            github_api,
+            "get_repo_meta_github",
+            side_effect=GitHubAPIError("403 rate limit exhausted"),
+        )
+
+        reviews = github_api.get_metrics(
+            endpoints, reviews_input, {"sunpy": old_meta}
+        )
+
+        mock_fetch.assert_called_once()
+        assert reviews["sunpy"].gh_meta.stargazers_count == 500
+        assert reviews["other-pkg"].gh_meta is None
 
     def test_skips_non_github_hosts(self, mocker, endpoints, old_meta):
         """Non-GitHub repos should be skipped without touching gh_meta."""

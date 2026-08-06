@@ -5,7 +5,7 @@ import secrets
 import pytest
 
 from pyosmeta import github_api
-from pyosmeta.github_api import GitHubAPI
+from pyosmeta.github_api import GitHubAPI, GitHubAPIError
 from pyosmeta.models.base import GhMeta
 
 
@@ -270,11 +270,12 @@ def test_get_metrics_rest_not_found(mocker, caplog):
     assert "Repository not found" in caplog.text
 
 
-def test_get_metrics_rest_forbidden(mocker, caplog):
-    """Test that a 403 response returns None and logs a warning."""
+def test_get_metrics_rest_forbidden_permission_denied(mocker, caplog):
+    """Test that a 403 without an exhausted rate limit (e.g. a private or
+    blocked repo) returns None and logs a warning, without raising."""
     mock_response = mocker.Mock()
     mock_response.status_code = 403
-    mock_response.text = "rate limited"
+    mock_response.text = "permission denied"
     mock_response.headers = {}
     mocker.patch("requests.get", return_value=mock_response)
 
@@ -286,7 +287,42 @@ def test_get_metrics_rest_forbidden(mocker, caplog):
         )
 
     assert metrics is None
-    assert "API limit" in caplog.text
+    assert "Forbidden" in caplog.text
+
+
+def test_get_metrics_rest_forbidden_rate_limit_exhausted(mocker):
+    """Test that a 403 with X-RateLimit-Remaining: 0 raises GitHubAPIError
+    instead of being treated as a single-package failure."""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 403
+    mock_response.text = "rate limited"
+    mock_response.headers = {
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "1700000000",
+    }
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api = GitHubAPI()
+
+    with pytest.raises(GitHubAPIError, match="rate limit exhausted"):
+        github_api._get_metrics_rest(
+            {"owner": "pyopensci", "repo_name": "pyosmeta"}
+        )
+
+
+def test_get_metrics_rest_unauthorized(mocker):
+    """Test that a 401 raises GitHubAPIError instead of being treated
+    as a single-package failure."""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 401
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api = GitHubAPI()
+
+    with pytest.raises(GitHubAPIError, match="401 Unauthorized"):
+        github_api._get_metrics_rest(
+            {"owner": "pyopensci", "repo_name": "pyosmeta"}
+        )
 
 
 def test_get_metrics_rest_unexpected_error(mocker, caplog):
@@ -306,9 +342,41 @@ def test_get_metrics_rest_unexpected_error(mocker, caplog):
     assert "Unexpected HTTP error" in caplog.text
 
 
+def test_get_contrib_count_rest_successful(mocker):
+    """Test that the contributor count matches the length of the
+    contributors list returned by _get_response_rest."""
+    github_api = GitHubAPI()
+    mocker.patch.object(
+        github_api,
+        "_get_response_rest",
+        return_value=[{"login": "a"}, {"login": "b"}, {"login": "c"}],
+    )
+
+    count = github_api._get_contrib_count_rest(
+        {"owner": "pyopensci", "repo_name": "pyosmeta"}
+    )
+
+    assert count == 3
+
+
+def test_get_contrib_count_rest_no_contributors(mocker, caplog):
+    """Test that an empty contributors list returns None and logs a
+    warning."""
+    github_api = GitHubAPI()
+    mocker.patch.object(github_api, "_get_response_rest", return_value=[])
+
+    with caplog.at_level(logging.WARNING):
+        count = github_api._get_contrib_count_rest(
+            {"owner": "pyopensci", "repo_name": "pyosmeta"}
+        )
+
+    assert count is None
+    assert "Repository not found" in caplog.text
+
+
 def test_get_repo_meta_github_is_rest_first(mocker):
-    """Test that get_repo_meta_github uses REST for metadata (not GraphQL)
-    and merges in contrib_count from the separate contributors call."""
+    """Test that get_repo_meta_github uses REST for metadata and merges in
+    contrib_count from the separate contributors call."""
     github_api = GitHubAPI()
     rest_metrics = {
         "name": "pyosmeta",
@@ -324,7 +392,6 @@ def test_get_repo_meta_github_is_rest_first(mocker):
     mock_rest = mocker.patch.object(
         github_api, "_get_metrics_rest", return_value=dict(rest_metrics)
     )
-    mock_graphql = mocker.patch.object(github_api, "_get_metrics_graphql")
     mock_contrib = mocker.patch.object(
         github_api, "_get_contrib_count_rest", return_value=7
     )
@@ -336,7 +403,6 @@ def test_get_repo_meta_github_is_rest_first(mocker):
     mock_rest.assert_called_once_with(
         {"owner": "pyopensci", "repo_name": "pyosmeta"}
     )
-    mock_graphql.assert_not_called()
     mock_contrib.assert_called_once_with(
         {"owner": "pyopensci", "repo_name": "pyosmeta"}
     )

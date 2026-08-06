@@ -23,6 +23,16 @@ from pyosmeta.models.base import GhMeta, RepositoryHost
 from .logging import logger
 
 
+class GitHubAPIError(Exception):
+    """Raised for GitHub API errors that should stop the whole metrics run.
+
+    Covers an invalid/expired token (401)
+    and a fully exhausted rate limit (403 with ``X-RateLimit-Remaining: 0``).
+    Both will affect every subsequent API call in the run so we opt to fail
+    fast.
+    """
+
+
 @dataclass
 class GitHubAPI:
     """
@@ -154,6 +164,26 @@ class GitHubAPI:
 
         return f"{base_url}?{'&'.join(params)}"
 
+    @staticmethod
+    def _is_rate_limit_exhausted(response) -> bool:
+        """Return True if response headers show the primary rate limit is
+        fully used up, as opposed to a plain permission-denied 403."""
+        return response.headers.get("X-RateLimit-Remaining") == "0"
+
+    @staticmethod
+    def _format_rate_limit_reset(response) -> str:
+        """Format the X-RateLimit-Reset header (a Unix timestamp) as a
+        human-readable UTC time for clear error logs."""
+        reset_header = response.headers.get("X-RateLimit-Reset")
+        if not reset_header:
+            return "unknown"
+        try:
+            return time.strftime(
+                "%Y-%m-%d %H:%M:%S UTC", time.gmtime(int(reset_header))
+            )
+        except (TypeError, ValueError):
+            return "unknown"
+
     def handle_rate_limit(self, response):
         """
         Handle rate limiting by waiting until the rate limit resets.
@@ -193,26 +223,38 @@ class GitHubAPI:
         results = []
         api_endpoint_url = url
 
-        try:
-            while api_endpoint_url:
-                response = requests.get(
-                    api_endpoint_url,
-                    headers={"Authorization": f"token {self.get_token()}"},
-                )
-                response.raise_for_status()
-                results.extend(response.json())
+        while api_endpoint_url:
+            response = requests.get(
+                api_endpoint_url,
+                headers={"Authorization": f"token {self.get_token()}"},
+            )
 
-                # Handle pagination & rate limiting
-                api_endpoint_url = response.links.get("next", {}).get("url")
-                self.handle_rate_limit(response)
-
-        except requests.HTTPError as exception:
-            if exception.response.status_code == 401:
-                logger.error(
-                    "Unauthorized request. Your token may be expired or invalid. Please refresh your token."
+            if response.status_code == 401:
+                raise GitHubAPIError(
+                    f"401 Unauthorized calling {api_endpoint_url}. Check "
+                    "that GITHUB_TOKEN is valid, unexpired, and has the "
+                    "correct scopes."
                 )
-            else:
-                raise exception
+            if response.status_code == 403:
+                if self._is_rate_limit_exhausted(response):
+                    raise GitHubAPIError(
+                        f"403 rate limit exhausted calling "
+                        f"{api_endpoint_url}. Resets at "
+                        f"{self._format_rate_limit_reset(response)}."
+                    )
+                logger.warning(
+                    "403 Forbidden (permission denied, not rate-limited) "
+                    f"calling {api_endpoint_url}.\n"
+                    f"API Response Text: {response.text}"
+                )
+                break
+
+            response.raise_for_status()
+            results.extend(response.json())
+
+            # Handle pagination & rate limiting
+            api_endpoint_url = response.links.get("next", {}).get("url")
+            self.handle_rate_limit(response)
 
         return results
 
@@ -244,6 +286,7 @@ class GitHubAPI:
             Updated review data with GitHub metrics.
         """
         existing_gh_meta = existing_gh_meta or {}
+        stop_early = False
 
         for pkg_name, owner_repo in endpoints.items():
             review = reviews[pkg_name]
@@ -254,15 +297,25 @@ class GitHubAPI:
                 continue
 
             previous_meta = existing_gh_meta.get(pkg_name.lower())
-            try:
-                new_meta = self.get_repo_meta_github(owner_repo)
-            except Exception:
-                logger.warning(
-                    f"Unexpected error fetching GitHub metrics for {pkg_name}. "
-                    "Treating this package as a failed fetch.",
-                    exc_info=True,
-                )
-                new_meta = None
+
+            new_meta = None
+            if not stop_early:
+                try:
+                    new_meta = self.get_repo_meta_github(owner_repo)
+                except GitHubAPIError as exc:
+                    logger.error(
+                        f"Stopping GitHub metrics run early: {exc} "
+                        "Remaining packages will fall back to previously "
+                        "saved metrics."
+                    )
+                    stop_early = True
+                except Exception:
+                    logger.warning(
+                        f"Unexpected error fetching GitHub metrics for {pkg_name}. "
+                        "Treating this package as a failed fetch.",
+                        exc_info=True,
+                    )
+                    new_meta = None
 
             if new_meta is not None:
                 reviews[pkg_name].gh_meta = new_meta
@@ -317,124 +370,6 @@ class GitHubAPI:
 
         return len(contributors)
 
-    def _get_metrics_graphql(
-        self, repo_info: dict[str, str]
-    ) -> dict[str, Any] | None:
-        """
-        Get GitHub metrics from the GitHub GraphQL API for a single repository.
-
-        Parameters
-        ----------
-        repo_info : dict
-            A dictionary containing the owner and repository name.
-
-        Returns
-        -------
-        Optional[Dict[str, Any]]
-            A dictionary containing the specified GitHub metrics for the repository.
-            Returns None if the repository is not found or access is forbidden.
-
-        Notes
-        -----
-        This method makes a GraphQL call to the GitHub API to retrieve metadata
-        about a pyos reviewed package repository.
-
-        If the repository is not found or access is forbidden, this method returns None.
-        """
-
-        query = """
-        query($owner: String!, $name: String!) {
-            repository(owner: $owner, name: $name) {
-                name
-                description
-                homepageUrl
-                createdAt
-                stargazers {
-                    totalCount
-                }
-                watchers {
-                    totalCount
-                }
-                issues(states: OPEN) {
-                    totalCount
-                }
-                forks {
-                    totalCount
-                }
-                defaultBranchRef {
-                    target {
-                        ... on Commit {
-                            history(first: 1) {
-                                edges {
-                                    node {
-                                        committedDate
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                collaborators {
-                    totalCount
-                }
-            }
-        }
-        """
-
-        variables = {
-            "owner": repo_info["owner"],
-            "name": repo_info["repo_name"],
-        }
-
-        headers = {"Authorization": f"Bearer {self.get_token()}"}
-
-        response = requests.post(
-            "https://api.github.com/graphql",
-            json={"query": query, "variables": variables},
-            headers=headers,
-        )
-
-        if response.status_code == 200:
-            data = response.json()
-            repo_data = data["data"]["repository"]
-
-            if not repo_data:
-                logger.warning(
-                    f"Repository metrics not able to be retrieved (it may not be on GitHub?): {repo_info['owner']}/{repo_info['repo_name']}."
-                )
-                return None
-
-            return {
-                "name": repo_data["name"],
-                "description": repo_data["description"],
-                "documentation": repo_data["homepageUrl"],
-                "created_at": repo_data["createdAt"],
-                "stargazers_count": repo_data["stargazers"]["totalCount"],
-                "watchers_count": repo_data["watchers"]["totalCount"],
-                "open_issues_count": repo_data["issues"]["totalCount"],
-                "forks_count": repo_data["forks"]["totalCount"],
-                "last_commit": repo_data["defaultBranchRef"]["target"][
-                    "history"
-                ]["edges"][0]["node"]["committedDate"],
-            }
-        elif response.status_code == 404:
-            logger.warning(
-                f"Repository not found: {repo_info['owner']}/{repo_info['repo_name']}. Did the repo URL change?"
-            )
-            return None
-        elif response.status_code == 403:
-            logger.warning(
-                f"Oops! You may have hit an API limit for repository: {repo_info['owner']}/{repo_info['repo_name']}.\n"
-                f"API Response Text: {response.text}\n"
-                f"API Response Headers: {response.headers}"
-            )
-            return None
-        else:
-            logger.warning(
-                f"Unexpected HTTP error: {response.status_code} for repository: {repo_info['owner']}/{repo_info['repo_name']}"
-            )
-            return None
-
     def _get_metrics_rest(
         self, repo_info: dict[str, str]
     ) -> dict[str, Any] | None:
@@ -485,11 +420,21 @@ class GitHubAPI:
                 f"Repository not found: {owner}/{repo_name}. Did the repo URL change?"
             )
             return None
+        elif response.status_code == 401:
+            raise GitHubAPIError(
+                f"401 Unauthorized calling {url}. Check that GITHUB_TOKEN "
+                "is valid, unexpired, and has the correct scopes."
+            )
         elif response.status_code == 403:
+            if self._is_rate_limit_exhausted(response):
+                raise GitHubAPIError(
+                    f"403 rate limit exhausted calling {url}. Resets at "
+                    f"{self._format_rate_limit_reset(response)}."
+                )
             logger.warning(
-                f"Oops! You may have hit an API limit for repository: {owner}/{repo_name}.\n"
-                f"API Response Text: {response.text}\n"
-                f"API Response Headers: {response.headers}"
+                "403 Forbidden (permission denied, not rate-limited) for "
+                f"repository: {owner}/{repo_name}.\n"
+                f"API Response Text: {response.text}"
             )
             return None
         else:
@@ -521,9 +466,6 @@ class GitHubAPI:
         requiring org membership or elevated permissions. Contributor count
         is fetched separately via `_get_contrib_count_rest`, since it isn't
         part of the main repo metadata endpoint.
-
-        `_get_metrics_graphql` is kept temporarily as deprecated, non-critical
-        code (see implementation plan Step 6) and is no longer called here.
 
         If the repository is not found or access is forbidden, it returns None.
         """

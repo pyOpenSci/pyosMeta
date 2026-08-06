@@ -24,7 +24,7 @@ from pyosmeta.utils_clean import (
         # Test cases for missing dates
         (None, "missing"),
         ("missing", "missing"),
-        # Unparseable input shouldn't raise, just fall back to "missing"
+        # Unparsable input shouldn't raise, just fall back to "missing"
         ("not-a-date", "missing"),
     ],
 )
