@@ -253,7 +253,10 @@ class GhMeta(BaseModel, UrlValidatorMixin):
     open_issues_count: int
     forks_count: int
     documentation: Optional[str]
-    contrib_count: int
+    # Optional because the contributors REST call can fail independently of
+    # the GraphQL call (e.g. a 404) - it shouldn't raise a ValidationError
+    # and take down metrics for the whole package when that happens.
+    contrib_count: Optional[int] = None
     last_commit: str
 
     @field_validator(

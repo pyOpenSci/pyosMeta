@@ -24,9 +24,60 @@ To run at the CLI: parse_issue_metadata
 
 import pickle
 
+from pydantic import ValidationError
+
 from pyosmeta import ProcessIssues
+from pyosmeta.constants import PACKAGES_RAW_URL
+from pyosmeta.file_io import load_website_yml
 from pyosmeta.github_api import GitHubAPI
 from pyosmeta.logging import logger
+from pyosmeta.models.base import GhMeta
+
+
+def get_existing_gh_meta(url: str = PACKAGES_RAW_URL) -> dict[str, GhMeta]:
+    """Load the currently published packages.yml and pull out the
+    ``gh_meta`` block for each package, keyed by lowercased package name.
+
+    This is used as a fallback so that a failed GitHub API call doesn't
+    wipe out metrics we already collected in a previous run.
+
+    Parameters
+    ----------
+    url : str
+        URL to the live packages.yml file.
+
+    Returns
+    -------
+    dict
+        Mapping of lowercased package name to its last known ``GhMeta``.
+        Packages with no previously saved (or no longer valid) metrics are
+        omitted.
+    """
+    try:
+        existing_packages = load_website_yml("package_name", url)
+    except Exception:
+        logger.error(
+            "Couldn't load the existing packages.yml. Continuing without "
+            "a fallback for any GitHub metrics fetches that fail this run.",
+            exc_info=True,
+        )
+        return {}
+
+    existing_gh_meta = {}
+    for name, pkg in existing_packages.items():
+        if not pkg.get("gh_meta"):
+            continue
+        try:
+            existing_gh_meta[name] = GhMeta(**pkg["gh_meta"])
+        except ValidationError:
+            logger.error(
+                f"Existing gh_meta for {name} in the live packages.yml "
+                "doesn't match the current GhMeta model. Skipping it as a "
+                "fallback.",
+                exc_info=True,
+            )
+
+    return existing_gh_meta
 
 
 def main():
@@ -53,7 +104,10 @@ def main():
     # Contrib count is only available via rest api
     logger.info("Getting GitHub metrics for all packages...")
     repo_paths = process_review.get_repo_paths(accepted_reviews)
-    all_reviews = github_api.get_metrics(repo_paths, accepted_reviews)
+    existing_gh_meta = get_existing_gh_meta()
+    all_reviews = github_api.get_metrics(
+        repo_paths, accepted_reviews, existing_gh_meta
+    )
 
     with open("all_reviews.pickle", "wb") as f:
         pickle.dump(all_reviews, f)

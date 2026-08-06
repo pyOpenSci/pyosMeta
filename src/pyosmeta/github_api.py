@@ -18,7 +18,7 @@ import requests
 from dotenv import load_dotenv
 
 from pyosmeta.models import ReviewModel
-from pyosmeta.models.base import RepositoryHost
+from pyosmeta.models.base import GhMeta, RepositoryHost
 
 from .logging import logger
 
@@ -186,6 +186,7 @@ class GitHubAPI:
         self,
         endpoints: dict[dict[str, str]],
         reviews: dict[str, ReviewModel],
+        existing_gh_meta: dict[str, GhMeta] | None = None,
     ) -> dict[str, ReviewModel]:
         """
         Get GitHub metrics for all reviews using provided repo name and owner.
@@ -197,22 +198,42 @@ class GitHubAPI:
             A dictionary mapping package names to their owner and repo-names.
         reviews : dict
             A dictionary containing review data.
+        existing_gh_meta : dict[str, GhMeta], Optional
+            A dictionary mapping lowercased package names to the last known
+            good ``GhMeta`` (e.g. loaded from the live packages.yml). Used as
+            a fallback so a single failed API call doesn't erase previously
+            collected metrics.
 
         Returns:
         -------
         dict
             Updated review data with GitHub metrics.
         """
+        existing_gh_meta = existing_gh_meta or {}
 
         for pkg_name, owner_repo in endpoints.items():
             review = reviews[pkg_name]
-            if review.repository_host == RepositoryHost.github:
-                reviews[pkg_name].gh_meta = self.get_repo_meta_github(
-                    owner_repo
-                )
-            else:
+            if review.repository_host != RepositoryHost.github:
                 logger.warning(
                     f"Unsupported repository host for {pkg_name}: {review.repository_host}"
+                )
+                continue
+
+            previous_meta = existing_gh_meta.get(pkg_name.lower())
+            new_meta = self.get_repo_meta_github(owner_repo)
+
+            if new_meta is not None:
+                reviews[pkg_name].gh_meta = new_meta
+            elif previous_meta is not None:
+                logger.warning(
+                    f"Couldn't refresh GitHub metrics for {pkg_name}. "
+                    "Using the previously saved metrics from packages.yml."
+                )
+                reviews[pkg_name].gh_meta = previous_meta
+            else:
+                logger.warning(
+                    f"No GitHub metrics available for {pkg_name} "
+                    "(none saved previously, and this fetch failed)."
                 )
 
         return reviews
