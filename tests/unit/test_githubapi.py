@@ -1,3 +1,4 @@
+import logging
 import os
 import secrets
 
@@ -5,6 +6,7 @@ import pytest
 
 from pyosmeta import github_api
 from pyosmeta.github_api import GitHubAPI
+from pyosmeta.models.base import GhMeta
 
 
 @pytest.fixture
@@ -170,3 +172,131 @@ def test_get_user_info_bad_credentials(mocker):
 
     with pytest.raises(ValueError, match="Oops, I couldn't authenticate"):
         github_api.get_user_info("example_user")
+
+
+def test_gh_meta_field_mapping_matches_model_fields():
+    """Ensure GhMeta field mapping stays aligned with the model.
+
+    This test makes sure that all required GhMeta fields are accounted for and
+    that non-contributor fields have an explicit REST source mapping.
+    """
+    mapping = GitHubAPI.get_gh_meta_field_mapping()
+
+    required_fields = set(mapping["required_fields"])
+    model_fields = set(GhMeta.model_fields.keys())
+    mapped_fields = set(mapping["rest_field_map"].keys())
+
+    assert required_fields == model_fields
+    assert required_fields == mapped_fields.union({"contrib_count"})
+    assert mapping["last_commit_source"] == "pushed_at"
+    assert mapping["contrib_source"] == "GET /repos/{owner}/{repo}/contributors"
+
+
+@pytest.fixture
+def rest_repo_response():
+    """A representative GET /repos/{owner}/{repo} payload."""
+    return {
+        "name": "pyosmeta",
+        "description": "A package for pyOS metadata.",
+        "homepage": "https://example.com/docs",
+        "created_at": "2020-01-01T00:00:00Z",
+        "stargazers_count": 42,
+        "watchers_count": 42,
+        "open_issues_count": 3,
+        "forks_count": 5,
+        "pushed_at": "2024-06-01T00:00:00Z",
+    }
+
+
+def test_get_metrics_rest_successful(mocker, rest_repo_response):
+    """Test that a 200 response is normalized to GhMeta-compatible keys."""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = rest_repo_response
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api = GitHubAPI()
+    metrics = github_api._get_metrics_rest(
+        {"owner": "pyopensci", "repo_name": "pyosmeta"}
+    )
+
+    assert metrics == {
+        "name": "pyosmeta",
+        "description": "A package for pyOS metadata.",
+        "documentation": "https://example.com/docs",
+        "created_at": "2020-01-01T00:00:00Z",
+        "stargazers_count": 42,
+        "watchers_count": 42,
+        "open_issues_count": 3,
+        "forks_count": 5,
+        "last_commit": "2024-06-01T00:00:00Z",
+    }
+
+
+def test_get_metrics_rest_normalizes_empty_homepage(mocker, rest_repo_response):
+    """Test that an empty-string homepage is normalized to None."""
+    rest_repo_response["homepage"] = ""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = rest_repo_response
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api = GitHubAPI()
+    metrics = github_api._get_metrics_rest(
+        {"owner": "pyopensci", "repo_name": "pyosmeta"}
+    )
+
+    assert metrics["documentation"] is None
+
+
+def test_get_metrics_rest_not_found(mocker, caplog):
+    """Test that a 404 response returns None and logs a warning."""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 404
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api = GitHubAPI()
+
+    with caplog.at_level(logging.WARNING):
+        metrics = github_api._get_metrics_rest(
+            {"owner": "pyopensci", "repo_name": "missing-repo"}
+        )
+
+    assert metrics is None
+    assert "Repository not found" in caplog.text
+
+
+def test_get_metrics_rest_forbidden(mocker, caplog):
+    """Test that a 403 response returns None and logs a warning."""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 403
+    mock_response.text = "rate limited"
+    mock_response.headers = {}
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api = GitHubAPI()
+
+    with caplog.at_level(logging.WARNING):
+        metrics = github_api._get_metrics_rest(
+            {"owner": "pyopensci", "repo_name": "pyosmeta"}
+        )
+
+    assert metrics is None
+    assert "API limit" in caplog.text
+
+
+def test_get_metrics_rest_unexpected_error(mocker, caplog):
+    """Test that an unexpected status code returns None and logs a warning."""
+    mock_response = mocker.Mock()
+    mock_response.status_code = 500
+    mocker.patch("requests.get", return_value=mock_response)
+
+    github_api = GitHubAPI()
+
+    with caplog.at_level(logging.WARNING):
+        metrics = github_api._get_metrics_rest(
+            {"owner": "pyopensci", "repo_name": "pyosmeta"}
+        )
+
+    assert metrics is None
+    assert "Unexpected HTTP error" in caplog.text

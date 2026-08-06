@@ -30,6 +30,40 @@ class GitHubAPI:
     metadata about each package.
     """
 
+    # Mapping for how GhMeta fields are populated.
+    # `contrib_count` is populated separately from the contributors REST endpoint.
+    GH_META_REQUIRED_FIELDS = tuple(GhMeta.model_fields.keys())
+    GH_META_REST_FIELD_MAP = {
+        "name": "name",
+        "description": "description",
+        "documentation": "homepage",
+        "created_at": "created_at",
+        "stargazers_count": "stargazers_count",
+        "watchers_count": "watchers_count",
+        "open_issues_count": "open_issues_count",
+        "forks_count": "forks_count",
+        "last_commit": "pushed_at",
+    }
+    GH_META_CONTRIB_SOURCE = "GET /repos/{owner}/{repo}/contributors"
+    GH_META_LAST_COMMIT_SOURCE = GH_META_REST_FIELD_MAP["last_commit"]
+
+    @classmethod
+    def get_gh_meta_field_mapping(cls) -> dict[str, Any]:
+        """Return the GhMeta field map and source details.
+
+        Returns
+        -------
+        dict[str, Any]
+            Mapping details describing required output fields and where each
+            field comes from in the REST API payload or endpoint.
+        """
+        return {
+            "required_fields": cls.GH_META_REQUIRED_FIELDS,
+            "rest_field_map": cls.GH_META_REST_FIELD_MAP,
+            "contrib_source": cls.GH_META_CONTRIB_SOURCE,
+            "last_commit_source": cls.GH_META_LAST_COMMIT_SOURCE,
+        }
+
     def __init__(
         self,
         org: str | None = "pyopensci",
@@ -390,6 +424,69 @@ class GitHubAPI:
         else:
             logger.warning(
                 f"Unexpected HTTP error: {response.status_code} for repository: {repo_info['owner']}/{repo_info['repo_name']}"
+            )
+            return None
+
+    def _get_metrics_rest(
+        self, repo_info: dict[str, str]
+    ) -> dict[str, Any] | None:
+        """Get GitHub metadata from the GitHub REST API for a single repository.
+
+        Parameters
+        ----------
+        repo_info : dict
+            A dictionary containing the owner and repository name.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            A dictionary containing GhMeta-compatible metadata for the
+            repository, normalized using GH_META_REST_FIELD_MAP.
+            Returns None if the repository is not found or access is
+            forbidden.
+
+        Notes
+        -----
+        This method calls GET /repos/{owner}/{repo} to retrieve metadata
+        about a pyos reviewed package repository. `contrib_count` is not
+        included here - it's fetched separately via _get_contrib_count_rest.
+
+        If the repository is not found or access is forbidden, this method
+        returns None.
+        """
+        owner = repo_info["owner"]
+        repo_name = repo_info["repo_name"]
+        url = f"https://api.github.com/repos/{owner}/{repo_name}"
+        headers = {"Authorization": f"Bearer {self.get_token()}"}
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            repo_data = response.json()
+            metrics = {
+                gh_meta_field: repo_data.get(rest_field)
+                for gh_meta_field, rest_field in self.GH_META_REST_FIELD_MAP.items()
+            }
+            # GitHub returns an empty string (not null) when no homepage
+            # is set, so normalize that to None for GhMeta.
+            if not metrics.get("documentation"):
+                metrics["documentation"] = None
+            return metrics
+        elif response.status_code == 404:
+            logger.warning(
+                f"Repository not found: {owner}/{repo_name}. Did the repo URL change?"
+            )
+            return None
+        elif response.status_code == 403:
+            logger.warning(
+                f"Oops! You may have hit an API limit for repository: {owner}/{repo_name}.\n"
+                f"API Response Text: {response.text}\n"
+                f"API Response Headers: {response.headers}"
+            )
+            return None
+        else:
+            logger.warning(
+                f"Unexpected HTTP error: {response.status_code} for repository: {owner}/{repo_name}"
             )
             return None
 
