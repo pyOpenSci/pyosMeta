@@ -221,6 +221,8 @@ def clean_archive(archive):
     if not archive:
         # If field is empty, return None
         return None
+    if archive.lower() in ("n/a", "tbd"):
+        return None
     if archive.startswith("[") and archive.endswith(")"):
         # Extract the outermost link
         link = archive[archive.rfind("](") + 2 : -1]
@@ -237,10 +239,6 @@ def clean_archive(archive):
             logger.warning(f"Invalid archive URL (not resolving): {archive}")
             # raise ValueError(f"Invalid archive URL (not resolving): {archive}")
         return archive
-    elif archive.lower() == "n/a":
-        return None
-    elif archive.lower() == "tbd":
-        return None
     else:
         raise ValueError(f"Invalid archive URL: {archive}")
 
