@@ -6,6 +6,7 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Feat: add tqdm progress bar to parse issues workflow & remove community heading noise (@lwasser, #385)
 * Fix: permissions issue in reusable workflow
 
 ## [v1.7.9] - 2026-08-05

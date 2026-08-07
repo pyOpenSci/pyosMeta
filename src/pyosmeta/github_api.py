@@ -16,6 +16,8 @@ from typing import Any, Optional, Union
 
 import requests
 from dotenv import load_dotenv
+from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from pyosmeta.models import ReviewModel
 from pyosmeta.models.base import RepositoryHost
@@ -204,16 +206,19 @@ class GitHubAPI:
             Updated review data with GitHub metrics.
         """
 
-        for pkg_name, owner_repo in endpoints.items():
-            review = reviews[pkg_name]
-            if review.repository_host == RepositoryHost.github:
-                reviews[pkg_name].gh_meta = self.get_repo_meta_github(
-                    owner_repo
-                )
-            else:
-                logger.warning(
-                    f"Unsupported repository host for {pkg_name}: {review.repository_host}"
-                )
+        for pkg_name, owner_repo in tqdm(
+            endpoints.items(), desc="Fetching repo metadata"
+        ):
+            with logging_redirect_tqdm():
+                review = reviews[pkg_name]
+                if review.repository_host == RepositoryHost.github:
+                    reviews[pkg_name].gh_meta = self.get_repo_meta_github(
+                        owner_repo
+                    )
+                else:
+                    logger.warning(
+                        f"Unsupported repository host for {pkg_name}: {review.repository_host}"
+                    )
 
         return reviews
 
