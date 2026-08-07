@@ -260,7 +260,7 @@ class GitHubAPI:
 
         return results
 
-def get_metrics(
+    def get_metrics(
         self,
         endpoints: dict[dict[str, str]],
         reviews: dict[str, ReviewModel],
