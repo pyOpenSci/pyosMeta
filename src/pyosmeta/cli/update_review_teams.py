@@ -111,6 +111,12 @@ def process_user(
         # their github username and hitting the github api
         logger.info(f"Found a new contributor: {gh_user}")
         new_contrib = processor.return_user_info(gh_user)
+        if not new_contrib.get("github_username") and not new_contrib.get(
+            "github_image_id"
+        ):
+            # GitHub API found no user for this handle. Skip them.
+            logger.warning(f"GitHub user '{gh_user}' not found - skipping")
+            return user, contribs
         new_contrib["date_added"] = datetime.now().strftime("%Y-%m-%d")
         try:
             contribs[gh_user] = PersonModel(**new_contrib)
@@ -137,6 +143,34 @@ def process_user(
         user.name = getattr(contribs[gh_user], "name")
 
     return user, contribs
+
+
+def log_missing_user(
+    role: str, pkg_name: str, is_fast_track: bool = False
+) -> None:
+    """Log that a review role has no associated GitHub user.
+
+    `eic` is a newer field and older reviews may not have it yet, but we are
+    slowly updating those reviews so over time it will be filled out. A
+    missing `reviewers` is also expected for joss-fast-track packages, which
+    only go through editor checks. Both cases are logged at debug level.
+
+    All other missing roles (e.g. `editor`, or `reviewers` on a
+    non-fast-track package) are unexpected and logged as a warning.
+
+    Parameters
+    ----------
+    role : str
+        The review role that is missing a user (e.g. "eic", "editor").
+    pkg_name : str
+        The name of the package being processed.
+    is_fast_track : bool
+        Whether the package is a joss-fast-track review. Only relevant when
+        `role` is "reviewers".
+    """
+    expected = role == "eic" or (role == "reviewers" and is_fast_track)
+    log = logger.debug if expected else logger.warning
+    log(f"I can't find a username for {role} under {pkg_name}. Moving on.")
 
 
 def main():
@@ -183,8 +217,8 @@ def main():
                             "Keys in the `contrib_types` map must be a `ReviewUser` or `list[ReviewUser]` in the `ReviewModel`"
                         )
                 else:
-                    logger.warning(
-                        f"I can't find a username for {role} under {pkg_name}. Moving on."
+                    log_missing_user(
+                        role, pkg_name, is_fast_track=review.is_joss_fast_track
                     )
 
     # Export to yaml

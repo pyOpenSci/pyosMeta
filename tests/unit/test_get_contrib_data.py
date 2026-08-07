@@ -59,3 +59,15 @@ def test_comment_to_list_package_name(process_issues):
 
     review = process_issues.parse_issue(Issue(**sample_response))
     assert review.package_name == "sunpy"
+
+
+def test_get_contributor_data_ignores_unfilled_template_placeholders(
+    process_issues,
+):
+    """A submitter who never replaced the "All current maintainers"
+    template placeholder (e.g. `@github_handle1, @github_handle2`) should
+    end up with no parsed maintainers, not literal placeholder users."""
+    result = process_issues.get_contributor_data(
+        "@github_handle1, @github_handle2"
+    )
+    assert result is None

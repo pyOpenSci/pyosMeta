@@ -47,6 +47,35 @@ def get_clean_user(username: str) -> str:
     return username.lower().strip()
 
 
+_PLACEHOLDER_TOKENS = {"n/a", "na", "tbd", "none"}
+_PLACEHOLDER_HANDLE_PATTERN = re.compile(r"^github_handle\d*$")
+
+
+def is_placeholder_username(username: str) -> bool:
+    """Check whether a GitHub username is template placeholder text.
+
+    Some review issues are submitted with the template placeholder left
+    in (e.g. `github_handle1`) or filled in with `N/A`/`TBD` when a role
+    (e.g. reviewers on a joss-fast-track package) has no real user. These
+    should be treated as an empty value rather than parsed as a literal GitHub
+    username.
+
+    Parameters
+    ----------
+    username : str
+        A cleaned (lowercased/stripped) GitHub username.
+
+    Returns
+    -------
+    bool
+        True if the username is a known placeholder token.
+    """
+    username = username.lower().strip()
+    return username in _PLACEHOLDER_TOKENS or bool(
+        _PLACEHOLDER_HANDLE_PATTERN.match(username)
+    )
+
+
 def clean_date(source_date: str | None) -> datetime | str:
     """Cleans up a date string to a consistent datetime format.
 
