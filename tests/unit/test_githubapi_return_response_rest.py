@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 
-from pyosmeta.github_api import GitHubAPI
+from pyosmeta.github_api import GitHubAPI, GitHubAPIError
 
 
 class TestGitHubAPI:
@@ -85,19 +85,41 @@ class TestGitHubAPI:
             self.mock_get.return_value
         )
 
-    def test_unauthorized_request(self, caplog):
-        """Test handling of an unauthorized (401) response."""
+    def test_unauthorized_request(self):
+        """Test that a 401 response raises GitHubAPIError instead of
+        being silently swallowed."""
         self.mock_get.return_value.status_code = 401
-        self.mock_get.return_value.raise_for_status.side_effect = (
-            requests.HTTPError(response=self.mock_get.return_value)
-        )
+
+        with pytest.raises(GitHubAPIError, match="401 Unauthorized"):
+            self.api._get_response_rest("https://api.github.com/repos/test")
+
+    def test_forbidden_rate_limit_exhausted(self):
+        """Test that a 403 with X-RateLimit-Remaining: 0 raises
+        GitHubAPIError."""
+        self.mock_get.return_value.status_code = 403
+        self.mock_get.return_value.text = "rate limited"
+        self.mock_get.return_value.headers = {
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": "1700000000",
+        }
+
+        with pytest.raises(GitHubAPIError, match="rate limit exhausted"):
+            self.api._get_response_rest("https://api.github.com/repos/test")
+
+    def test_forbidden_permission_denied(self, caplog):
+        """Test that a 403 without an exhausted rate limit returns the
+        results collected so far and logs a warning, without raising."""
+        self.mock_get.return_value.status_code = 403
+        self.mock_get.return_value.text = "permission denied"
+        self.mock_get.return_value.headers = {}
 
         with caplog.at_level(logging.WARNING):
             result = self.api._get_response_rest(
                 "https://api.github.com/repos/test"
             )
-            assert result == []
-            assert "Unauthorized request." in caplog.text
+
+        assert result == []
+        assert "Forbidden" in caplog.text
 
     def test_general_http_error(self):
         """Test handling of a general HTTP error (e.g., 500)."""

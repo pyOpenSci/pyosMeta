@@ -50,25 +50,33 @@ def get_clean_user(username: str) -> str:
 def clean_date(source_date: str | None) -> datetime | str:
     """Cleans up a date string to a consistent datetime format.
 
-    The source date string may have been manually entered as month-day-year format,
-    retrieved from GitHub as a timestamp, could be missing, or contain random text.
-    This utility validates the input and returns a consistent format.
+    The source date string may have been manually entered as month-day-year
+    format, retrieved fresh from GitHub as a full timestamp, already cleaned
+    to ``YYYY-MM-DD`` (e.g. re-loaded from a previously exported
+    packages.yml), could be missing, or contain random text. This utility
+    validates the input and returns a consistent format.
+
+    Cleaning an already-cleaned date
+    should return the same value, since we re-parse previously exported
+    metrics as a fallback when a fresh GitHub API call fails (so the data aren't
+    deleted).
     """
 
     if source_date is None or source_date == "missing":
         return "missing"
-    else:
+
+    for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"):
         try:
             return (
-                datetime.strptime(source_date, "%Y-%m-%dT%H:%M:%SZ")
-                .date()
-                .strftime("%Y-%m-%d")
+                datetime.strptime(source_date, fmt).date().strftime("%Y-%m-%d")
             )
-        except TypeError:
-            logger.error(
-                "Oops - missing date. Setting date to 'missing'", exc_info=True
-            )
-            return "missing"
+        except (TypeError, ValueError):
+            continue
+
+    logger.error(
+        f"Oops - couldn't parse date '{source_date}'. Setting date to 'missing'"
+    )
+    return "missing"
 
 
 def clean_name(source_name: str) -> str:
