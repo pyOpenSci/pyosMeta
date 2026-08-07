@@ -207,7 +207,7 @@ class ProcessIssues:
         # this could be made more flexible if it just runs until it runs
         # out of categories to parse
         meta["partners"] = self.get_categories(
-            body, "## Community Partnerships", 3, keyed=True
+            body, "## Community Partnerships", 3, keyed=True, optional=True
         )
         if "joss_doi" in meta:
             # Normalize the JOSS archive field. Some issues use `JOSS DOI` others `JOSS`
@@ -399,6 +399,7 @@ class ProcessIssues:
         section_str: str,
         num_vals: int,
         keyed: bool = False,
+        optional: bool = False,
     ) -> list[str] | None:
         """Parse through a pyOS review issue and grab categories associated
         with a package
@@ -422,13 +423,20 @@ class ProcessIssues:
             (and just extract the key).
 
             eg. ``- [x] Astropy: some other text`` would be parsed as ``'astropy'``
+
+        optional : bool
+            If True, the section is expected to be missing from some issues
+            (e.g. a newer template field older reviews won't have), so a
+            missing section is silently returned as None instead of logging
+            a warning.
         """
         # Find the starting index of the category section
         index = [
             i for i, sublist in enumerate(issue_list) if section_str in sublist
         ]
         if len(index) == 0:
-            logger.warning(f"{section_str} not found in the list")
+            if not optional:
+                logger.warning(f"{section_str} not found in the list")
             return None
         index = index[0]
 

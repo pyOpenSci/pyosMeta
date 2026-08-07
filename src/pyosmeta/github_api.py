@@ -16,6 +16,8 @@ from typing import Any, Optional, Union
 
 import requests
 from dotenv import load_dotenv
+from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from pyosmeta.models import ReviewModel
 from pyosmeta.models.base import GhMeta, RepositoryHost
@@ -258,7 +260,7 @@ class GitHubAPI:
 
         return results
 
-    def get_metrics(
+def get_metrics(
         self,
         endpoints: dict[dict[str, str]],
         reviews: dict[str, ReviewModel],
@@ -288,48 +290,51 @@ class GitHubAPI:
         existing_gh_meta = existing_gh_meta or {}
         stop_early = False
 
-        for pkg_name, owner_repo in endpoints.items():
-            review = reviews[pkg_name]
-            if review.repository_host != RepositoryHost.github:
-                logger.warning(
-                    f"Unsupported repository host for {pkg_name}: {review.repository_host}"
-                )
-                continue
-
-            previous_meta = existing_gh_meta.get(pkg_name.lower())
-
-            new_meta = None
-            if not stop_early:
-                try:
-                    new_meta = self.get_repo_meta_github(owner_repo)
-                except GitHubAPIError as exc:
-                    logger.error(
-                        f"Stopping GitHub metrics run early: {exc} "
-                        "Remaining packages will fall back to previously "
-                        "saved metrics."
-                    )
-                    stop_early = True
-                except Exception:
+        for pkg_name, owner_repo in tqdm(
+            endpoints.items(), desc="Fetching repo metadata"
+        ):
+            with logging_redirect_tqdm():
+                review = reviews[pkg_name]
+                if review.repository_host != RepositoryHost.github:
                     logger.warning(
-                        f"Unexpected error fetching GitHub metrics for {pkg_name}. "
-                        "Treating this package as a failed fetch.",
-                        exc_info=True,
+                        f"Unsupported repository host for {pkg_name}: {review.repository_host}"
                     )
-                    new_meta = None
+                    continue
 
-            if new_meta is not None:
-                reviews[pkg_name].gh_meta = new_meta
-            elif previous_meta is not None:
-                logger.warning(
-                    f"Couldn't refresh GitHub metrics for {pkg_name}. "
-                    "Using the previously saved metrics from packages.yml."
-                )
-                reviews[pkg_name].gh_meta = previous_meta
-            else:
-                logger.warning(
-                    f"No GitHub metrics available for {pkg_name} "
-                    "(none saved previously, and this fetch failed)."
-                )
+                previous_meta = existing_gh_meta.get(pkg_name.lower())
+
+                new_meta = None
+                if not stop_early:
+                    try:
+                        new_meta = self.get_repo_meta_github(owner_repo)
+                    except GitHubAPIError as exc:
+                        logger.error(
+                            f"Stopping GitHub metrics run early: {exc} "
+                            "Remaining packages will fall back to previously "
+                            "saved metrics."
+                        )
+                        stop_early = True
+                    except Exception:
+                        logger.warning(
+                            f"Unexpected error fetching GitHub metrics for {pkg_name}. "
+                            "Treating this package as a failed fetch.",
+                            exc_info=True,
+                        )
+                        new_meta = None
+
+                if new_meta is not None:
+                    reviews[pkg_name].gh_meta = new_meta
+                elif previous_meta is not None:
+                    logger.warning(
+                        f"Couldn't refresh GitHub metrics for {pkg_name}. "
+                        "Using the previously saved metrics from packages.yml."
+                    )
+                    reviews[pkg_name].gh_meta = previous_meta
+                else:
+                    logger.warning(
+                        f"No GitHub metrics available for {pkg_name} "
+                        "(none saved previously, and this fetch failed)."
+                    )
 
         return reviews
 
