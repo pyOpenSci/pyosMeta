@@ -281,7 +281,7 @@ class GitHubAPI:
             A dictionary containing review data.
         existing_gh_meta : dict[str, GhMeta], Optional
             A dictionary mapping lowercased package names to the last known
-            good ``GhMeta`` (e.g. loaded from the live packages.yml). Used as
+            good ``GhMeta`` name (e.g. loaded from the live packages.yml). Used as
             a fallback so a single failed API call doesn't erase previously
             collected metrics.
 
