@@ -295,7 +295,7 @@ class GitHubAPI:
             Review data with freshly fetched ``gh_meta`` where the API
             succeeded, or ``None`` where it did not.
         """
-        # if True, metrics run should stop further API fetches
+        # If True, metrics run should stop further API fetches
         stop_metrics_run = False
 
         for pkg_name, owner_repo in tqdm(
