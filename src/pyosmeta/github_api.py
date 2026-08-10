@@ -175,8 +175,8 @@ class GitHubAPI:
 
     @staticmethod
     def _format_rate_limit_reset(response) -> str:
-        """Format the X-RateLimit-Reset header (a Unix timestamp) as a
-        human-readable UTC time for clear error logs."""
+        """Format the X-RateLimit-Reset header timestamp to a
+        human-readable UTC time."""
         reset_header = response.headers.get("X-RateLimit-Reset")
         if not reset_header:
             return "unknown"
