@@ -168,7 +168,10 @@ class GitHubAPI:
 
     @staticmethod
     def _is_rate_limit_exhausted(response) -> bool:
-        """Return True if response headers show the primary rate limit is
+        """Return True if rate limit has been reached.
+        
+        The header is checked for `X-RateLimit-Remaining` to indicate if the
+        primary rate limit is
         fully used up, as opposed to a plain permission-denied 403."""
         return response.headers.get("X-RateLimit-Remaining") == "0"
 
