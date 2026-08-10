@@ -1,5 +1,6 @@
 import pytest
 
+from pyosmeta.cli.process_reviews import update_gh_meta
 from pyosmeta.github_api import GitHubAPI, GitHubAPIError
 from pyosmeta.models import ReviewModel
 from pyosmeta.models.base import GhMeta
@@ -53,77 +54,32 @@ def old_meta():
 
 
 class TestGetMetrics:
+    """Fetch-only behavior: get_metrics does not gap-fill from existing data."""
+
     def test_uses_fresh_data_when_fetch_succeeds(
-        self, mocker, review, endpoints, new_meta, old_meta
+        self, mocker, review, endpoints, new_meta
     ):
-        """A successful fetch should update gh_meta, even if we had
-        previously saved metrics for this package."""
         github_api = GitHubAPI()
         mocker.patch.object(
             github_api, "get_repo_meta_github", return_value=new_meta
         )
 
-        reviews = github_api.get_metrics(
-            endpoints, {"sunpy": review}, {"sunpy": old_meta}
-        )
+        reviews = github_api.get_metrics(endpoints, {"sunpy": review})
 
         assert reviews["sunpy"].gh_meta.stargazers_count == 999
 
-    def test_keeps_previous_data_when_fetch_fails(
-        self, mocker, review, endpoints, old_meta
-    ):
-        """If the API call fails (returns None), we must never delete
-        previously collected metrics."""
+    def test_leaves_none_when_fetch_fails(self, mocker, review, endpoints):
+        """Failed fetch leaves gh_meta empty; gap-fill is update_gh_meta's job."""
         github_api = GitHubAPI()
         mocker.patch.object(
             github_api, "get_repo_meta_github", return_value=None
         )
 
-        reviews = github_api.get_metrics(
-            endpoints, {"sunpy": review}, {"sunpy": old_meta}
-        )
-
-        assert reviews["sunpy"].gh_meta is not None
-        assert reviews["sunpy"].gh_meta.stargazers_count == 500
-
-    def test_existing_gh_meta_lookup_is_case_insensitive(
-        self, mocker, review, endpoints, old_meta
-    ):
-        """existing_gh_meta is keyed by lowercased package name (as
-        produced by file_io.load_website_yml), so lookups must lowercase
-        the package name too."""
-        github_api = GitHubAPI()
-        mocker.patch.object(
-            github_api, "get_repo_meta_github", return_value=None
-        )
-
-        reviews = github_api.get_metrics(
-            endpoints, {"sunpy": review}, {"SunPy".lower(): old_meta}
-        )
-
-        assert reviews["sunpy"].gh_meta.stargazers_count == 500
-
-    def test_no_data_when_fetch_fails_and_nothing_saved(
-        self, mocker, review, endpoints
-    ):
-        """If we've never successfully fetched metrics for a package and
-        the fetch fails, gh_meta should stay empty (nothing to lose)."""
-        github_api = GitHubAPI()
-        mocker.patch.object(
-            github_api, "get_repo_meta_github", return_value=None
-        )
-
-        reviews = github_api.get_metrics(endpoints, {"sunpy": review}, {})
+        reviews = github_api.get_metrics(endpoints, {"sunpy": review})
 
         assert reviews["sunpy"].gh_meta is None
 
-    def test_unexpected_exception_does_not_stop_the_batch(
-        self, mocker, review, endpoints, old_meta
-    ):
-        """An unexpected exception (e.g. a network error) from
-        get_repo_meta_github for one package must not crash the batch -
-        it should be treated like a failed fetch, falling back to
-        previously saved metrics."""
+    def test_unexpected_exception_leaves_none(self, mocker, review, endpoints):
         github_api = GitHubAPI()
         mocker.patch.object(
             github_api,
@@ -131,19 +87,13 @@ class TestGetMetrics:
             side_effect=RuntimeError("boom"),
         )
 
-        reviews = github_api.get_metrics(
-            endpoints, {"sunpy": review}, {"sunpy": old_meta}
-        )
+        reviews = github_api.get_metrics(endpoints, {"sunpy": review})
 
-        assert reviews["sunpy"].gh_meta is not None
-        assert reviews["sunpy"].gh_meta.stargazers_count == 500
+        assert reviews["sunpy"].gh_meta is None
 
-    def test_fatal_error_falls_back_for_current_package(
-        self, mocker, review, endpoints, old_meta
+    def test_fatal_error_leaves_none_for_current_package(
+        self, mocker, review, endpoints
     ):
-        """A GitHubAPIError (401 or rate-limit-exhausted 403) for a
-        package must not crash the batch - it should fall back to
-        previously saved metrics, just like any other failed fetch."""
         github_api = GitHubAPI()
         mocker.patch.object(
             github_api,
@@ -151,19 +101,13 @@ class TestGetMetrics:
             side_effect=GitHubAPIError("401 Unauthorized"),
         )
 
-        reviews = github_api.get_metrics(
-            endpoints, {"sunpy": review}, {"sunpy": old_meta}
-        )
+        reviews = github_api.get_metrics(endpoints, {"sunpy": review})
 
-        assert reviews["sunpy"].gh_meta is not None
-        assert reviews["sunpy"].gh_meta.stargazers_count == 500
+        assert reviews["sunpy"].gh_meta is None
 
     def test_fatal_error_stops_remaining_packages_from_being_fetched(
-        self, mocker, old_meta
+        self, mocker
     ):
-        """Once a GitHubAPIError occurs, no further API calls should be
-        made for remaining packages - they should go straight to fallback
-        (or stay empty if nothing was saved)."""
         endpoints = {
             "sunpy": {"owner": "sunpy", "repo_name": "sunpy"},
             "other-pkg": {"owner": "other", "repo_name": "other-pkg"},
@@ -185,16 +129,13 @@ class TestGetMetrics:
             side_effect=GitHubAPIError("403 rate limit exhausted"),
         )
 
-        reviews = github_api.get_metrics(
-            endpoints, reviews_input, {"sunpy": old_meta}
-        )
+        reviews = github_api.get_metrics(endpoints, reviews_input)
 
         mock_fetch.assert_called_once()
-        assert reviews["sunpy"].gh_meta.stargazers_count == 500
+        assert reviews["sunpy"].gh_meta is None
         assert reviews["other-pkg"].gh_meta is None
 
-    def test_skips_non_github_hosts(self, mocker, endpoints, old_meta):
-        """Non-GitHub repos should be skipped without touching gh_meta."""
+    def test_skips_non_github_hosts(self, mocker):
         review = ReviewModel(
             package_name="example",
             repository_link="https://gitlab.com/example/example",
@@ -205,8 +146,60 @@ class TestGetMetrics:
         reviews = github_api.get_metrics(
             {"example": {"owner": "example", "repo_name": "example"}},
             {"example": review},
-            {"example": old_meta},
         )
 
         mock_fetch.assert_not_called()
         assert reviews["example"].gh_meta is None
+
+
+class TestUpdateGhMeta:
+    """Gap-fill from previously published packages.yml after a fetch."""
+
+    def test_prefers_fresh_data(self, review, new_meta, old_meta):
+        review.gh_meta = GhMeta(**new_meta)
+
+        reviews = update_gh_meta({"sunpy": old_meta}, {"sunpy": review})
+
+        assert reviews["sunpy"].gh_meta.stargazers_count == 999
+
+    def test_fills_from_existing_when_fetch_left_none(self, review, old_meta):
+        assert review.gh_meta is None
+
+        reviews = update_gh_meta({"sunpy": old_meta}, {"sunpy": review})
+
+        assert reviews["sunpy"].gh_meta is not None
+        assert reviews["sunpy"].gh_meta.stargazers_count == 500
+
+    def test_existing_lookup_is_case_insensitive(self, old_meta):
+        """existing_gh_meta keys are lowercased; review keys may not be."""
+        review = ReviewModel(
+            package_name="SunPy",
+            repository_link="https://github.com/sunpy/sunpy",
+        )
+
+        reviews = update_gh_meta({"sunpy": old_meta}, {"SunPy": review})
+
+        assert reviews["SunPy"].gh_meta.stargazers_count == 500
+
+    def test_leaves_none_when_nothing_saved(self, review):
+        reviews = update_gh_meta({}, {"sunpy": review})
+
+        assert reviews["sunpy"].gh_meta is None
+
+    def test_gap_fills_after_fatal_stop(self, old_meta):
+        """Simulate get_metrics stop: both packages None, then merge fills."""
+        reviews = {
+            "sunpy": ReviewModel(
+                package_name="sunpy",
+                repository_link="https://github.com/sunpy/sunpy",
+            ),
+            "other-pkg": ReviewModel(
+                package_name="other-pkg",
+                repository_link="https://github.com/other/other-pkg",
+            ),
+        }
+
+        reviews = update_gh_meta({"sunpy": old_meta}, reviews)
+
+        assert reviews["sunpy"].gh_meta.stargazers_count == 500
+        assert reviews["other-pkg"].gh_meta is None

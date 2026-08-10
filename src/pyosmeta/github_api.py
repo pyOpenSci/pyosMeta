@@ -26,14 +26,10 @@ from .logging import logger
 
 
 class GitHubAPIError(Exception):
-    """Raised for GitHub API errors.
-    
-       The usual handling of these errors would be to stop the metrics run.
+    """Raised for GitHub API errors that affect the whole metrics run.
 
-    Covers an invalid/expired token (401)
-    and a fully exhausted rate limit (403 with ``X-RateLimit-Remaining: 0``).
-    Both will affect every subsequent API call in the run so we opt to fail
-    fast.
+    Covers an invalid/expired token (401) and a fully exhausted rate limit
+    (403 with ``X-RateLimit-Remaining: 0``).
     """
 
 
@@ -171,7 +167,7 @@ class GitHubAPI:
     @staticmethod
     def _is_rate_limit_exhausted(response) -> bool:
         """Return True if rate limit has been reached.
-        
+
         The header is checked for `X-RateLimit-Remaining` to indicate if the
         primary rate limit is
         fully used up, as opposed to a plain permission-denied 403."""
@@ -269,11 +265,20 @@ class GitHubAPI:
         self,
         endpoints: dict[dict[str, str]],
         reviews: dict[str, ReviewModel],
-        existing_gh_meta: dict[str, GhMeta] | None = None,
     ) -> dict[str, ReviewModel]:
         """
-        Get GitHub metrics for all reviews using provided repo name and owner.
-        Does not work on GitLab currently
+        Fetch GitHub metrics for all reviews using provided repo name and owner.
+        Does not work on GitLab currently.
+
+        On success, sets ``review.gh_meta`` from the API response (date fields
+        are cleaned via the ``GhMeta`` model). On failure, leaves ``gh_meta``
+        as ``None`` so a separate merge step can gap-fill from previously
+        published packages.yml data.
+
+        If a ``GitHubAPIError`` is raised (401 or exhausted rate-limit 403),
+        further API fetches for remaining packages are stopped
+        (``stop_metrics_run``). Those packages keep ``gh_meta=None`` for the
+        merge step to fill.
 
         Parameters:
         ----------
@@ -281,19 +286,15 @@ class GitHubAPI:
             A dictionary mapping package names to their owner and repo-names.
         reviews : dict
             A dictionary containing review data.
-        existing_gh_meta : dict[str, GhMeta], Optional
-            A dictionary mapping lowercased package names to the last known
-            good ``GhMeta`` name (e.g. loaded from the live packages.yml). Used as
-            a fallback so a single failed API call doesn't erase previously
-            collected metrics.
 
         Returns:
         -------
         dict
-            Updated review data with GitHub metrics.
+            Review data with freshly fetched ``gh_meta`` where the API
+            succeeded, or ``None`` where it did not.
         """
-        existing_gh_meta = existing_gh_meta or {}
-        stop_early = False
+        # if True, metrics run should stop further API fetches
+        stop_metrics_run = False
 
         for pkg_name, owner_repo in tqdm(
             endpoints.items(), desc="Fetching repo metadata"
@@ -302,44 +303,33 @@ class GitHubAPI:
                 review = reviews[pkg_name]
                 if review.repository_host != RepositoryHost.github:
                     logger.warning(
-                        f"Unsupported repository host for {pkg_name}: {review.repository_host}"
+                        f"Unsupported repository host for {pkg_name}: "
+                        f"{review.repository_host}"
                     )
                     continue
 
-                previous_meta = existing_gh_meta.get(pkg_name.lower())
-
-                new_meta = None
-                if not stop_early:
+                new_metadata = None
+                if not stop_metrics_run:
                     try:
-                        new_meta = self.get_repo_meta_github(owner_repo)
+                        new_metadata = self.get_repo_meta_github(owner_repo)
                     except GitHubAPIError as exc:
                         logger.error(
                             f"Stopping GitHub metrics run early: {exc} "
-                            "Remaining packages will fall back to previously "
-                            "saved metrics."
+                            "Remaining packages will keep empty gh_meta for "
+                            "gap-fill from previously saved metrics."
                         )
-                        stop_early = True
+                        stop_metrics_run = True
                     except Exception:
                         logger.warning(
-                            f"Unexpected error fetching GitHub metrics for {pkg_name}. "
-                            "Treating this package as a failed fetch.",
+                            f"Unexpected error fetching GitHub metrics for "
+                            f"{pkg_name}. Treating this package as a failed "
+                            "fetch.",
                             exc_info=True,
                         )
-                        new_meta = None
+                        new_metadata = None
 
-                if new_meta is not None:
-                    reviews[pkg_name].gh_meta = new_meta
-                elif previous_meta is not None:
-                    logger.warning(
-                        f"Couldn't refresh GitHub metrics for {pkg_name}. "
-                        "Using the previously saved metrics from packages.yml."
-                    )
-                    reviews[pkg_name].gh_meta = previous_meta
-                else:
-                    logger.warning(
-                        f"No GitHub metrics available for {pkg_name} "
-                        "(none saved previously, and this fetch failed)."
-                    )
+                if new_metadata is not None:
+                    reviews[pkg_name].gh_meta = new_metadata
 
         return reviews
 

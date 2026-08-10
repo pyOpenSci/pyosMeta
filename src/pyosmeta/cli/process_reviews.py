@@ -31,6 +31,7 @@ from pyosmeta.constants import PACKAGES_RAW_URL
 from pyosmeta.file_io import load_website_yml
 from pyosmeta.github_api import GitHubAPI
 from pyosmeta.logging import logger
+from pyosmeta.models import ReviewModel
 from pyosmeta.models.base import GhMeta
 
 
@@ -38,8 +39,8 @@ def get_existing_gh_meta(url: str = PACKAGES_RAW_URL) -> dict[str, GhMeta]:
     """Load the currently published packages.yml and pull out the
     ``gh_meta`` block for each package, keyed by lowercased package name.
 
-    This is used as a fallback so that a failed GitHub API call doesn't
-    wipe out metrics we already collected in a previous run.
+    Used by ``update_gh_meta`` as a backup when a fresh GitHub API fetch
+    leaves ``gh_meta`` empty. Does not itself apply metrics to reviews.
 
     Parameters
     ----------
@@ -53,6 +54,7 @@ def get_existing_gh_meta(url: str = PACKAGES_RAW_URL) -> dict[str, GhMeta]:
         Packages with no previously saved (or no longer valid) metrics are
         omitted.
     """
+    # TODO: fail fast if packages.yml cannot be loaded (separate follow-up).
     try:
         existing_packages = load_website_yml("package_name", url)
     except Exception:
@@ -80,6 +82,35 @@ def get_existing_gh_meta(url: str = PACKAGES_RAW_URL) -> dict[str, GhMeta]:
     return existing_gh_meta
 
 
+def update_gh_meta(
+    existing_gh_meta: dict[str, GhMeta],
+    reviews: dict[str, ReviewModel],
+) -> dict[str, ReviewModel]:
+    """Fill in missing gh_meta from previously published packages.yml.
+
+    Fresh API data (already on ``review.gh_meta``) wins. If a fetch left
+    ``gh_meta`` as None, reuse the last known ``GhMeta`` for that package.
+    """
+    for pkg_name, review in reviews.items():
+        if review.gh_meta is not None:
+            continue
+
+        previous_metadata = existing_gh_meta.get(pkg_name.lower())
+        if previous_metadata is not None:
+            logger.warning(
+                f"Couldn't refresh GitHub metrics for {pkg_name}. "
+                "Using the previously saved metrics from packages.yml."
+            )
+            review.gh_meta = previous_metadata
+        else:
+            logger.warning(
+                f"No GitHub metrics available for {pkg_name} "
+                "(none saved previously, and this fetch failed)."
+            )
+
+    return reviews
+
+
 def main():
     github_api = GitHubAPI(
         org="pyopensci",
@@ -104,11 +135,10 @@ def main():
     # Contrib count is only available via rest api
     logger.info("Getting GitHub metrics for all packages...")
     repo_paths = process_review.get_repo_paths(accepted_reviews)
-    # Grab existing gh metadata from the packages.yml file in the website repo
+    # Fetch first; gap-fill from packages.yml only where the API left gh_meta empty
     existing_gh_meta = get_existing_gh_meta()
-    all_reviews = github_api.get_metrics(
-        repo_paths, accepted_reviews, existing_gh_meta
-    )
+    all_reviews = github_api.get_metrics(repo_paths, accepted_reviews)
+    all_reviews = update_gh_meta(existing_gh_meta, all_reviews)
 
     with open("all_reviews.pickle", "wb") as f:
         pickle.dump(all_reviews, f)
