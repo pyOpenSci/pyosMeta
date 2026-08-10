@@ -256,7 +256,7 @@ class GhMeta(BaseModel, UrlValidatorMixin):
     open_issues_count: int
     forks_count: int
     documentation: Optional[str]
-    # Optional in case the rest cal fails and we don't have new metrics
+    # Optional in case the rest call fails and we don't have new metrics
     contrib_count: Optional[int] = None
     last_commit: str
 

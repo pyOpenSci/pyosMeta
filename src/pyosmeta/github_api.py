@@ -38,9 +38,11 @@ class GitHubAPI:
     """
     A class that processes GitHub issues in our peer review process and returns
     metadata about each package.
+
+    This class contains variable that maps the GhMeta fields to the GitHub REST
+    API fields. It also defines the source of the data for each field.
     """
 
-    # Mapping for how GhMeta fields are populated.
     # `contrib_count` is populated separately from the contributors REST endpoint.
     GH_META_REQUIRED_FIELDS = tuple(GhMeta.model_fields.keys())
     GH_META_REST_FIELD_MAP = {
@@ -263,7 +265,7 @@ class GitHubAPI:
 
     def get_metrics(
         self,
-        endpoints: dict[dict[str, str]],
+        endpoints: dict[str, dict[str, str]],
         reviews: dict[str, ReviewModel],
     ) -> dict[str, ReviewModel]:
         """

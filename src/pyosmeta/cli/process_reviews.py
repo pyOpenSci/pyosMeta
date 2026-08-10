@@ -1,13 +1,13 @@
 """
-Script that parses metadata from and issue and adds it to a .yml file for the
+Script that parses metadata from an issue and adds it to a .yml file for the
 website. It also grabs some of the package metadata such as stars,
 last commit, etc.
 
 This script also checks:
-* That each packages documentation is both https compliant and resolves
+* That each package's documentation is both https compliant and resolves
 * If documentation link is broken it removes it.
 * NOTE: we may want to have the website note if docs are not available for a
-package and have a process to followup
+package and have a process to follow-up
 
 Output: packages.yml file containing a list of:
  1. all packages with accepted reviews
@@ -19,7 +19,7 @@ To run at the CLI: parse_issue_metadata
 """
 
 # TODO: if we export files we might want packages.yml and then under_review.yml
-# thus we'd want to add a second input parameters which was file_name
+# thus we'd want to add a second input parameter which was file_name
 # TODO: feature - Create an "under review now" list as well
 
 import pickle
