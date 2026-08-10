@@ -6,7 +6,7 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
-* Fix: handle GitHub API errors, ensure metadata are overwritten, use REST API for metadata and stop the run early (@lwasser, #384)
+* Fix: handle GitHub 401 and 403 API errors, use REST API for metadata, ensure metadata are updated, and fail on bad api calls (@lwasser, #384)
 * Fix: permissions issue in reusable workflow (@lwasser, #382)
 * Feat: add tqdm progress bar to parse issues workflow & remove community heading noise (@lwasser, #385)
 
