@@ -26,7 +26,9 @@ from .logging import logger
 
 
 class GitHubAPIError(Exception):
-    """Raised for GitHub API errors that should stop the whole metrics run.
+    """Raised for GitHub API errors.
+    
+       The usual handling of these errors would be to stop the metrics run.
 
     Covers an invalid/expired token (401)
     and a fully exhausted rate limit (403 with ``X-RateLimit-Remaining: 0``).
