@@ -248,6 +248,16 @@
         "infra",
         "bug"
       ]
+    },
+    {
+      "login": "abadger",
+      "name": "Toshio Kuratomi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/209242?v=4",
+      "profile": "http://anonbadger.wordpress.com/",
+      "contributions": [
+        "code",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
