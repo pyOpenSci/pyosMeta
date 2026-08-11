@@ -365,7 +365,6 @@ class ProcessIssues:
             models = models[0]
         return models
 
-    # TODO: This now returns a dict of owner:repo_name to support graphql
     def get_repo_paths(
         self, review_issues: dict[str, ReviewModel]
     ) -> dict[str, dict[str, str]]:

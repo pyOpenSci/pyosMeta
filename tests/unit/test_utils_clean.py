@@ -17,9 +17,15 @@ from pyosmeta.utils_clean import (
         # Test cases for valid dates
         ("2024-03-07T12:34:56Z", "2024-03-07"),
         ("2024-02-28T00:00:00Z", "2024-02-28"),
+        # Already-cleaned dates (e.g. re-loaded from a previous
+        # packages.yml export) must round-trip unchanged.
+        ("2024-03-07", "2024-03-07"),
+        ("2024-02-28", "2024-02-28"),
         # Test cases for missing dates
         (None, "missing"),
         ("missing", "missing"),
+        # Unparsable input shouldn't raise, just fall back to "missing"
+        ("not-a-date", "missing"),
     ],
 )
 def test_clean_date(input_date, expected_output):

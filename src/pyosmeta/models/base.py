@@ -38,6 +38,7 @@ class RepositoryHost(str, Enum):
     github = "github"
     gitlab = "gitlab"
     codeberg = "codeberg"
+    bitbucket = "bitbucket"
 
     @classmethod
     def from_url(cls, url: str) -> "RepositoryHost":
@@ -59,6 +60,8 @@ class RepositoryHost(str, Enum):
             return cls.gitlab
         elif "codeberg.org" in url:
             return cls.codeberg
+        elif "bitbucket.org" in url:
+            return cls.bitbucket
         else:
             return cls.other
 
@@ -253,7 +256,8 @@ class GhMeta(BaseModel, UrlValidatorMixin):
     open_issues_count: int
     forks_count: int
     documentation: Optional[str]
-    contrib_count: int
+    # Optional in case the rest call fails and we don't have new metrics
+    contrib_count: Optional[int] = None
     last_commit: str
 
     @field_validator(
