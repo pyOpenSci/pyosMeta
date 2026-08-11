@@ -24,48 +24,98 @@ This repo contains several modules and several CLI scripts, including:
 
 _Since pyOpenSci uses this tool for its website, we expect this package to have infrequent releases._
 
+## How the metadata workflow works
+
+The canonical YAML files live in the
+[pyopensci.github.io](https://github.com/pyOpenSci/pyopensci.github.io) website
+repo under `data/`:
+
+- [`data/contributors.yml`](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/contributors.yml)
+  — community page and metrics
+- [`data/packages.yml`](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/packages.yml)
+  — accepted peer-reviewed packages and GitHub metrics
+
+A weekly (or manually dispatched) GitHub Action on the **website** repo
+([`update-contribs-reviews.yml`](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/.github/workflows/update-contribs-reviews.yml))
+checks out that repo, installs `pyosmeta`, runs the three CLIs below in order,
+then opens a PR with updates to those two files.
+
+```mermaid
+flowchart LR
+  subgraph website["pyopensci.github.io (website repo)"]
+    direction TB
+    contribYml["data/contributors.yml"]
+    pkgYml["data/packages.yml"]
+    contribYml ~~~ pkgYml
+  end
+
+  subgraph pyosMeta["pyosMeta package"]
+    direction TB
+    updateContribs["update-contributors"]
+    updateReviews["update-reviews"]
+    pickle1["all_contribs.pickle"]
+    pickle2["all_reviews.pickle"]
+    updateTeams["update-review-teams"]
+  end
+
+  website ~~~ pyosMeta
+
+  contribYml -->|"Read existing yml"| updateContribs
+  pkgYml -->|"Read existing yml"| updateReviews
+  updateContribs --> pickle1 --> updateTeams
+  updateReviews --> pickle2 --> updateTeams
+  updateTeams -->|"Update yml file"| contribYml
+  updateTeams -->|"Update yml file"| pkgYml
+```
+
+### What each step does
+
+1. **`update-contributors`** — Loads the published `contributors.yml`, finds
+   new people from pyOpenSci `.all-contributorsrc` files, and (with `--update`)
+   refreshes profile fields from GitHub. If a person already has a `name` in
+   the YAML, that value is kept and not overwritten from GitHub.
+2. **`update-reviews`** — Parses accepted review issues, fetches fresh GitHub
+   metrics per package, then gap-fills any missing `gh_meta` from the existing
+   `packages.yml` so previously published metrics are not deleted when an API
+   call fails.
+3. **`update-review-teams`** — Merges the two pickle outputs (no extra API
+   calls), links reviewers/editors/maintainers to packages, and writes
+   `data/contributors.yml` and `data/packages.yml` relative to the current
+   working directory (the website checkout in CI).
+
+`parse-history` is a one-time helper for `date_added` values; it is not part of
+the weekly pipeline.
+
+For local setup and how to run the scripts, see the
+[Development Guide](./development.md#running-the-metadata-cli-scripts).
+
 ## Installation
 
-Using pip:
+pyosMeta is available on PyPI and can be installed with pip:
 
 ```console
 pip install pyosmeta
 ```
 
-Using conda:
-
-```console
-conda install pyosmeta
-```
-
 ## Usage
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
+After installing `pyosmeta`, the main entry points are:
 
-This repo contains several modules and several CLI scripts, including:
-
-- `parse-history`
-  - This script:
-    1. gets a list of all contributors
-    2. parses through the commit history (locally) to figure out when they were added to the contributor.yml file
-    3. then it adds a date_Added key for that person
-      This will allow us to ensure the yaml file retains order when users are
-      highlighted as "new" and also for diff's in git.
 - `update-contributors`
-  - This script parses through and updates the existing contributor list stored in pyopensci.github.io repo in the data/contributors.yml file.
-  - That's used to populate the [community page](https://www.pyopensci.org/our-community/), and to update our [metrics page](https://www.pyopensci.org/metrics/).
 - `update-reviews`
-  - This script parses metadata from and issue and adds it to a .yml file for the website. It also grabs some of the package metadata such as stars, last commit, etc.
-  - It outputs a `packages.yml` file with all packages with accepted reviews; information related to the review; basic package stats; and partner information.
 - `update-review-teams`
-  - This script parses through our packages.yml and contributors.yml.
-  - It:
-    1. Updates reviewer, editor and maintainer data in the contributor.yml file to ensure all packages they supported are listed there.
-    1b: And that they have a listing as peer-review under contributor type
-    2. Finally it looks to see if we are missing review participants from the review issues in the contributor file and updates that file.
-  - **Warning**: This script assumes that update_contributors and update_reviews has been run. Rather than hit any api's it just updates information from the issues.
+- `parse-history` (one-time helper; not part of the weekly pipeline)
 
-_Note: this section will be rewritten to be more user focused._
+See [How the metadata workflow works](#how-the-metadata-workflow-works) for
+what each weekly script does, and the
+[Development Guide](./development.md#running-the-metadata-cli-scripts) for how
+to run them locally.
+
+## Contributing
+
+- [Contributing guide](./CONTRIBUTING.md) — how to open issues and pull requests
+- [Development guide](./development.md) — local setup, CLIs, tests, and releases
+- [Change log](./CHANGELOG.md)
 
 ## Contributors ✨
 
@@ -119,18 +169,6 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
 Contributions of any kind welcome!
-
-## Contributing
-
-[CONTRIBUTING.md](./CONTRIBUTING.md)
-
-## Development
-
-[Development guide](./development.md)
-
-## Change log
-
-[CHANGELOG.md](./CHANGELOG.md)
 
 ## Code of Conduct
 

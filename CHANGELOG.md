@@ -6,6 +6,8 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Docs: clarify README / CONTRIBUTING / development split; add workflow overview with Mermaid diagram; slim Usage section
+
 [v1.8.0] - 2026-08-11
 
 * Fix: handle GitHub 401 and 403 API errors, use REST API for metadata, ensure metadata are updated, and fail on bad API calls (@lwasser, #384)

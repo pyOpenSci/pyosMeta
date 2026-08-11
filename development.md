@@ -51,9 +51,114 @@ uv run parse-history
 uv run fetch-rss-feed
 ```
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for what each script does and the flags it accepts (e.g. `uv run update-contributors --update update_all`).
-
 If you'd rather activate the virtual environment directly, run `source .venv/bin/activate`, then call the scripts directly (e.g. `update-contributors`). To deactivate, run `deactivate`.
+
+For the weekly website pipeline overview, see the
+[README](./README.md#how-the-metadata-workflow-works). Details for each script
+are below.
+
+## Running the metadata CLI scripts
+
+`update-review-teams` expects pickle files from `update-contributors` and
+`update-reviews`, so run those two first.
+
+### update-contributors
+
+```console
+uv run update-contributors
+```
+
+With the optional `--update` flag, the script refreshes contributor profile
+fields from each person's public GitHub account (website, location,
+organization, Twitter, and so on). It also checks that profile websites
+resolve; broken links are removed so they do not fail website CI. A name
+already present in `contributors.yml` is kept and not overwritten from GitHub.
+This flag is rarely needed:
+
+```console
+uv run update-contributors --update update_all
+```
+
+Without `--update`, the script only adds people who are not already in the
+website's `contributors.yml`.
+
+The script gathers contributors from `.all-contributorsrc` files across
+pyOpenSci repos (so the website can acknowledge people who review guides,
+participate in peer review, and help in other ways—not only those with code
+commits). The repo list and contribution-type mapping live in
+[`src/pyosmeta/constants.py`](./src/pyosmeta/constants.py) (`CONTRIB_REPOS` /
+`REPO_CONTRIB_TYPES`). Update that file when adding or removing a tracked repo.
+
+Running this script:
+
+1. Parses `.all-contributorsrc` files across those repos.
+2. Updates the website
+   [`contributors.yml`](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/contributors.yml)
+   with new contributors and roles (via the later `update-review-teams` step).
+3. With `--update update_all`, also refreshes GitHub profile metadata as
+   described above.
+
+**Returns:** `all_contribs.pickle` for `update-review-teams`.
+
+### update-reviews
+
+```console
+uv run update-reviews
+```
+
+This script parses pyOpenSci's *accepted* review issues, then collects editors,
+reviewers, authors/maintainers, and package metadata (DOI, docs URL, stars,
+last commit, and related GitHub stats). That data is used to:
+
+1. Update each contributor's peer-review metadata in `contributors.yml` (in
+   `update-review-teams`).
+2. Update the website package listing.
+3. Refresh package stats from the GitHub API, falling back to existing
+   `packages.yml` `gh_meta` when a fetch fails so published metrics are not
+   deleted.
+
+**Returns:** `all_reviews.pickle` for `update-review-teams`.
+
+### update-review-teams
+
+This script bridges the two pickle outputs. It does not call the GitHub API.
+It updates each contributor's peer-review contributions, including:
+
+1. Packages submitted or reviewed
+2. Packages for which the contributor served as an editor
+3. Contributor types used on the
+   [community page](https://www.pyopensci.org/our-community/index.html#pyopensci-community-contributors):
+   peer-review, package-maintainer, package-reviewer, package-editor
+
+It also fills missing names in review data from `contributors.yml` so the
+[package listing](https://www.pyopensci.org/python-packages.html) can show
+people's names rather than only GitHub usernames.
+
+```console
+uv run update-review-teams
+```
+
+**Returns** (written relative to the current working directory; in CI this is
+the website checkout):
+
+1. `data/contributors.yml`
+2. `data/packages.yml`
+
+### How these scripts are used in production
+
+They run from the website repo workflow
+[`update-contribs-reviews.yml`](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/.github/workflows/update-contribs-reviews.yml)
+(weekly cron and manual dispatch).
+
+Canonical data files:
+
+* [contributors.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/contributors.yml)
+* [packages.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/packages.yml)
+
+### Rate limiting
+
+TODO: rate limiting is not a practical issue yet, but it likely will be.
+Document how we handle GitHub API limits when that becomes necessary.
 
 ## Running tests
 
