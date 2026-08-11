@@ -23,3 +23,23 @@ from pyosmeta.utils_parse import parse_user_names
 )
 def test_parse_user_names(name, expected_result):
     assert parse_user_names(name) == expected_result
+
+
+@pytest.mark.parametrize(
+    "username",
+    [
+        "N/A",
+        "n/a",
+        "TBD",
+        "None",
+        "github_handle1",
+        "github_handle2",
+        "(@github_handle1)",
+        "Some Name (@github_handle1)",
+    ],
+)
+def test_parse_user_names_placeholder_returns_none(username):
+    """Placeholder/junk usernames (leftover template text or N/A/TBD) should
+    parse to None, just like a genuinely empty value, instead of being kept
+    as a literal `github_username`."""
+    assert parse_user_names(username) is None

@@ -8,6 +8,7 @@ from pyosmeta.utils_clean import (
     clean_markdown,
     clean_name,
     get_clean_user,
+    is_placeholder_username,
 )
 
 
@@ -100,3 +101,28 @@ def test_clean_date_accepted_key(input_dict, expected_output):
 )
 def test_get_clean_user(input_username, expected_output):
     assert get_clean_user(input_username) == expected_output
+
+
+@pytest.mark.parametrize(
+    "username, expected_output",
+    [
+        # Known junk tokens, case-insensitive
+        ("N/A", True),
+        ("n/a", True),
+        ("NA", True),
+        ("TBD", True),
+        ("tbd", True),
+        ("None", True),
+        # Literal template placeholder, with/without trailing number
+        ("github_handle", True),
+        ("github_handle1", True),
+        ("github_handle2", True),
+        ("github_handle42", True),
+        # Real usernames should not be flagged
+        ("octocat", False),
+        ("leahawasser", False),
+        ("github_handle_extra", False),
+    ],
+)
+def test_is_placeholder_username(username, expected_output):
+    assert is_placeholder_username(username) == expected_output

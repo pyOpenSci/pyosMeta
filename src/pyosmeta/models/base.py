@@ -13,6 +13,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    ValidationInfo,
     field_serializer,
     field_validator,
     model_validator,
@@ -325,6 +326,19 @@ class ReviewModel(BaseModel):
     labels: list[str] = Field(default_factory=list)
     active: bool = True  # To indicate if package is maintained or archived
 
+    @property
+    def is_joss_fast_track(self) -> bool:
+        """Whether this package went through JOSS fast-track review.
+
+        Fast-tracked packages (already accepted by JOSS within the past
+        year) skip our normal reviewer assignment and only go through
+        editor checks, so it's expected for `reviewers` to be empty.
+        Derived from the `joss-fast-track` GitHub issue label rather than
+        stored as a separate field, so it can't drift out of sync with the
+        issue itself.
+        """
+        return "joss-fast-track" in self.labels
+
     @model_validator(mode="after")
     def set_repository_host_from_link(self):
         """Set repository_host based on repository_link if not already set."""
@@ -332,6 +346,19 @@ class ReviewModel(BaseModel):
             self.repository_host = RepositoryHost.from_url(
                 self.repository_link
             )
+        return self
+
+    @model_validator(mode="after")
+    def default_maintainers_to_submitting_author(self):
+        """Default `all_current_maintainers` to the submitting author.
+
+        Some issues leave the "All current maintainers" template
+        placeholder (e.g. `@github_handle1, @github_handle2`) unfilled,
+        which parses to an empty list. In that case, assume the submitting
+        author is the only maintainer rather than leaving this blank.
+        """
+        if not self.all_current_maintainers and self.submitting_author:
+            self.all_current_maintainers = [self.submitting_author]
         return self
 
     @field_validator(
@@ -441,15 +468,27 @@ class ReviewModel(BaseModel):
 
     @field_validator("all_current_maintainers", "reviewers", mode="before")
     @classmethod
-    def listify(cls, item: Any):
+    def listify(cls, item: Any, info: ValidationInfo):
         """Wrap a plural user field in a list when a single user is given.
 
         ``get_contributor_data`` collapses a single parsed user to a bare
         ``ReviewUser`` (correct for single-value roles like the submitting
         author), so list-typed roles such as reviewers must be re-wrapped.
-        ``None`` is left untouched so optional fields stay unset.
+        It returns ``None`` when every entry was filtered out (e.g. all
+        placeholder usernames). ``reviewers`` is optional, so ``None`` is
+        left as-is; ``all_current_maintainers`` is a required list, so
+        ``None`` becomes an empty list (later defaulted to the submitting
+        author by `default_maintainers_to_submitting_author`).
         """
         if item is None:
+            if info.field_name == "all_current_maintainers":
+                pkg_name = info.data.get("package_name", "unknown package")
+                logger.warning(
+                    f"No maintainers found for {pkg_name} - all entries "
+                    "were placeholder/junk usernames. Defaulting to the "
+                    "submitting author. Check the review issue to confirm."
+                )
+                return []
             return item
         if not isinstance(item, list):
             return [item]

@@ -4,7 +4,7 @@ pyOpenSci review and contributor metadata.
 """
 
 from pyosmeta.models import ReviewUser
-from pyosmeta.utils_clean import clean_name
+from pyosmeta.utils_clean import clean_name, is_placeholder_username
 
 
 def parse_user_names(username: str) -> ReviewUser | None:
@@ -46,5 +46,7 @@ def parse_user_names(username: str) -> ReviewUser | None:
             "name": "",
         }
     if (parsed["github_username"] == "") and (parsed["name"] == ""):
+        return None
+    if is_placeholder_username(parsed["github_username"]):
         return None
     return ReviewUser(**parsed)

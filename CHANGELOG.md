@@ -6,6 +6,7 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* fix: handle placeholder usernames in review teams gracefully (@lwasser, #387)
 * Feat: add tqdm progress bar to parse issues workflow & remove community heading noise (@lwasser, #385)
 * Fix: permissions issue in reusable workflow
 
