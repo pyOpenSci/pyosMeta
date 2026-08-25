@@ -1,5 +1,6 @@
 import pickle
 import urllib.request
+from pathlib import Path
 from typing import Dict, List, Union
 
 import ruamel.yaml
@@ -7,6 +8,27 @@ from ruamel.yaml import YAML
 
 from .constants import RAW_BASE_URL
 from .logging import logger
+
+
+def get_output_path(data_dir: Union[str, Path], filename: str) -> Path:
+    """Resolve an OS-safe absolute output path for a website data file.
+
+    Parameters
+    ----------
+    data_dir : str or Path
+        Directory that holds the website YAML files (e.g. the ``data/``
+        folder of the pyopensci.github.io repo).
+    filename : str
+        Base filename to write, e.g. ``contributors.yml``.
+
+    Returns
+    -------
+    Path
+        Absolute path to ``data_dir/filename`` with its parent created.
+    """
+    path = (Path(data_dir).expanduser() / filename).resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def load_pickle(filename):
@@ -90,7 +112,7 @@ def open_yml_file(file_path: str) -> dict:
         logger.error(f"Oops - can find the url: {file_path}", exc_info=True)
 
 
-def export_yaml(filename: str, data_list: list):
+def export_yaml(filename: Union[str, Path], data_list: list):
     """Update website contrib file with the information grabbed from GitHub
     API
 
@@ -168,7 +190,8 @@ def clean_yaml_file(filename):
 
 
 def clean_export_yml(
-    a_dict: Dict[str, Union[str, List[str]]] | List[dict], filename: str
+    a_dict: Dict[str, Union[str, List[str]]] | List[dict],
+    filename: Union[str, Path],
 ) -> None:
     """Inputs a dictionary with keys - contribs or packages.
     It then converse to a list for export, and creates a cleaned

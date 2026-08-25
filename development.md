@@ -47,6 +47,7 @@ Use `uv run` to execute any of the package's CLI entry points without manually a
 uv run update-contributors
 uv run update-reviews
 uv run update-review-teams
+uv run update-editorial-board
 uv run parse-history
 uv run fetch-rss-feed
 ```
@@ -143,6 +144,59 @@ the website checkout):
 
 1. `data/contributors.yml`
 2. `data/packages.yml`
+
+### update-editorial-board
+
+```console
+uv run update-editorial-board
+```
+
+This script builds the editor roster from GitHub org team membership and
+writes three files under `data/` relative to the current working directory
+(run from the website repo root):
+
+1. `editorial-board.yml` — active editors and their role flags
+2. `emeritus-editors.yml` — emeritus editors
+3. `contributors.yml` — updated editorial flags (`editorial_board`,
+   `emeritus_editor`) and titles
+
+#### Source of truth: GitHub teams
+
+GitHub org teams decide who is an editor. The team slugs live in
+[`src/pyosmeta/constants.py`](./src/pyosmeta/constants.py) (`EDITORIAL_TEAMS`):
+
+| Team slug | Role |
+| --------- | ---- |
+| `editorial-board` | Active editorial board |
+| `emeritus-editors` | Emeritus editors |
+| `eic-team` | Editor in Chief |
+| `peer-review-lead` | Peer review lead |
+
+Reading these teams needs a token with team read permission
+(e.g. `PYOS_GHA_TEAMS_READ`).
+
+#### Rules and edge cases
+
+**Active membership wins over emeritus.** The active roster is the union
+of `editorial-board`, `eic-team`, and `peer-review-lead`. Anyone in an
+active team is removed from the emeritus set (`emeritus_only = emeritus -
+active`). So if a person is in *both* an active team and the
+`emeritus-editors` team, they are treated as **active** and written to
+`editorial-board.yml`, not `emeritus-editors.yml`. Example: someone on
+both `peer-review-lead` and `emeritus-editors` appears only as an active
+peer review lead. To make them emeritus, remove them from the active team.
+
+**Emeritus is never removed from `contributors.yml`.** Anyone already
+flagged `emeritus_editor: true` in `contributors.yml` keeps that flag and
+their `Emeritus Editor` title even if they are not in any GitHub team
+(for example, people who never joined the org and so can't be added to a
+team). For these people the script only forces `editorial_board: false`.
+The trade-off: a *stale* emeritus flag will not self-correct and must be
+fixed by hand.
+
+**Historical role flags are preserved.** `emeritus_eic` and
+`emeritus_peer_review_lead` are read from the existing YAML because they
+are historical roles with no current GitHub team.
 
 ### How these scripts are used in production
 

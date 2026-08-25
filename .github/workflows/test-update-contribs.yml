@@ -36,7 +36,7 @@ jobs:
           # install pip=>20.1 to use "pip cache dir"
           python -m pip install --upgrade pip wheel
 
-      - name: Install pyosmeta and run update contribs
+      - name: Install pyosMeta and run update contribs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -45,6 +45,12 @@ jobs:
           update-contributors
           update-reviews
           update-review-teams
+
+      - name: Update editorial board
+        env:
+          GITHUB_TOKEN: ${{ secrets.PYOS_GHA_TEAMS_READ }}
+        run: |
+          update-editorial-board
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
@@ -55,6 +61,8 @@ jobs:
           add-paths: |
             data/contributors.yml
             data/packages.yml
+            data/editorial-board.yml
+            data/emeritus-editors.yml
           author: Leah <leah@pyopensci.org>
           base: main
           branch: contribs

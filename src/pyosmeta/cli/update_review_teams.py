@@ -21,14 +21,15 @@ To run: update_reviewers
 """
 
 from datetime import datetime
+from pathlib import Path
 
 from pydantic import ValidationError
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-from pyosmeta.constants import CONTRIBUTORS_REL_PATH, PACKAGES_REL_PATH
+from pyosmeta.constants import CONTRIBUTORS_FILE, PACKAGES_FILE
 from pyosmeta.contributors import ProcessContributors
-from pyosmeta.file_io import clean_export_yml, load_pickle
+from pyosmeta.file_io import clean_export_yml, get_output_path, load_pickle
 from pyosmeta.github_api import GitHubAPI
 from pyosmeta.logging import logger
 from pyosmeta.models import PersonModel, ReviewModel, ReviewUser
@@ -140,6 +141,10 @@ def process_user(
 
 
 def main():
+    # Website YAML lives in data/ relative to the current working directory
+    # (run from the pyopensci.github.io repo root).
+    data_dir = Path("data")
+
     github_api = GitHubAPI()
     process_contribs = ProcessContributors(github_api, [])
 
@@ -191,8 +196,12 @@ def main():
     contribs_ls = [model.model_dump() for model in contribs.values()]
     pkgs_ls = [model.model_dump() for model in packages.values()]
 
-    clean_export_yml(contribs_ls, CONTRIBUTORS_REL_PATH)
-    clean_export_yml(pkgs_ls, PACKAGES_REL_PATH)
+    contrib_path = get_output_path(data_dir, CONTRIBUTORS_FILE)
+    pkg_path = get_output_path(data_dir, PACKAGES_FILE)
+    clean_export_yml(contribs_ls, contrib_path)
+    clean_export_yml(pkgs_ls, pkg_path)
+    print(f"Wrote {contrib_path}")
+    print(f"Wrote {pkg_path}")
 
 
 if __name__ == "__main__":

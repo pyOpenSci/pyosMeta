@@ -14,8 +14,6 @@ datamodel-codegen --input issue_schema.json --input-file-type jsonschema --outpu
 #   filename:  issue_schema.json
 #   timestamp: 2024-07-02T23:19:14+00:00
 
-from __future__ import annotations
-
 from datetime import datetime
 from enum import Enum
 from typing import Any, List, Literal, Optional, Union

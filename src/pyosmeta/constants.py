@@ -1,25 +1,39 @@
-"""Single source of truth for paths and URLs to pyOpenSci website data files.
+"""Single source of truth for pyOpenSci website data paths and editor teams.
 
 These constants are used across the CLI scripts to read and write
 `contributors.yml` and `packages.yml`, which live in the `data/` directory of
-the pyopensci.github.io (Hugo) website repo. Update the values here rather
-than hardcoding them in individual scripts.
+the pyopensci.github.io (Hugo) website repo, and to name the GitHub org
+teams that are the source of truth for editor listings. Update the values
+here rather than hardcoding them in individual scripts.
 """
 
 # Reused by file_io.create_paths() to build .all-contributorsrc URLs for
 # other pyOpenSci repos, so it must stay org-level (no repo name baked in).
 RAW_BASE_URL = "https://raw.githubusercontent.com/pyOpenSci/"
 
-# Shared prefix for both website data files.
+# Shared prefix for website data files on GitHub (always POSIX `/`).
+WEBSITE_DATA_DIR = "data"
 WEBSITE_DATA_RAW_URL = (
-    f"{RAW_BASE_URL}pyopensci.github.io/refs/heads/main/data/"
+    f"{RAW_BASE_URL}pyopensci.github.io/refs/heads/main/{WEBSITE_DATA_DIR}/"
 )
 
-CONTRIBUTORS_REL_PATH = "data/contributors.yml"
-PACKAGES_REL_PATH = "data/packages.yml"
+CONTRIBUTORS_FILE = "contributors.yml"
+PACKAGES_FILE = "packages.yml"
+EDITORIAL_BOARD_FILE = "editorial-board.yml"
+EMERITUS_EDITORS_FILE = "emeritus-editors.yml"
 
-CONTRIBUTORS_RAW_URL = f"{WEBSITE_DATA_RAW_URL}contributors.yml"
-PACKAGES_RAW_URL = f"{WEBSITE_DATA_RAW_URL}packages.yml"
+# POSIX repo-relative locations of the data files *inside* the website repo.
+# Use these for git operations (e.g. `repo.git.show("<sha>:<path>")`) and to
+# reference where a file lives in the repo -- NOT as a local filesystem write
+# target. CLIs write under ``data/`` relative to the current working directory
+# via `file_io.get_output_path(Path("data"), <FILE constant>)`.
+CONTRIBUTORS_REL_PATH = f"{WEBSITE_DATA_DIR}/{CONTRIBUTORS_FILE}"
+PACKAGES_REL_PATH = f"{WEBSITE_DATA_DIR}/{PACKAGES_FILE}"
+
+CONTRIBUTORS_RAW_URL = f"{WEBSITE_DATA_RAW_URL}{CONTRIBUTORS_FILE}"
+PACKAGES_RAW_URL = f"{WEBSITE_DATA_RAW_URL}{PACKAGES_FILE}"
+EDITORIAL_BOARD_RAW_URL = f"{WEBSITE_DATA_RAW_URL}{EDITORIAL_BOARD_FILE}"
+EMERITUS_EDITORS_RAW_URL = f"{WEBSITE_DATA_RAW_URL}{EMERITUS_EDITORS_FILE}"
 
 # Single source of truth for pyOpenSci repos whose all-contributors bot data
 # feeds into contributors.yml, and the contribution-type category each repo's
@@ -44,3 +58,13 @@ REPO_CONTRIB_TYPES: dict[str, str] = {
 }
 
 CONTRIB_REPOS = list(REPO_CONTRIB_TYPES.keys())
+
+# GitHub org team slugs used as the source of truth for editor listings.
+# Membership is managed on GitHub; pyosMeta reads these teams.
+EDITORIAL_TEAMS: dict[str, str] = {
+    "editorial_board": "editorial-board",
+    "emeritus_editors": "emeritus-editors",
+    "eic_team": "eic-team",
+    "peer_review_lead": "peer-review-lead",
+    "triage_team": "triage-team",
+}

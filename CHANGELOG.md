@@ -7,6 +7,7 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 ## [Unreleased]
 
 * Docs: clarify README / CONTRIBUTING / development split; add workflow overview with Mermaid diagram; slim Usage section
+* Feat: Automate editorial board roster management using GitHub teams (@lwasser #393)
 
 [v1.8.0] - 2026-08-11
 
