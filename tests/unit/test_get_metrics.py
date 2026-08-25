@@ -1,6 +1,9 @@
 import pytest
 
-from pyosmeta.cli.process_reviews import update_gh_meta
+from pyosmeta.cli.process_reviews import (
+    require_accepted_reviews,
+    update_gh_meta,
+)
 from pyosmeta.github_api import GitHubAPI, GitHubAPIError
 from pyosmeta.models import ReviewModel
 from pyosmeta.models.base import GhMeta
@@ -203,3 +206,12 @@ class TestUpdateGhMeta:
 
         assert reviews["sunpy"].gh_meta.stargazers_count == 500
         assert reviews["other-pkg"].gh_meta is None
+
+
+def test_require_accepted_reviews_passes_when_nonempty(review):
+    require_accepted_reviews({"sunpy": review})
+
+
+def test_require_accepted_reviews_fails_when_empty():
+    with pytest.raises(RuntimeError, match="No accepted reviews"):
+        require_accepted_reviews({})

@@ -20,24 +20,34 @@ uv sync --extra dev
 
 This creates a `.venv` in the repo, installs `pyosmeta` in editable mode, and installs the `dev` dependencies (pytest, black, flake8, pre-commit, etc.) defined in `pyproject.toml`.
 
-### Setup a token to authenticate with the GitHub API
+### Setup tokens to authenticate with the GitHub API
 
-Most of the CLI scripts call the GitHub API, so you'll need a token to interface with the GitHub API:
+Most CLI scripts call the GitHub API. pyosMeta uses **two** env vars:
 
-1. [Create a fine-grained personal access token](https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api?apiVersion=2022-11-28#about-tokens) with "Repository Access" set to "Public Repositories (read-only)". No other configuration needed.
-2. Duplicate the `.env-default` file and rename the copy to `.env`.
-3. Assign your token to the `GITHUB_TOKEN` variable in the `.env` file.
+| Variable | Used for | Typical token |
+| -------- | -------- | ------------- |
+| `GITHUB_TOKEN` | Issues, contributors, package metrics (`update-reviews`, `update-contributors`, …) | Classic PAT with public-repo read access |
+| `GITHUB_TOKEN_TEAMS` | Org team membership (`update-editorial-board`) | Fine-grained (or classic) token with org **Members** / team read |
 
-pyosMeta reads `GITHUB_TOKEN` from the `.env` file (via `python-dotenv`), so you don't need to export it in your shell's config file. If you ever do need to set it as a shell environment variable instead, first figure out what shell you're using:
+1. Create a classic [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) that can read public repos (for issues and contributor data).
+2. Create a second token that can read pyOpenSci org teams (fine-grained with Members: Read on the org, or classic with `read:org`).
+3. Duplicate `.env-default` to `.env` and set both:
+
+```console
+GITHUB_TOKEN=...
+GITHUB_TOKEN_TEAMS=...
+```
+
+pyosMeta loads these from `.env` via `python-dotenv`. You do not need to export them in your shell config unless you prefer that. If you do export them:
 
 ```console
 echo $SHELL
 ```
 
-- If it returns `/bin/zsh`, open your config file with `code ~/.zshrc` and add `export GITHUB_TOKEN=your-token-here`.
-- If it returns `/bin/bash`, open your config file with `code ~/.bash_profile` and add `export GITHUB_TOKEN=your-token-here`.
+- zsh: add the exports to `~/.zshrc`
+- bash: add them to `~/.bash_profile`
 
-Restart your terminal (or run `source ~/.zshrc` / `source ~/.bash_profile`) for the change to take effect.
+Restart the terminal (or `source` the config) after changing shell exports.
 
 ### Run the CLI scripts
 
@@ -172,8 +182,9 @@ GitHub org teams decide who is an editor. The team slugs live in
 | `eic-team` | Editor in Chief |
 | `peer-review-lead` | Peer review lead |
 
-Reading these teams needs a token with team read permission
-(e.g. `PYOS_GHA_TEAMS_READ`).
+Reading these teams needs `GITHUB_TOKEN_TEAMS` (team/org read
+permission). In CI that value comes from
+`PYOS_READ_TEAM_MEMBERS_SECRET`.
 
 #### Rules and edge cases
 

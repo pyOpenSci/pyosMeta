@@ -115,6 +115,9 @@ class GitHubAPI:
         """Fetches the GitHub API key from the users environment. If running
         local from an .env file.
 
+        Used for issues, contributors, and package metrics. Org team reads
+        use ``get_teams_token`` / ``GITHUB_TOKEN_TEAMS`` instead.
+
         Returns
         -------
         str
@@ -131,6 +134,32 @@ class GitHubAPI:
         except KeyError:
             raise KeyError(
                 "Oops! A GITHUB_TOKEN environment variable wasn't found."
+            )
+
+    def get_teams_token(self) -> str:
+        """Return the token used to read GitHub organization teams.
+
+        Reads ``GITHUB_TOKEN_TEAMS`` from the environment (or ``.env``).
+        Team membership endpoints need org/team read permission that a
+        public-repo PAT often does not have.
+
+        Returns
+        -------
+        str
+            The teams API token.
+
+        Raises
+        ------
+        KeyError
+            If ``GITHUB_TOKEN_TEAMS`` is not set.
+        """
+        load_dotenv()
+        try:
+            return os.environ["GITHUB_TOKEN_TEAMS"]
+        except KeyError:
+            raise KeyError(
+                "Oops! A GITHUB_TOKEN_TEAMS environment variable wasn't "
+                "found. Set it to a token that can read pyOpenSci org teams."
             )
 
     @property
@@ -213,7 +242,13 @@ class GitHubAPI:
                 sleep_time = max(reset_time - time.time(), 0) + 1
                 time.sleep(sleep_time)
 
-    def _get_response_rest(self, url: str) -> list[dict[str, Any]]:
+    def _get_response_rest(
+        self,
+        url: str,
+        *,
+        token: str | None = None,
+        token_name: str = "GITHUB_TOKEN",
+    ) -> list[dict[str, Any]]:
         """Make a GET request to the GitHub REST API.
         Handles pagination and rate limiting.
 
@@ -221,6 +256,11 @@ class GitHubAPI:
         ----------
         url : str
             The API endpoint URL.
+        token : str, optional
+            Auth token to use. Defaults to ``get_token()``
+            (``GITHUB_TOKEN``).
+        token_name : str, optional
+            Env var name for 401 error messages.
 
         Returns
         -------
@@ -229,17 +269,18 @@ class GitHubAPI:
         """
         results = []
         api_endpoint_url = url
+        auth_token = token if token is not None else self.get_token()
 
         while api_endpoint_url:
             response = requests.get(
                 api_endpoint_url,
-                headers={"Authorization": f"token {self.get_token()}"},
+                headers={"Authorization": f"token {auth_token}"},
             )
 
             if response.status_code == 401:
                 raise GitHubAPIError(
                     f"401 Unauthorized calling {api_endpoint_url}. Check "
-                    "that GITHUB_TOKEN is valid, unexpired, and has the "
+                    f"that {token_name} is valid, unexpired, and has the "
                     "correct scopes."
                 )
             if response.status_code == 403:
@@ -539,8 +580,7 @@ class GitHubAPI:
         requests.HTTPError
             If the team is missing or inaccessible (GitHub answers 404
             when the token cannot read a private team). Reading org teams
-            needs a token with team read permission (for example
-            PYOS_GHA_TEAMS_READ).
+            needs ``GITHUB_TOKEN_TEAMS`` with team read permission.
         """
         if not self.org:
             raise GitHubAPIError(
@@ -551,7 +591,11 @@ class GitHubAPI:
             f"https://api.github.com/orgs/{self.org}/teams/{slug}"
             "/members?per_page=100"
         )
-        members = self._get_response_rest(url)
+        members = self._get_response_rest(
+            url,
+            token=self.get_teams_token(),
+            token_name="GITHUB_TOKEN_TEAMS",
+        )
 
         logins: list[str] = []
         for member in members:

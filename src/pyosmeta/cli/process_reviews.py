@@ -111,6 +111,23 @@ def update_gh_meta(
     return reviews
 
 
+def require_accepted_reviews(accepted_reviews: dict[str, ReviewModel]) -> None:
+    """Raise if the review fetch/parse produced no packages.
+
+    An empty result is never valid for pyOpenSci (we have many approved
+    packages). Writing an empty pickle would let ``update-review-teams``
+    overwrite ``packages.yml`` with nothing.
+    """
+    if accepted_reviews:
+        return
+    raise RuntimeError(
+        "No accepted reviews were returned from GitHub. Refusing to write "
+        "all_reviews.pickle so packages.yml is not overwritten with empty "
+        "data. Check GITHUB_TOKEN and that the software-submission issues "
+        "API returned packages labeled 6/pyOS-approved."
+    )
+
+
 def main():
     github_api = GitHubAPI(
         org="pyopensci",
@@ -130,6 +147,8 @@ def main():
             print(error)
             print("-" * 20)
         raise RuntimeError("Errors in parsing reviews, see printout above")
+
+    require_accepted_reviews(accepted_reviews)
 
     # Update gh metrics via api for all packages
     # Contrib count is only available via rest api
