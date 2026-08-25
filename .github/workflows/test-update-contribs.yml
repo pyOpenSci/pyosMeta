@@ -48,7 +48,7 @@ jobs:
 
       - name: Update editorial board
         env:
-          GITHUB_TOKEN: ${{ secrets.PYOS_GHA_TEAMS_READ }}
+          GITHUB_TOKEN: ${{ secrets.PYOS_READ_TEAM_MEMBERS_SECRET }}
         run: |
           update-editorial-board
 
