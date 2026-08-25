@@ -2,13 +2,28 @@
 
 GitHub teams are the source of truth for active and emeritus specialty
 roles (``eic-team``, ``triage-team``, ``emeritus-editor-in-chief``,
-``emeritus-peer-review-lead``, ``emeritus-triage-team``, "emeritus-editor"
+``emeritus-peer-review-lead``, ``emeritus-triage-team``,
+``emeritus-editors``).
 
-.).
+People who cannot join org teams are listed in
+``manual-editorial-roster.yml`` and merged after the team fetch via
+``merge_manual_roster``.
 """
 
 from dataclasses import dataclass
 from typing import Any, Callable
+
+# Manual YAML keys (only ``true`` values needed) → RosterEntry fields.
+_MANUAL_FLAG_MAP = {
+    "editor": "active_editor",
+    "eic": "active_eic",
+    "peer_review_lead": "active_peer_review_lead",
+    "triage": "active_triage",
+    "emeritus_editor": "emeritus_editor",
+    "emeritus_eic": "emeritus_eic",
+    "emeritus_peer_review_lead": "emeritus_peer_review_lead",
+    "emeritus_triage": "emeritus_triage",
+}
 
 
 @dataclass
@@ -106,6 +121,40 @@ def build_roster(
             emeritus_triage=username in emeritus_triage,
         )
     return roster
+
+
+def merge_manual_roster(
+    roster: dict[str, RosterEntry],
+    manual: dict[str, dict] | None,
+) -> dict[str, RosterEntry]:
+    """Add hand-maintained people who are not on GitHub teams.
+
+    ``manual`` is the mapping from ``manual-editorial-roster.yml``. Only
+    role keys set to true are applied (``editor``, ``emeritus_editor``,
+    specialty flags). ``name`` / ``note`` are ignored here.
+
+    If a username is already in ``roster`` from team membership, the
+    team entry wins and the manual row is skipped.
+    """
+    if not manual:
+        return roster
+
+    out = dict(roster)
+    for raw_name, raw_flags in manual.items():
+        username = (raw_name or "").strip().lower()
+        if not username or username in out:
+            continue
+        if not isinstance(raw_flags, dict):
+            continue
+
+        kwargs: dict[str, bool] = {}
+        for yaml_key, attr in _MANUAL_FLAG_MAP.items():
+            if raw_flags.get(yaml_key) is True:
+                kwargs[attr] = True
+        if not kwargs:
+            continue
+        out[username] = RosterEntry(**kwargs)
+    return out
 
 
 def board_yaml(roster: dict[str, RosterEntry]) -> dict[str, dict]:

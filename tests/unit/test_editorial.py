@@ -14,6 +14,7 @@ from pyosmeta.editorial import (
     build_roster,
     editorial_titles,
     emeritus_yaml,
+    merge_manual_roster,
 )
 
 _ROLE_ATTRS = (
@@ -190,6 +191,52 @@ def test_emeritus_yaml_includes_emeritus_editor_flag():
         "emeritus_eic": True,
         "emeritus_triage": True,
     }
+
+
+def test_merge_manual_roster_adds_editor_and_emeritus():
+    roster = build_roster(_teams(editorial_board=["alice"]))
+    merged = merge_manual_roster(
+        roster,
+        {
+            "dhomeier": {"name": "Derek", "note": "x", "editor": True},
+            "jbencook": {"emeritus_editor": True},
+            "kellyrowland": {
+                "emeritus_editor": True,
+                "emeritus_eic": True,
+            },
+        },
+    )
+    assert merged["dhomeier"].active_editor is True
+    assert merged["dhomeier"].is_active is True
+    assert merged["jbencook"].emeritus_editor is True
+    assert merged["jbencook"].is_active is False
+    assert merged["kellyrowland"].emeritus_eic is True
+    assert "dhomeier" in board_yaml(merged)
+    assert "jbencook" in emeritus_yaml(merged)
+    assert "kellyrowland" in emeritus_yaml(merged)
+
+
+def test_merge_manual_roster_team_wins():
+    roster = build_roster(_teams(editorial_board=["dhomeier"]))
+    merged = merge_manual_roster(
+        roster,
+        {"dhomeier": {"emeritus_editor": True}},
+    )
+    assert merged["dhomeier"].active_editor is True
+    assert merged["dhomeier"].emeritus_editor is False
+
+
+def test_merge_manual_roster_ignores_false_and_empty():
+    roster = build_roster(_teams())
+    merged = merge_manual_roster(
+        roster,
+        {
+            "skipme": {"editor": False, "emeritus_editor": False},
+            "alsoskip": {"name": "Only Name"},
+            "": {"editor": True},
+        },
+    )
+    assert merged == {}
 
 
 def test_editorial_titles_include_triage_and_base_editor():
@@ -370,7 +417,38 @@ def editorial_cli_data_dir(tmp_path, monkeypatch):
                 "contributor_type": ["editor"],
                 "title": "Emeritus Editor in Chief",
             },
+            {
+                "github_username": "dhomeier",
+                "name": "Derek Homeier",
+                "editorial_board": False,
+                "emeritus_editor": False,
+                "contributor_type": [],
+                "title": None,
+            },
+            {
+                "github_username": "jbencook",
+                "name": "Ben Cook",
+                "editorial_board": False,
+                "emeritus_editor": False,
+                "contributor_type": [],
+                "title": "Guest editor",
+            },
         ],
+    )
+    _dump_yaml(
+        data_dir / "manual-editorial-roster.yml",
+        {
+            "dhomeier": {
+                "name": "Derek Homeier",
+                "note": "manual active",
+                "editor": True,
+            },
+            "jbencook": {
+                "name": "Ben Cook",
+                "note": "manual emeritus",
+                "emeritus_editor": True,
+            },
+        },
     )
 
     team_members = {
@@ -417,6 +495,11 @@ def test_cli_writes_board_and_emeritus_yaml(editorial_cli_data_dir):
     assert emeritus["cmarmo"]["emeritus_editor"] is True
     assert emeritus["cmarmo"]["emeritus_eic"] is True
     assert emeritus["cmarmo"]["emeritus_triage"] is False
+    # Manual overrides land in the generated board files
+    assert board["dhomeier"]["peer_review_lead"] is False
+    assert emeritus["jbencook"]["emeritus_editor"] is True
+    # Manual file itself must not be rewritten away
+    assert (editorial_cli_data_dir / "manual-editorial-roster.yml").exists()
 
 
 def test_cli_updates_contributors_flags(editorial_cli_data_dir):
@@ -435,3 +518,7 @@ def test_cli_updates_contributors_flags(editorial_cli_data_dir):
     assert "editor" in [
         t.lower() for t in by_user["newbie"]["contributor_type"]
     ]
+    assert by_user["dhomeier"]["editorial_board"] is True
+    assert by_user["dhomeier"]["emeritus_editor"] is False
+    assert by_user["jbencook"]["emeritus_editor"] is True
+    assert by_user["jbencook"]["editorial_board"] is False

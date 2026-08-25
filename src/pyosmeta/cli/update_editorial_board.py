@@ -19,6 +19,7 @@ from pyosmeta.constants import (
     EDITORIAL_TEAMS,
     EMERITUS_EDITORS_FILE,
     EMERITUS_EDITORS_RAW_URL,
+    MANUAL_EDITORIAL_ROSTER_FILE,
 )
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.editorial import (
@@ -27,6 +28,7 @@ from pyosmeta.editorial import (
     board_yaml,
     build_roster,
     emeritus_yaml,
+    merge_manual_roster,
 )
 from pyosmeta.file_io import (
     clean_export_yml,
@@ -94,6 +96,7 @@ def main() -> None:
     board_path = get_output_path(data_dir, EDITORIAL_BOARD_FILE)
     emeritus_path = get_output_path(data_dir, EMERITUS_EDITORS_FILE)
     contrib_path = get_output_path(data_dir, CONTRIBUTORS_FILE)
+    manual_path = data_dir / MANUAL_EDITORIAL_ROSTER_FILE
 
     github_api = GitHubAPI()
     teams: dict[str, list[str]] = {}
@@ -113,6 +116,24 @@ def main() -> None:
         previous.update(board_existing)
 
     roster = build_roster(teams, previous)
+
+    manual = {}
+    if manual_path.exists():
+        with manual_path.open() as handle:
+            loaded = YAML(typ="safe", pure=True).load(handle)
+        if isinstance(loaded, dict):
+            manual = loaded
+            print(f"\nManual roster ({manual_path}): {len(manual)}")
+            for login in sorted(manual):
+                print(f"  {login}")
+        else:
+            logger.warning(
+                "%s did not parse as a mapping; ignoring.", manual_path
+            )
+    else:
+        print(f"\nNo {MANUAL_EDITORIAL_ROSTER_FILE}; skipping manual merge.")
+
+    roster = merge_manual_roster(roster, manual)
     _print_roster(roster)
 
     _write_mapping_yaml(board_path, board_yaml(roster))
