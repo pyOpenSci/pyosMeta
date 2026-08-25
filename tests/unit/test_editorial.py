@@ -12,6 +12,7 @@ from pyosmeta.editorial import (
     apply_roster_to_contributors,
     board_yaml,
     build_roster,
+    editorial_titles,
     emeritus_yaml,
 )
 
@@ -19,6 +20,7 @@ _ROLE_ATTRS = (
     "active_editor",
     "active_eic",
     "active_peer_review_lead",
+    "active_triage",
     "emeritus_editor",
     "is_active",
 )
@@ -30,6 +32,7 @@ def _teams(**overrides):
         "emeritus_editors": [],
         "eic_team": [],
         "peer_review_lead": [],
+        "triage_team": [],
     }
     base.update(overrides)
     return base
@@ -49,12 +52,23 @@ def _teams(**overrides):
             "carol",
             {"active_peer_review_lead", "is_active"},
         ),
+        (
+            _teams(triage_team=["erin"]),
+            "erin",
+            {"active_triage", "is_active"},
+        ),
         (_teams(emeritus_editors=["dave"]), "dave", {"emeritus_editor"}),
         # Active membership wins over emeritus team membership
         (
             _teams(editorial_board=["lwasser"], emeritus_editors=["lwasser"]),
             "lwasser",
             {"active_editor", "is_active"},
+        ),
+        # Triage alone is active even if also on emeritus-editors
+        (
+            _teams(triage_team=["cmarmo"], emeritus_editors=["cmarmo"]),
+            "cmarmo",
+            {"active_triage", "is_active"},
         ),
     ],
 )
@@ -124,6 +138,36 @@ def test_active_over_emeritus_yaml_split():
     )
     assert "lwasser" in board_yaml(roster)
     assert "lwasser" not in emeritus_yaml(roster)
+
+
+def test_triage_only_lands_on_active_board_yaml():
+    roster = build_roster(_teams(triage_team=["erin"]))
+    board = board_yaml(roster)
+    assert board["erin"] == {
+        "peer_review_lead": False,
+        "eic_team": False,
+        "triage_team": True,
+        "emeritus_peer_review_lead": False,
+        "emeritus_eic": False,
+    }
+    assert "erin" not in emeritus_yaml(roster)
+
+
+def test_emeritus_yaml_includes_emeritus_editor_flag():
+    roster = build_roster(
+        _teams(emeritus_editors=["dave"]),
+        previous={"dave": {"emeritus_eic": True}},
+    )
+    assert emeritus_yaml(roster)["dave"] == {
+        "emeritus_editor": True,
+        "emeritus_peer_review_lead": False,
+        "emeritus_eic": True,
+    }
+
+
+def test_editorial_titles_include_triage_and_base_editor():
+    titles = editorial_titles(RosterEntry(active_triage=True, active_eic=True))
+    assert titles == ["Editor", "Editor in Chief", "Peer Review Triage"]
 
 
 @pytest.mark.parametrize(
@@ -243,6 +287,7 @@ def editorial_cli_data_dir(tmp_path, monkeypatch):
             "alice": {
                 "peer_review_lead": False,
                 "eic_team": False,
+                "triage_team": False,
                 "emeritus_peer_review_lead": False,
                 "emeritus_eic": False,
             }
@@ -252,6 +297,7 @@ def editorial_cli_data_dir(tmp_path, monkeypatch):
         data_dir / "emeritus-editors.yml",
         {
             "cmarmo": {
+                "emeritus_editor": True,
                 "emeritus_peer_review_lead": False,
                 "emeritus_eic": True,
             }
@@ -292,6 +338,7 @@ def editorial_cli_data_dir(tmp_path, monkeypatch):
         "emeritus-editors": ["cmarmo"],
         "eic-team": [],
         "peer-review-lead": ["alice"],
+        "triage-team": ["alice"],
     }
     mock_api = Mock()
     mock_api.get_team_members.side_effect = lambda slug: team_members[slug]
@@ -319,7 +366,10 @@ def test_cli_writes_board_and_emeritus_yaml(editorial_cli_data_dir):
     emeritus = _load_yaml(editorial_cli_data_dir / "emeritus-editors.yml")
 
     assert board["alice"]["peer_review_lead"] is True
+    assert board["alice"]["triage_team"] is True
     assert "newbie" in board
+    assert board["newbie"]["triage_team"] is False
+    assert emeritus["cmarmo"]["emeritus_editor"] is True
     assert emeritus["cmarmo"]["emeritus_eic"] is True
 
 
