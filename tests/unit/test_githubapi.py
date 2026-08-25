@@ -21,10 +21,27 @@ def mock_github_token(monkeypatch):
 
 
 @pytest.fixture
+def mock_github_teams_token(monkeypatch):
+    """Set a mock GITHUB_TOKEN_TEAMS in the environment."""
+    monkeypatch.setenv("GITHUB_TOKEN_TEAMS", secrets.token_hex(16))
+
+
+@pytest.fixture
 def mock_missing_github_token(monkeypatch, tmpdir):
     os.chdir(tmpdir)
     # Remove the GitHub token from the environment variable
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+
+    def do_nothing():
+        pass
+
+    monkeypatch.setattr(github_api, "load_dotenv", do_nothing)
+
+
+@pytest.fixture
+def mock_missing_github_teams_token(monkeypatch, tmpdir):
+    os.chdir(tmpdir)
+    monkeypatch.delenv("GITHUB_TOKEN_TEAMS", raising=False)
 
     def do_nothing():
         pass
@@ -48,6 +65,41 @@ def test_missing_token(mock_missing_github_token, tmpdir):
 
     with pytest.raises(KeyError, match="Oops! A GITHUB_TOKEN environment"):
         github_api.get_token()
+
+
+def test_get_teams_token(mock_github_teams_token):
+    """Test that get_teams_token reads GITHUB_TOKEN_TEAMS."""
+    api = GitHubAPI()
+    assert api.get_teams_token() == os.environ["GITHUB_TOKEN_TEAMS"]
+
+
+def test_missing_teams_token(mock_missing_github_teams_token, tmpdir):
+    """Test that a KeyError is raised when GITHUB_TOKEN_TEAMS is missing."""
+    api = GitHubAPI()
+
+    with pytest.raises(KeyError, match="GITHUB_TOKEN_TEAMS"):
+        api.get_teams_token()
+
+
+def test_get_team_members_uses_teams_token(mocker, mock_github_teams_token):
+    """Team membership requests must authenticate with GITHUB_TOKEN_TEAMS."""
+    api = GitHubAPI(org="pyopensci")
+    teams_token = os.environ["GITHUB_TOKEN_TEAMS"]
+    mock_rest = mocker.patch.object(
+        api,
+        "_get_response_rest",
+        return_value=[{"login": "editor1"}, {"login": "editor2"}],
+    )
+
+    members = api.get_team_members("editorial-board")
+
+    mock_rest.assert_called_once_with(
+        "https://api.github.com/orgs/pyopensci/teams/editorial-board"
+        "/members?per_page=100",
+        token=teams_token,
+        token_name="GITHUB_TOKEN_TEAMS",
+    )
+    assert members == ["editor1", "editor2"]
 
 
 @pytest.mark.parametrize(

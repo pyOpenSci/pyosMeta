@@ -6,6 +6,7 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Fix: don't overwrite packages.yml if api endpoints are not found (@lwasser)
 * Docs: clarify README / CONTRIBUTING / development split; add workflow overview with Mermaid diagram; slim Usage section
 * Feat: Automate editorial board roster management using GitHub teams (@lwasser #393)
 

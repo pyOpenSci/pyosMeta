@@ -153,6 +153,12 @@ def main():
     contribs: dict[str, PersonModel] = load_pickle("all_contribs.pickle")
     packages: dict[str, ReviewModel] = load_pickle("all_reviews.pickle")
 
+    if not packages:
+        raise RuntimeError(
+            "all_reviews.pickle is empty. Refusing to overwrite "
+            "packages.yml. Re-run update-reviews successfully first."
+        )
+
     contrib_types = process_contribs.contrib_types
 
     for pkg_name, review in tqdm(
