@@ -5,23 +5,50 @@ GitHub teams are the source of truth for who is active vs emeritus.
 existing website YAML because those roles are historical, not a current team.
 """
 
+from dataclasses import dataclass
 from typing import Any, Callable
+
+
+@dataclass
+class RosterEntry:
+    """Role flags for one editor, derived from GitHub team membership.
+
+    Each role has an active and an emeritus form. A person is *active*
+    when they hold any active role (``is_active``); otherwise they are
+    emeritus. The three active flags come straight from the active GitHub
+    teams (``editorial-board``, ``peer-review-lead``, ``eic-team``).
+    ``emeritus_editor`` means they are on the ``emeritus-editors`` team and
+    hold no active role. ``emeritus_peer_review_lead`` and ``emeritus_eic``
+    are historical (no team), preserved from the existing website YAML.
+    """
+
+    active_editor: bool = False
+    active_peer_review_lead: bool = False
+    active_eic: bool = False
+    emeritus_editor: bool = False
+    emeritus_peer_review_lead: bool = False
+    emeritus_eic: bool = False
+
+    @property
+    def is_active(self) -> bool:
+        """True when the person holds any active editorial role."""
+        return (
+            self.active_editor
+            or self.active_peer_review_lead
+            or self.active_eic
+        )
+
 
 EDITORIAL_TITLE_STRINGS = frozenset(
     {
         "Editor",
         "Editor in Chief",
-        "Editor in Chief Team",
         "Peer Review Lead",
         "Emeritus Editor",
         "Emeritus Editor in Chief",
         "Emeritus Peer Review Lead",
     }
 )
-
-TITLE_NORMALIZE = {
-    "Editor in Chief Team": "Editor in Chief",
-}
 
 
 def _usernames(logins: list[str] | None) -> set[str]:
@@ -41,7 +68,7 @@ def _lower_keys(mapping: dict | None) -> dict:
 def build_roster(
     teams: dict[str, list[str]],
     previous: dict[str, dict] | None = None,
-) -> dict[str, dict]:
+) -> dict[str, RosterEntry]:
     """Return username -> role flags from team membership.
 
     Parameters
@@ -62,73 +89,73 @@ def build_roster(
     active = board | eic | pr_lead
     emeritus_only = emeritus - active
 
-    roster: dict[str, dict] = {}
+    roster: dict[str, RosterEntry] = {}
     for username in active | emeritus_only:
         prev = previous.get(username) or {}
         if not isinstance(prev, dict):
             prev = {}
-        is_active = username in active
-        roster[username] = {
-            "active": is_active,
-            "peer_review_lead": username in pr_lead if is_active else False,
-            "eic_team": username in eic if is_active else False,
-            "emeritus_peer_review_lead": bool(
+        roster[username] = RosterEntry(
+            active_editor=username in board,
+            active_peer_review_lead=username in pr_lead,
+            active_eic=username in eic,
+            emeritus_editor=username in emeritus_only,
+            emeritus_peer_review_lead=bool(
                 prev.get("emeritus_peer_review_lead")
             ),
-            "emeritus_eic": bool(prev.get("emeritus_eic")),
-        }
+            emeritus_eic=bool(prev.get("emeritus_eic")),
+        )
     return roster
 
 
-def board_yaml(roster: dict[str, dict]) -> dict[str, dict]:
+def board_yaml(roster: dict[str, RosterEntry]) -> dict[str, dict]:
     """YAML mapping for ``editorial-board.yml`` (active editors)."""
     out: dict[str, dict] = {}
     for username in sorted(roster):
         entry = roster[username]
-        if not entry["active"]:
+        if not entry.is_active:
             continue
         out[username] = {
-            "peer_review_lead": entry["peer_review_lead"],
-            "eic_team": entry["eic_team"],
-            "emeritus_peer_review_lead": entry["emeritus_peer_review_lead"],
-            "emeritus_eic": entry["emeritus_eic"],
+            "peer_review_lead": entry.active_peer_review_lead,
+            "eic_team": entry.active_eic,
+            "emeritus_peer_review_lead": entry.emeritus_peer_review_lead,
+            "emeritus_eic": entry.emeritus_eic,
         }
     return out
 
 
-def emeritus_yaml(roster: dict[str, dict]) -> dict[str, dict]:
+def emeritus_yaml(roster: dict[str, RosterEntry]) -> dict[str, dict]:
     """YAML mapping for ``emeritus-editors.yml``."""
     out: dict[str, dict] = {}
     for username in sorted(roster):
         entry = roster[username]
-        if entry["active"]:
+        if entry.is_active:
             continue
         out[username] = {
-            "emeritus_peer_review_lead": entry["emeritus_peer_review_lead"],
-            "emeritus_eic": entry["emeritus_eic"],
+            "emeritus_peer_review_lead": entry.emeritus_peer_review_lead,
+            "emeritus_eic": entry.emeritus_eic,
         }
     return out
 
 
-def editorial_titles(entry: dict) -> list[str]:
+def editorial_titles(entry: RosterEntry) -> list[str]:
     """Titles that match the peer-review page role flags."""
     titles: list[str] = []
-    if entry["active"]:
-        if entry["peer_review_lead"]:
+    if entry.is_active:
+        if entry.active_peer_review_lead:
             titles.append("Peer Review Lead")
-        if entry["eic_team"]:
+        if entry.active_eic:
             titles.append("Editor in Chief")
-        if entry["emeritus_peer_review_lead"]:
+        if entry.emeritus_peer_review_lead:
             titles.append("Emeritus Peer Review Lead")
-        if entry["emeritus_eic"]:
+        if entry.emeritus_eic:
             titles.append("Emeritus Editor in Chief")
         if not titles:
             titles.append("Editor")
         return titles
 
-    if entry["emeritus_peer_review_lead"]:
+    if entry.emeritus_peer_review_lead:
         titles.append("Emeritus Peer Review Lead")
-    if entry["emeritus_eic"]:
+    if entry.emeritus_eic:
         titles.append("Emeritus Editor in Chief")
     if not titles:
         titles.append("Emeritus Editor")
@@ -144,10 +171,7 @@ def _as_title_list(title: Any) -> list[str]:
 
 
 def _is_editorial_title(title: str) -> bool:
-    return (
-        title in EDITORIAL_TITLE_STRINGS
-        or TITLE_NORMALIZE.get(title) in EDITORIAL_TITLE_STRINGS
-    )
+    return title in EDITORIAL_TITLE_STRINGS
 
 
 def _dump_title(titles: list[str]) -> str | list[str] | None:
@@ -186,12 +210,13 @@ def _ensure_list(value: Any) -> list:
 
 def apply_roster_to_contributors(
     contribs: list[dict],
-    roster: dict[str, dict],
+    roster: dict[str, RosterEntry],
     fetch_user: Callable[[str], dict] | None = None,
-) -> list[dict]:
-    """Set editorial flags and titles on contributor rows.
+) -> None:
+    """Set editorial flags and titles on contributor rows in place.
 
-    Existing row order is preserved. New team members are appended.
+    Mutates ``contribs`` directly: existing row order is preserved and new
+    team members are appended. Returns ``None``.
     """
     by_user: dict[str, dict] = {}
     for person in contribs:
@@ -202,12 +227,12 @@ def apply_roster_to_contributors(
     for username, person in by_user.items():
         if username in roster:
             entry = roster[username]
-            person["editorial_board"] = entry["active"]
-            person["emeritus_editor"] = not entry["active"]
+            person["editorial_board"] = entry.is_active
+            person["emeritus_editor"] = not entry.is_active
             person["title"] = sync_titles(
                 person.get("title"), editorial_titles(entry)
             )
-            if entry["active"]:
+            if entry.is_active:
                 contrib_types = _ensure_list(person.get("contributor_type"))
                 if "editor" not in [item.lower() for item in contrib_types]:
                     contrib_types.append("editor")
@@ -234,10 +259,8 @@ def apply_roster_to_contributors(
             "github_image_id": info.get("github_image_id"),
             "name": info.get("name"),
             "title": _dump_title(editorial_titles(entry)),
-            "editorial_board": entry["active"],
-            "emeritus_editor": not entry["active"],
-            "contributor_type": ["editor"] if entry["active"] else [],
+            "editorial_board": entry.is_active,
+            "emeritus_editor": not entry.is_active,
+            "contributor_type": ["editor"] if entry.is_active else [],
         }
         contribs.append(stub)
-
-    return contribs

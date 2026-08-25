@@ -22,6 +22,7 @@ from pyosmeta.constants import (
 )
 from pyosmeta.contributors import ProcessContributors
 from pyosmeta.editorial import (
+    RosterEntry,
     apply_roster_to_contributors,
     board_yaml,
     build_roster,
@@ -54,23 +55,23 @@ def _write_mapping_yaml(path: Path, data: dict) -> None:
         yaml.dump(data, handle)
 
 
-def _flag_labels(entry: dict) -> str:
+def _flag_labels(entry: RosterEntry) -> str:
     labels = []
-    if entry["peer_review_lead"]:
+    if entry.active_peer_review_lead:
         labels.append("peer_review_lead")
-    if entry["eic_team"]:
+    if entry.active_eic:
         labels.append("eic_team")
-    if entry["emeritus_peer_review_lead"]:
+    if entry.emeritus_peer_review_lead:
         labels.append("emeritus_peer_review_lead")
-    if entry["emeritus_eic"]:
+    if entry.emeritus_eic:
         labels.append("emeritus_eic")
     return f"  {' '.join(labels)}" if labels else ""
 
 
-def _print_roster(roster: dict[str, dict]) -> None:
-    active = sorted(name for name, row in roster.items() if row["active"])
+def _print_roster(roster: dict[str, RosterEntry]) -> None:
+    active = sorted(name for name, row in roster.items() if row.is_active)
     emeritus = sorted(
-        name for name, row in roster.items() if not row["active"]
+        name for name, row in roster.items() if not row.is_active
     )
     print(f"\nActive editors ({len(active)}):")
     for name in active:
@@ -100,9 +101,11 @@ def main() -> None:
     args = parser.parse_args()
 
     data_dir = args.data_dir
-    board_path = data_dir / EDITORIAL_BOARD_FILE
-    emeritus_path = data_dir / EMERITUS_EDITORS_FILE
-    contrib_path = data_dir / CONTRIBUTORS_FILE
+    # Resolve OS-safe paths once (creates data_dir if needed); reused for
+    # both reading the existing YAML and writing the regenerated files.
+    board_path = get_output_path(data_dir, EDITORIAL_BOARD_FILE)
+    emeritus_path = get_output_path(data_dir, EMERITUS_EDITORS_FILE)
+    contrib_path = get_output_path(data_dir, CONTRIBUTORS_FILE)
 
     github_api = GitHubAPI()
     teams: dict[str, list[str]] = {}
@@ -123,11 +126,6 @@ def main() -> None:
 
     roster = build_roster(teams, previous)
     _print_roster(roster)
-
-    # Resolve OS-safe write targets (creates data_dir if needed).
-    board_path = get_output_path(data_dir, EDITORIAL_BOARD_FILE)
-    emeritus_path = get_output_path(data_dir, EMERITUS_EDITORS_FILE)
-    contrib_path = get_output_path(data_dir, CONTRIBUTORS_FILE)
 
     _write_mapping_yaml(board_path, board_yaml(roster))
     _write_mapping_yaml(emeritus_path, emeritus_yaml(roster))
