@@ -148,11 +148,12 @@ the website checkout):
 ### update-editorial-board
 
 ```console
-uv run update-editorial-board --data-dir /path/to/website/data
+uv run update-editorial-board
 ```
 
 This script builds the editor roster from GitHub org team membership and
-writes three files to `--data-dir` (the website `data/` directory):
+writes three files under `data/` relative to the current working directory
+(run from the website repo root):
 
 1. `editorial-board.yml` — active editors and their role flags
 2. `emeritus-editors.yml` — emeritus editors

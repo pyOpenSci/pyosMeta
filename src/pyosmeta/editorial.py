@@ -13,18 +13,18 @@ from typing import Any, Callable
 class RosterEntry:
     """Role flags for one editor, derived from GitHub team membership.
 
-    Each role has an active and an emeritus form. A person is *active*
-    when they hold any active role (``is_active``); otherwise they are
-    emeritus. The three active flags come straight from the active GitHub
-    teams (``editorial-board``, ``peer-review-lead``, ``eic-team``).
-    ``emeritus_editor`` means they are on the ``emeritus-editors`` team and
-    hold no active role. ``emeritus_peer_review_lead`` and ``emeritus_eic``
-    are historical (no team), preserved from the existing website YAML.
+    A person is *active* when they hold any live active role
+    (``is_active``): ``editorial-board``, ``peer-review-lead``,
+    ``eic-team``, or ``triage-team``. ``emeritus_editor`` means they are
+    on the ``emeritus-editors`` team and hold no active role.
+    ``emeritus_peer_review_lead`` and ``emeritus_eic`` are historical
+    (no team), preserved from the existing website YAML.
     """
 
     active_editor: bool = False
     active_peer_review_lead: bool = False
     active_eic: bool = False
+    active_triage: bool = False
     emeritus_editor: bool = False
     emeritus_peer_review_lead: bool = False
     emeritus_eic: bool = False
@@ -36,6 +36,7 @@ class RosterEntry:
             self.active_editor
             or self.active_peer_review_lead
             or self.active_eic
+            or self.active_triage
         )
 
 
@@ -44,6 +45,8 @@ EDITORIAL_TITLE_STRINGS = frozenset(
         "Editor",
         "Editor in Chief",
         "Peer Review Lead",
+        "Peer Review Triage",
+        "Peer review triage",  # legacy casing in contributors.yml
         "Emeritus Editor",
         "Emeritus Editor in Chief",
         "Emeritus Peer Review Lead",
@@ -85,8 +88,9 @@ def build_roster(
     emeritus = _usernames(teams.get("emeritus_editors"))
     eic = _usernames(teams.get("eic_team"))
     pr_lead = _usernames(teams.get("peer_review_lead"))
+    triage = _usernames(teams.get("triage_team"))
 
-    active = board | eic | pr_lead
+    active = board | eic | pr_lead | triage
     emeritus_only = emeritus - active
 
     roster: dict[str, RosterEntry] = {}
@@ -98,6 +102,7 @@ def build_roster(
             active_editor=username in board,
             active_peer_review_lead=username in pr_lead,
             active_eic=username in eic,
+            active_triage=username in triage,
             emeritus_editor=username in emeritus_only,
             emeritus_peer_review_lead=bool(
                 prev.get("emeritus_peer_review_lead")
@@ -117,6 +122,7 @@ def board_yaml(roster: dict[str, RosterEntry]) -> dict[str, dict]:
         out[username] = {
             "peer_review_lead": entry.active_peer_review_lead,
             "eic_team": entry.active_eic,
+            "triage_team": entry.active_triage,
             "emeritus_peer_review_lead": entry.emeritus_peer_review_lead,
             "emeritus_eic": entry.emeritus_eic,
         }
@@ -131,6 +137,7 @@ def emeritus_yaml(roster: dict[str, RosterEntry]) -> dict[str, dict]:
         if entry.is_active:
             continue
         out[username] = {
+            "emeritus_editor": True,
             "emeritus_peer_review_lead": entry.emeritus_peer_review_lead,
             "emeritus_eic": entry.emeritus_eic,
         }
@@ -141,16 +148,18 @@ def editorial_titles(entry: RosterEntry) -> list[str]:
     """Titles that match the peer-review page role flags."""
     titles: list[str] = []
     if entry.is_active:
+        # Base Editor always; specialties are additive.
+        titles.append("Editor")
         if entry.active_peer_review_lead:
             titles.append("Peer Review Lead")
         if entry.active_eic:
             titles.append("Editor in Chief")
+        if entry.active_triage:
+            titles.append("Peer Review Triage")
         if entry.emeritus_peer_review_lead:
             titles.append("Emeritus Peer Review Lead")
         if entry.emeritus_eic:
             titles.append("Emeritus Editor in Chief")
-        if not titles:
-            titles.append("Editor")
         return titles
 
     if entry.emeritus_peer_review_lead:

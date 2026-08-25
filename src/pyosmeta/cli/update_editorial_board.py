@@ -61,6 +61,8 @@ def _flag_labels(entry: RosterEntry) -> str:
         labels.append("peer_review_lead")
     if entry.active_eic:
         labels.append("eic_team")
+    if entry.active_triage:
+        labels.append("triage_team")
     if entry.emeritus_peer_review_lead:
         labels.append("emeritus_peer_review_lead")
     if entry.emeritus_eic:

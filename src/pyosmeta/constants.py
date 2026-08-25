@@ -25,8 +25,8 @@ EMERITUS_EDITORS_FILE = "emeritus-editors.yml"
 # POSIX repo-relative locations of the data files *inside* the website repo.
 # Use these for git operations (e.g. `repo.git.show("<sha>:<path>")`) and to
 # reference where a file lives in the repo -- NOT as a local filesystem write
-# target. To write files, take a `--data-dir` at runtime and build the path
-# with `file_io.get_output_path(data_dir, <FILE constant>)`.
+# target. CLIs write under ``data/`` relative to the current working directory
+# via `file_io.get_output_path(Path("data"), <FILE constant>)`.
 CONTRIBUTORS_REL_PATH = f"{WEBSITE_DATA_DIR}/{CONTRIBUTORS_FILE}"
 PACKAGES_REL_PATH = f"{WEBSITE_DATA_DIR}/{PACKAGES_FILE}"
 
@@ -66,4 +66,5 @@ EDITORIAL_TEAMS: dict[str, str] = {
     "emeritus_editors": "emeritus-editors",
     "eic_team": "eic-team",
     "peer_review_lead": "peer-review-lead",
+    "triage_team": "triage-team",
 }

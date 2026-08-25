@@ -10,7 +10,7 @@ the review issues in the contributor file and updates that file.
 
 This script assumes that update_contributors and update_reviews has been run.
 Rather than hit any api's it just updates information from the issues.
-To run: update_reviewers --data-dir /path/to/website/data
+To run: update_reviewers
 
 # TODO - FEATURE we have some packages that were NOT approved but we had
 # editors and reviewers who participated. We need to acknowledge these people
@@ -20,7 +20,6 @@ To run: update_reviewers --data-dir /path/to/website/data
 
 """
 
-import argparse
 from datetime import datetime
 from pathlib import Path
 
@@ -142,23 +141,9 @@ def process_user(
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description=(
-            "Update reviewer/editor/maintainer data in the website "
-            "contributors.yml and packages.yml files."
-        )
-    )
-    parser.add_argument(
-        "--data-dir",
-        type=Path,
-        required=True,
-        help=(
-            "Directory containing the website YAML files "
-            "(contributors.yml, packages.yml), e.g. the data/ folder of the "
-            "pyopensci.github.io repo."
-        ),
-    )
-    args = parser.parse_args()
+    # Website YAML lives in data/ relative to the current working directory
+    # (run from the pyopensci.github.io repo root).
+    data_dir = Path("data")
 
     github_api = GitHubAPI()
     process_contribs = ProcessContributors(github_api, [])
@@ -211,8 +196,8 @@ def main():
     contribs_ls = [model.model_dump() for model in contribs.values()]
     pkgs_ls = [model.model_dump() for model in packages.values()]
 
-    contrib_path = get_output_path(args.data_dir, CONTRIBUTORS_FILE)
-    pkg_path = get_output_path(args.data_dir, PACKAGES_FILE)
+    contrib_path = get_output_path(data_dir, CONTRIBUTORS_FILE)
+    pkg_path = get_output_path(data_dir, PACKAGES_FILE)
     clean_export_yml(contribs_ls, contrib_path)
     clean_export_yml(pkgs_ls, pkg_path)
     print(f"Wrote {contrib_path}")
