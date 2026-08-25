@@ -1,8 +1,9 @@
 """Build the editor roster from GitHub org team membership.
 
 GitHub teams are the source of truth for who is active vs emeritus.
-``emeritus_eic`` and ``emeritus_peer_review_lead`` are preserved from the
-existing website YAML because those roles are historical, not a current team.
+``emeritus_eic``, ``emeritus_peer_review_lead``, and ``emeritus_triage``
+are preserved from the existing website YAML because those roles are
+historical, not a current team.
 """
 
 from dataclasses import dataclass
@@ -17,8 +18,9 @@ class RosterEntry:
     (``is_active``): ``editorial-board``, ``peer-review-lead``,
     ``eic-team``, or ``triage-team``. ``emeritus_editor`` means they are
     on the ``emeritus-editors`` team and hold no active role.
-    ``emeritus_peer_review_lead`` and ``emeritus_eic`` are historical
-    (no team), preserved from the existing website YAML.
+    ``emeritus_peer_review_lead``, ``emeritus_eic``, and
+    ``emeritus_triage`` are historical (no team), preserved from the
+    existing website YAML.
     """
 
     active_editor: bool = False
@@ -28,6 +30,7 @@ class RosterEntry:
     emeritus_editor: bool = False
     emeritus_peer_review_lead: bool = False
     emeritus_eic: bool = False
+    emeritus_triage: bool = False
 
     @property
     def is_active(self) -> bool:
@@ -50,6 +53,7 @@ EDITORIAL_TITLE_STRINGS = frozenset(
         "Emeritus Editor",
         "Emeritus Editor in Chief",
         "Emeritus Peer Review Lead",
+        "Emeritus Peer Review Triage",
     }
 )
 
@@ -108,6 +112,7 @@ def build_roster(
                 prev.get("emeritus_peer_review_lead")
             ),
             emeritus_eic=bool(prev.get("emeritus_eic")),
+            emeritus_triage=bool(prev.get("emeritus_triage")),
         )
     return roster
 
@@ -121,10 +126,11 @@ def board_yaml(roster: dict[str, RosterEntry]) -> dict[str, dict]:
             continue
         out[username] = {
             "peer_review_lead": entry.active_peer_review_lead,
-            "eic_team": entry.active_eic,
-            "triage_team": entry.active_triage,
+            "eic": entry.active_eic,
+            "triage": entry.active_triage,
             "emeritus_peer_review_lead": entry.emeritus_peer_review_lead,
             "emeritus_eic": entry.emeritus_eic,
+            "emeritus_triage": entry.emeritus_triage,
         }
     return out
 
@@ -140,6 +146,7 @@ def emeritus_yaml(roster: dict[str, RosterEntry]) -> dict[str, dict]:
             "emeritus_editor": True,
             "emeritus_peer_review_lead": entry.emeritus_peer_review_lead,
             "emeritus_eic": entry.emeritus_eic,
+            "emeritus_triage": entry.emeritus_triage,
         }
     return out
 
@@ -160,12 +167,16 @@ def editorial_titles(entry: RosterEntry) -> list[str]:
             titles.append("Emeritus Peer Review Lead")
         if entry.emeritus_eic:
             titles.append("Emeritus Editor in Chief")
+        if entry.emeritus_triage:
+            titles.append("Emeritus Peer Review Triage")
         return titles
 
     if entry.emeritus_peer_review_lead:
         titles.append("Emeritus Peer Review Lead")
     if entry.emeritus_eic:
         titles.append("Emeritus Editor in Chief")
+    if entry.emeritus_triage:
+        titles.append("Emeritus Peer Review Triage")
     if not titles:
         titles.append("Emeritus Editor")
     return titles

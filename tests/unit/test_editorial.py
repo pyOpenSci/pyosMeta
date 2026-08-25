@@ -79,13 +79,14 @@ def test_build_roster_role_flags(teams, username, true_attrs):
 
 
 @pytest.mark.parametrize(
-    "previous, teams, username, expected_eic, expected_pr_lead",
+    "previous, teams, username, expected_eic, expected_pr_lead, expected_triage",
     [
         (
             {"cmarmo": {"emeritus_eic": True}},
             _teams(emeritus_editors=["cmarmo"]),
             "cmarmo",
             True,
+            False,
             False,
         ),
         (
@@ -94,14 +95,24 @@ def test_build_roster_role_flags(teams, username, true_attrs):
             "oldlead",
             False,
             True,
+            False,
+        ),
+        (
+            {"erin": {"emeritus_triage": True}},
+            _teams(emeritus_editors=["erin"]),
+            "erin",
+            False,
+            False,
+            True,
         ),
         # Historical flags survive even when the person is active
         (
-            {"alice": {"emeritus_eic": True}},
+            {"alice": {"emeritus_eic": True, "emeritus_triage": True}},
             _teams(editorial_board=["alice"]),
             "alice",
             True,
             False,
+            True,
         ),
         # previous keys are case-normalized for lookup
         (
@@ -110,15 +121,22 @@ def test_build_roster_role_flags(teams, username, true_attrs):
             "cmarmo",
             True,
             False,
+            False,
         ),
     ],
 )
 def test_build_roster_preserves_historical_flags(
-    previous, teams, username, expected_eic, expected_pr_lead
+    previous,
+    teams,
+    username,
+    expected_eic,
+    expected_pr_lead,
+    expected_triage,
 ):
     entry = build_roster(teams, previous=previous)[username]
     assert entry.emeritus_eic is expected_eic
     assert entry.emeritus_peer_review_lead is expected_pr_lead
+    assert entry.emeritus_triage is expected_triage
 
 
 def test_build_roster_normalizes_username_case():
@@ -145,10 +163,11 @@ def test_triage_only_lands_on_active_board_yaml():
     board = board_yaml(roster)
     assert board["erin"] == {
         "peer_review_lead": False,
-        "eic_team": False,
-        "triage_team": True,
+        "eic": False,
+        "triage": True,
         "emeritus_peer_review_lead": False,
         "emeritus_eic": False,
+        "emeritus_triage": False,
     }
     assert "erin" not in emeritus_yaml(roster)
 
@@ -156,18 +175,32 @@ def test_triage_only_lands_on_active_board_yaml():
 def test_emeritus_yaml_includes_emeritus_editor_flag():
     roster = build_roster(
         _teams(emeritus_editors=["dave"]),
-        previous={"dave": {"emeritus_eic": True}},
+        previous={
+            "dave": {"emeritus_eic": True, "emeritus_triage": True},
+        },
     )
     assert emeritus_yaml(roster)["dave"] == {
         "emeritus_editor": True,
         "emeritus_peer_review_lead": False,
         "emeritus_eic": True,
+        "emeritus_triage": True,
     }
 
 
 def test_editorial_titles_include_triage_and_base_editor():
-    titles = editorial_titles(RosterEntry(active_triage=True, active_eic=True))
-    assert titles == ["Editor", "Editor in Chief", "Peer Review Triage"]
+    titles = editorial_titles(
+        RosterEntry(
+            active_triage=True,
+            active_eic=True,
+            emeritus_triage=True,
+        )
+    )
+    assert titles == [
+        "Editor",
+        "Editor in Chief",
+        "Peer Review Triage",
+        "Emeritus Peer Review Triage",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -286,10 +319,11 @@ def editorial_cli_data_dir(tmp_path, monkeypatch):
         {
             "alice": {
                 "peer_review_lead": False,
-                "eic_team": False,
-                "triage_team": False,
+                "eic": False,
+                "triage": False,
                 "emeritus_peer_review_lead": False,
                 "emeritus_eic": False,
+                "emeritus_triage": False,
             }
         },
     )
@@ -300,6 +334,7 @@ def editorial_cli_data_dir(tmp_path, monkeypatch):
                 "emeritus_editor": True,
                 "emeritus_peer_review_lead": False,
                 "emeritus_eic": True,
+                "emeritus_triage": False,
             }
         },
     )
@@ -366,11 +401,14 @@ def test_cli_writes_board_and_emeritus_yaml(editorial_cli_data_dir):
     emeritus = _load_yaml(editorial_cli_data_dir / "emeritus-editors.yml")
 
     assert board["alice"]["peer_review_lead"] is True
-    assert board["alice"]["triage_team"] is True
+    assert board["alice"]["triage"] is True
+    assert board["alice"]["eic"] is False
+    assert board["alice"]["emeritus_triage"] is False
     assert "newbie" in board
-    assert board["newbie"]["triage_team"] is False
+    assert board["newbie"]["triage"] is False
     assert emeritus["cmarmo"]["emeritus_editor"] is True
     assert emeritus["cmarmo"]["emeritus_eic"] is True
+    assert emeritus["cmarmo"]["emeritus_triage"] is False
 
 
 def test_cli_updates_contributors_flags(editorial_cli_data_dir):
