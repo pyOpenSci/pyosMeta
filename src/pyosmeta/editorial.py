@@ -214,6 +214,13 @@ def apply_roster_to_contributors(
                     person["contributor_type"] = contrib_types
             continue
 
+        # Never remove emeritus status. Some emeritus editors are not in a
+        # GitHub team (e.g. people who never joined the org), so they won't
+        # be in the roster. Preserve their flag and title as-is.
+        if person.get("emeritus_editor"):
+            person["editorial_board"] = False
+            continue
+
         person["editorial_board"] = False
         person["emeritus_editor"] = False
         person["title"] = sync_titles(person.get("title"), None)

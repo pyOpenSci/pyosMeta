@@ -1,7 +1,16 @@
 ab93:
   emeritus_peer_review_lead: false
   emeritus_eic: false
+anitagraser:
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
+arianesasso:
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
 banesullivan:
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
+batalex:
   emeritus_peer_review_lead: false
   emeritus_eic: false
 cmarmo:
@@ -10,6 +19,12 @@ cmarmo:
 isabelizimm:
   emeritus_peer_review_lead: false
   emeritus_eic: true
+jlpalomino:
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
+luizirber:
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
 mjhajharia:
   emeritus_peer_review_lead: false
   emeritus_eic: false
