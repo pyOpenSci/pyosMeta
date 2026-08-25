@@ -16,6 +16,9 @@ batalex:
 cmarmo:
   emeritus_peer_review_lead: false
   emeritus_eic: true
+eliotwrobson:
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
 isabelizimm:
   emeritus_peer_review_lead: false
   emeritus_eic: true

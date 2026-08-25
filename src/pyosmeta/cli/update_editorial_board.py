@@ -1,12 +1,12 @@
 """Fetch GitHub editorial teams and write website roster YAML.
 
 Writes ``editorial-board.yml``, ``emeritus-editors.yml``, and updates
-editorial flags/titles in ``contributors.yml`` in ``--data-dir``.
+editorial flags/titles in ``contributors.yml`` in the ``data/`` directory
+relative to the current working directory.
 
-To run: update-editorial-board --data-dir /path/to/website/data
+To run (from the website repo root): update-editorial-board
 """
 
-import argparse
 from pathlib import Path
 
 from ruamel.yaml import YAML
@@ -82,25 +82,9 @@ def _print_roster(roster: dict[str, RosterEntry]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Update editorial board YAML from GitHub org team membership."
-        )
-    )
-    parser.add_argument(
-        "--data-dir",
-        type=Path,
-        default=Path("data"),
-        help=(
-            "Directory containing the website YAML files "
-            "(editorial-board.yml, emeritus-editors.yml, "
-            "contributors.yml). Defaults to data/ (relative to the "
-            "current working directory)."
-        ),
-    )
-    args = parser.parse_args()
-
-    data_dir = args.data_dir
+    # The website YAML lives in data/ relative to the current working
+    # directory (run from the pyopensci.github.io repo root).
+    data_dir = Path("data")
     # Resolve OS-safe paths once (creates data_dir if needed); reused for
     # both reading the existing YAML and writing the regenerated files.
     board_path = get_output_path(data_dir, EDITORIAL_BOARD_FILE)

@@ -1,3 +1,8 @@
+akritaag:
+  peer_review_lead: false
+  eic_team: false
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
 coatless:
   peer_review_lead: false
   eic_team: false
@@ -9,11 +14,6 @@ crhea93:
   emeritus_peer_review_lead: false
   emeritus_eic: false
 ctb:
-  peer_review_lead: false
-  eic_team: false
-  emeritus_peer_review_lead: false
-  emeritus_eic: false
-eliotwrobson:
   peer_review_lead: false
   eic_team: false
   emeritus_peer_review_lead: false

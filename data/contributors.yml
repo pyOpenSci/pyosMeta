@@ -4414,14 +4414,14 @@
 - name: Eliot Robson
   github_username: eliotwrobson
   github_image_id: 1345068
-  title: Editor
+  title: Emeritus Editor
   sort: 0
   bio: I'm just this guy, you know?
   organization: UIUC
   date_added: '2023-09-11'
   deia_advisory: false
-  editorial_board: true
-  emeritus_editor: false
+  editorial_board: false
+  emeritus_editor: true
   advisory: false
   emeritus_advisory: false
   twitter: eliotdexter
@@ -11160,13 +11160,13 @@
 - name: Akrita
   github_username: akritaag
   github_image_id: 2558622
-  title:
+  title: Editor
   sort:
   bio:
   organization:
   date_added: '2025-10-17'
   deia_advisory: false
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -11179,6 +11179,7 @@
   contributor_type:
     - peer-review
     - reviewer
+    - editor
   packages_eic:
   packages_editor:
   packages_submitted:
