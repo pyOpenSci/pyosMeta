@@ -1,12 +1,14 @@
 """
 A module that contains all of the methods related to interfacing
-with the GitHub API. There are three groupings of activities:
+with the GitHub API. There are four groupings of activities:
 
 1. Parsing GitHub issues to return pyOS software peer review information
 2. Parsing contributor profile data to return names and affiliations where
 available
 3. Parsing package repositories to return package metadata such as pull request
 numbers, stars and more "health & stability" related metrics
+4. Fetching GitHub organization team members (editorial board and related
+teams)
 """
 
 import os
@@ -512,3 +514,51 @@ class GitHubAPI:
                 "Oops, I couldn't authenticate. Please check your token."
             )
         return response.json()
+
+    def get_team_members(self, slug: str) -> list[str]:
+        """Return GitHub logins for members of an organization team.
+
+        Uses the REST API (``GET /orgs/{org}/teams/{slug}/members``) and
+        follows pagination via ``_get_response_rest``. Team membership is
+        the source of truth for pyOpenSci editor listings.
+
+        Parameters
+        ----------
+        slug : str
+            GitHub team slug, e.g. ``editorial-board`` or ``eic-team``.
+
+        Returns
+        -------
+        list[str]
+            GitHub usernames for the team's members.
+
+        Raises
+        ------
+        GitHubAPIError
+            If the token is invalid (401) or rate-limited (403).
+        requests.HTTPError
+            If the team is missing or inaccessible (GitHub answers 404
+            when the token cannot read a private team). Reading org teams
+            needs a token with team read permission (for example
+            PYOS_GHA_TEAMS_READ).
+        """
+        if not self.org:
+            raise GitHubAPIError(
+                "An organization name is required to fetch team members."
+            )
+
+        url = (
+            f"https://api.github.com/orgs/{self.org}/teams/{slug}"
+            "/members?per_page=100"
+        )
+        members = self._get_response_rest(url)
+
+        logins: list[str] = []
+        for member in members:
+            if not member:
+                continue
+            login = (member.get("login") or "").strip()
+            if login:
+                logins.append(login)
+
+        return logins
