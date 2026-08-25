@@ -6,9 +6,15 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+[v1.8.1] - 2026-08-25
+
 * Fix: don't overwrite packages.yml if api endpoints are not found (@lwasser)
-* Docs: clarify README / CONTRIBUTING / development split; add workflow overview with Mermaid diagram; slim Usage section
+* Docs: clarify README / CONTRIBUTING / development split; add workflow overview with Mermaid diagram; slim Usage section (@lwasser))
 * Feat: Automate editorial board roster management using GitHub teams (@lwasser #393)
+
+This release adds a feature - automating editorial board roster management using
+GitHub teams. It also fixes a bug where the packages.yml file was being overwritten
+if endpoints aren't found and it fixes permissions throughout as well.
 
 [v1.8.0] - 2026-08-11
 
