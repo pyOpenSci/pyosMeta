@@ -2,7 +2,9 @@
 
 GitHub teams are the source of truth for active and emeritus specialty
 roles (``eic-team``, ``triage-team``, ``emeritus-editor-in-chief``,
-``emeritus-peer-review-lead``, ``emeritus-triage-team``, etc.).
+``emeritus-peer-review-lead``, ``emeritus-triage-team``, "emeritus-editor"
+
+.).
 """
 
 from dataclasses import dataclass
