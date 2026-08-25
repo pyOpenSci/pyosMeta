@@ -146,7 +146,6 @@ class PersonModel(BaseModel, UrlValidatorMixin):
         None, validation_alias=AliasChoices("company")
     )
     date_added: Optional[str] = ""
-    deia_advisory: Optional[bool] = False
     editorial_board: Optional[bool] = Field(
         None, validation_alias=AliasChoices("editorial-board")
     )
