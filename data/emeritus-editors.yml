@@ -25,6 +25,9 @@ jlpalomino:
 luizirber:
   emeritus_peer_review_lead: false
   emeritus_eic: false
+lwasser:
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
 mjhajharia:
   emeritus_peer_review_lead: false
   emeritus_eic: false
@@ -32,6 +35,9 @@ nickledave:
   emeritus_peer_review_lead: false
   emeritus_eic: true
 nimasarajpoor:
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
+ocefpaf:
   emeritus_peer_review_lead: false
   emeritus_eic: false
 simonmolinsky:

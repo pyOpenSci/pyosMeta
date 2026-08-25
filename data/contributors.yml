@@ -2,7 +2,7 @@
   github_username: lwasser
   github_image_id: 7649194
   title:
-    - Peer Review Lead
+    - Emeritus Editor
     - Executive Director & Founder
     - Emeritus editor
   sort: 1
@@ -11,8 +11,8 @@
   organization: pyOpenSci
   date_added: '2019-10-10'
   deia_advisory: false
-  editorial_board: true
-  emeritus_editor: false
+  editorial_board: false
+  emeritus_editor: true
   advisory: false
   emeritus_advisory: false
   twitter: leahawasser
@@ -369,7 +369,9 @@
 - name: Filipe
   github_username: ocefpaf
   github_image_id: 950575
-  title: Advisory Council
+  title:
+    - Emeritus Editor
+    - Advisory Council
   sort:
   bio: Filipe Fernandes is a Physical oceanographer by training, turned
       research software engineer, and a software packager hobbyist.
@@ -377,7 +379,7 @@
   date_added: '2019-10-17'
   deia_advisory: false
   editorial_board: false
-  emeritus_editor: false
+  emeritus_editor: true
   advisory: true
   emeritus_advisory: false
   twitter: ocefpaf
