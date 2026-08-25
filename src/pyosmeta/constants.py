@@ -67,4 +67,7 @@ EDITORIAL_TEAMS: dict[str, str] = {
     "eic_team": "eic-team",
     "peer_review_lead": "peer-review-lead",
     "triage_team": "triage-team",
+    "emeritus_eic": "emeritus-editor-in-chief",
+    "emeritus_peer_review_lead": "emeritus-peer-review-lead",
+    "emeritus_triage": "emeritus-triage-team",
 }

@@ -6,6 +6,8 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Fix: make sure emeritus positions are updated in the workflow including triage (@lwasser)
+
 [v1.8.1] - 2026-08-25
 
 * Fix: don't overwrite packages.yml if api endpoints are not found (@lwasser)

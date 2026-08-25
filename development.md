@@ -181,6 +181,10 @@ GitHub org teams decide who is an editor. The team slugs live in
 | `emeritus-editors` | Emeritus editors |
 | `eic-team` | Editor in Chief |
 | `peer-review-lead` | Peer review lead |
+| `triage-team` | Active peer review triage |
+| `emeritus-editor-in-chief` | Emeritus Editor in Chief |
+| `emeritus-peer-review-lead` | Emeritus peer review lead |
+| `emeritus-triage-team` | Emeritus peer review triage |
 
 Reading these teams needs `GITHUB_TOKEN_TEAMS` (team/org read
 permission). In CI that value comes from
@@ -189,7 +193,8 @@ permission). In CI that value comes from
 #### Rules and edge cases
 
 **Active membership wins over emeritus.** The active roster is the union
-of `editorial-board`, `eic-team`, and `peer-review-lead`. Anyone in an
+of `editorial-board`, `eic-team`, `peer-review-lead`, and
+`triage-team`. Anyone in an
 active team is removed from the emeritus set (`emeritus_only = emeritus -
 active`). So if a person is in *both* an active team and the
 `emeritus-editors` team, they are treated as **active** and written to
@@ -205,9 +210,11 @@ team). For these people the script only forces `editorial_board: false`.
 The trade-off: a *stale* emeritus flag will not self-correct and must be
 fixed by hand.
 
-**Historical role flags are preserved.** `emeritus_eic` and
-`emeritus_peer_review_lead` are read from the existing YAML because they
-are historical roles with no current GitHub team.
+**Emeritus specialty flags come from GitHub teams.** ``emeritus_eic``,
+``emeritus_peer_review_lead``, and ``emeritus_triage`` are set from
+``emeritus-editor-in-chief``, ``emeritus-peer-review-lead``, and
+``emeritus-triage-team`` membership. Add or remove people on those teams
+to change their flags; existing YAML is not used as a fallback.
 
 ### How these scripts are used in production
 

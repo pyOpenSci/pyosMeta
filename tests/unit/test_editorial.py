@@ -33,6 +33,9 @@ def _teams(**overrides):
         "eic_team": [],
         "peer_review_lead": [],
         "triage_team": [],
+        "emeritus_eic": [],
+        "emeritus_peer_review_lead": [],
+        "emeritus_triage": [],
     }
     base.update(overrides)
     return base
@@ -79,45 +82,47 @@ def test_build_roster_role_flags(teams, username, true_attrs):
 
 
 @pytest.mark.parametrize(
-    "previous, teams, username, expected_eic, expected_pr_lead, expected_triage",
+    "teams, username, expected_eic, expected_pr_lead, expected_triage",
     [
         (
-            {"cmarmo": {"emeritus_eic": True}},
-            _teams(emeritus_editors=["cmarmo"]),
+            _teams(emeritus_editors=["cmarmo"], emeritus_eic=["cmarmo"]),
             "cmarmo",
             True,
             False,
             False,
         ),
         (
-            {"oldlead": {"emeritus_peer_review_lead": True}},
-            _teams(emeritus_editors=["oldlead"]),
+            _teams(
+                emeritus_editors=["oldlead"],
+                emeritus_peer_review_lead=["oldlead"],
+            ),
             "oldlead",
             False,
             True,
             False,
         ),
         (
-            {"erin": {"emeritus_triage": True}},
-            _teams(emeritus_editors=["erin"]),
+            _teams(emeritus_editors=["erin"], emeritus_triage=["erin"]),
             "erin",
             False,
             False,
             True,
         ),
-        # Historical flags survive even when the person is active
+        # Emeritus specialty flags survive even when the person is active
         (
-            {"alice": {"emeritus_eic": True, "emeritus_triage": True}},
-            _teams(editorial_board=["alice"]),
+            _teams(
+                editorial_board=["alice"],
+                emeritus_eic=["alice"],
+                emeritus_triage=["alice"],
+            ),
             "alice",
             True,
             False,
             True,
         ),
-        # previous keys are case-normalized for lookup
+        # Team logins are case-normalized
         (
-            {"CMARMO": {"emeritus_eic": True}},
-            _teams(emeritus_editors=["Cmarmo"]),
+            _teams(emeritus_editors=["Cmarmo"], emeritus_eic=["CMARMO"]),
             "cmarmo",
             True,
             False,
@@ -125,15 +130,14 @@ def test_build_roster_role_flags(teams, username, true_attrs):
         ),
     ],
 )
-def test_build_roster_preserves_historical_flags(
-    previous,
+def test_build_roster_emeritus_specialty_from_teams(
     teams,
     username,
     expected_eic,
     expected_pr_lead,
     expected_triage,
 ):
-    entry = build_roster(teams, previous=previous)[username]
+    entry = build_roster(teams)[username]
     assert entry.emeritus_eic is expected_eic
     assert entry.emeritus_peer_review_lead is expected_pr_lead
     assert entry.emeritus_triage is expected_triage
@@ -174,10 +178,11 @@ def test_triage_only_lands_on_active_board_yaml():
 
 def test_emeritus_yaml_includes_emeritus_editor_flag():
     roster = build_roster(
-        _teams(emeritus_editors=["dave"]),
-        previous={
-            "dave": {"emeritus_eic": True, "emeritus_triage": True},
-        },
+        _teams(
+            emeritus_editors=["dave"],
+            emeritus_eic=["dave"],
+            emeritus_triage=["dave"],
+        ),
     )
     assert emeritus_yaml(roster)["dave"] == {
         "emeritus_editor": True,
@@ -374,6 +379,9 @@ def editorial_cli_data_dir(tmp_path, monkeypatch):
         "eic-team": [],
         "peer-review-lead": ["alice"],
         "triage-team": ["alice"],
+        "emeritus-editor-in-chief": ["cmarmo"],
+        "emeritus-peer-review-lead": [],
+        "emeritus-triage-team": [],
     }
     mock_api = Mock()
     mock_api.get_team_members.side_effect = lambda slug: team_members[slug]
