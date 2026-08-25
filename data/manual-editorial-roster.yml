@@ -1,0 +1,27 @@
+# Hand-maintained editorial roster overrides.
+# --------------------------------------------
+# This file contains people who haven't joined our organization
+# but who do hold active or emeritus editorial roles.
+# This file is manually maintained and likely won't need to be
+# updated in the future as our onboarding is now better.
+# This file is merged by update-editorial-board after we fetch each team from
+# the github teams. Do not overwrite this file.
+
+# Here we define what flags to use for each person (what is true)
+# editor: true          → editorial-board.yml (active editor)
+# emeritus_editor: true → emeritus-editors.yml
+
+jbencook:
+  name: Ben Cook
+  note: "Not on GitHub teams; keep as emeritus editor"
+  emeritus_editor: true
+
+dhomeier:
+  name: Derek Homeier
+  note: "Not on GitHub teams; keep as active editor"
+  editor: true
+
+kellyrowland:
+  name: Kelly L. Rowland
+  note: "Not in org / cannot invite; keep as emeritus editor"
+  emeritus_editor: true

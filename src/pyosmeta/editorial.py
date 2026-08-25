@@ -1,13 +1,29 @@
 """Build the editor roster from GitHub org team membership.
 
-GitHub teams are the source of truth for who is active vs emeritus.
-``emeritus_eic``, ``emeritus_peer_review_lead``, and ``emeritus_triage``
-are preserved from the existing website YAML because those roles are
-historical, not a current team.
+GitHub teams are the source of truth for active and emeritus specialty
+roles (``eic-team``, ``triage-team``, ``emeritus-editor-in-chief``,
+``emeritus-peer-review-lead``, ``emeritus-triage-team``,
+``emeritus-editors``).
+
+People who cannot join org teams are listed in
+``manual-editorial-roster.yml`` and merged after the team fetch via
+``merge_manual_roster``.
 """
 
 from dataclasses import dataclass
 from typing import Any, Callable
+
+# Manual YAML keys (only ``true`` values needed) → RosterEntry fields.
+_MANUAL_FLAG_MAP = {
+    "editor": "active_editor",
+    "eic": "active_eic",
+    "peer_review_lead": "active_peer_review_lead",
+    "triage": "active_triage",
+    "emeritus_editor": "emeritus_editor",
+    "emeritus_eic": "emeritus_eic",
+    "emeritus_peer_review_lead": "emeritus_peer_review_lead",
+    "emeritus_triage": "emeritus_triage",
+}
 
 
 @dataclass
@@ -19,8 +35,7 @@ class RosterEntry:
     ``eic-team``, or ``triage-team``. ``emeritus_editor`` means they are
     on the ``emeritus-editors`` team and hold no active role.
     ``emeritus_peer_review_lead``, ``emeritus_eic``, and
-    ``emeritus_triage`` are historical (no team), preserved from the
-    existing website YAML.
+    ``emeritus_triage`` come from the matching emeritus GitHub teams.
     """
 
     active_editor: bool = False
@@ -66,12 +81,6 @@ def _usernames(logins: list[str] | None) -> set[str]:
     }
 
 
-def _lower_keys(mapping: dict | None) -> dict:
-    if not mapping:
-        return {}
-    return {str(key).strip().lower(): value for key, value in mapping.items()}
-
-
 def build_roster(
     teams: dict[str, list[str]],
     previous: dict[str, dict] | None = None,
@@ -83,38 +92,69 @@ def build_roster(
     teams : dict
         Mapping of ``EDITORIAL_TEAMS`` keys to GitHub logins.
     previous : dict, optional
-        Combined existing ``editorial-board.yml`` and
-        ``emeritus-editors.yml`` so historical emeritus role flags are
-        kept.
+        Ignored. Kept so callers can pass existing board YAML without
+        breaking; emeritus specialty flags come from GitHub teams.
     """
-    previous = _lower_keys(previous)
+    _ = previous
     board = _usernames(teams.get("editorial_board"))
     emeritus = _usernames(teams.get("emeritus_editors"))
     eic = _usernames(teams.get("eic_team"))
     pr_lead = _usernames(teams.get("peer_review_lead"))
     triage = _usernames(teams.get("triage_team"))
+    emeritus_eic = _usernames(teams.get("emeritus_eic"))
+    emeritus_pr_lead = _usernames(teams.get("emeritus_peer_review_lead"))
+    emeritus_triage = _usernames(teams.get("emeritus_triage"))
 
     active = board | eic | pr_lead | triage
     emeritus_only = emeritus - active
 
     roster: dict[str, RosterEntry] = {}
     for username in active | emeritus_only:
-        prev = previous.get(username) or {}
-        if not isinstance(prev, dict):
-            prev = {}
         roster[username] = RosterEntry(
             active_editor=username in board,
             active_peer_review_lead=username in pr_lead,
             active_eic=username in eic,
             active_triage=username in triage,
             emeritus_editor=username in emeritus_only,
-            emeritus_peer_review_lead=bool(
-                prev.get("emeritus_peer_review_lead")
-            ),
-            emeritus_eic=bool(prev.get("emeritus_eic")),
-            emeritus_triage=bool(prev.get("emeritus_triage")),
+            emeritus_peer_review_lead=username in emeritus_pr_lead,
+            emeritus_eic=username in emeritus_eic,
+            emeritus_triage=username in emeritus_triage,
         )
     return roster
+
+
+def merge_manual_roster(
+    roster: dict[str, RosterEntry],
+    manual: dict[str, dict] | None,
+) -> dict[str, RosterEntry]:
+    """Add hand-maintained people who are not on GitHub teams.
+
+    ``manual`` is the mapping from ``manual-editorial-roster.yml``. Only
+    role keys set to true are applied (``editor``, ``emeritus_editor``,
+    specialty flags). ``name`` / ``note`` are ignored here.
+
+    If a username is already in ``roster`` from team membership, the
+    team entry wins and the manual row is skipped.
+    """
+    if not manual:
+        return roster
+
+    out = dict(roster)
+    for raw_name, raw_flags in manual.items():
+        username = (raw_name or "").strip().lower()
+        if not username or username in out:
+            continue
+        if not isinstance(raw_flags, dict):
+            continue
+
+        kwargs: dict[str, bool] = {}
+        for yaml_key, attr in _MANUAL_FLAG_MAP.items():
+            if raw_flags.get(yaml_key) is True:
+                kwargs[attr] = True
+        if not kwargs:
+            continue
+        out[username] = RosterEntry(**kwargs)
+    return out
 
 
 def board_yaml(roster: dict[str, RosterEntry]) -> dict[str, dict]:

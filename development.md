@@ -170,26 +170,120 @@ writes three files under `data/` relative to the current working directory
 3. `contributors.yml` — updated editorial flags (`editorial_board`,
    `emeritus_editor`) and titles
 
+It also **reads** (never writes)
+[`manual-editorial-roster.yml`](#manual-editorial-rosteryml-hand-maintained-exception)
+when that file exists.
+
 #### Source of truth: GitHub teams
 
-GitHub org teams decide who is an editor. The team slugs live in
+Editorial membership is managed on GitHub, not by hand-editing the
+generated board YAML. All editorial teams are nested under the org team
+[`peer-review-team`](https://github.com/orgs/pyOpenSci/teams/peer-review-team),
+which groups everyone who supports peer review (active and emeritus).
+
+When someone is **onboarded**, add them to the appropriate active team.
+When they **step down**, remove them from active teams and add them to
+`emeritus-editors` plus any emeritus specialty team that matches their
+former role (EiC, peer review lead, or triage). pyosMeta reads these
+teams on each run of `update-editorial-board` and writes:
+
+* `editorial-board.yml` / `emeritus-editors.yml` — role flags for the
+  [peer review editorial board page](https://www.pyopensci.org/about-peer-review/index.html#our-editorial-team)
+* `contributors.yml` — `editorial_board`, `emeritus_editor`, and title
+  strings used on the community page and elsewhere on the site
+
+Do **not** hand-edit `editorial-board.yml` or `emeritus-editors.yml` to
+add or remove editors; change GitHub team membership instead (or use
+[`manual-editorial-roster.yml`](#manual-editorial-rosteryml-hand-maintained-exception)
+when they cannot be on a team).
+
+Team slugs are defined in
 [`src/pyosmeta/constants.py`](./src/pyosmeta/constants.py) (`EDITORIAL_TEAMS`):
 
-| Team slug | Role |
-| --------- | ---- |
-| `editorial-board` | Active editorial board |
-| `emeritus-editors` | Emeritus editors |
-| `eic-team` | Editor in Chief |
-| `peer-review-lead` | Peer review lead |
+```mermaid
+flowchart TB
+  PR[peer-review-team]
+  PR --> EB[editorial-board]
+  PR --> EIC[eic-team]
+  PR --> PRL[peer-review-lead]
+  PR --> TRI[triage-team]
+  PR --> EE[emeritus-editors]
+  PR --> EEIC[emeritus-editor-in-chief]
+  PR --> EPRL[emeritus-peer-review-lead]
+  PR --> ETRI[emeritus-triage-team]
+  Manual[manual-editorial-roster.yml] -.->|"merge after teams"| Out[board + emeritus yml]
+  EB --> Out
+  EE --> Out
+```
+
+| Team slug | Role | When to use |
+| --------- | ---- | ----------- |
+| `editorial-board` | Active editor | Default team for current board editors |
+| `eic-team` | Editor in Chief | Current EiC(s) |
+| `peer-review-lead` | Peer review lead | Current peer review lead(s) |
+| `triage-team` | Peer review triage | Current triage volunteers |
+| `emeritus-editors` | Emeritus editor | Anyone who has stepped down from the board |
+| `emeritus-editor-in-chief` | Emeritus Editor in Chief | Former EiC(s) still listed with that title |
+| `emeritus-peer-review-lead` | Emeritus peer review lead | Former peer review lead(s) |
+| `emeritus-triage-team` | Emeritus peer review triage | Former triage volunteer(s) |
+
+A person can hold more than one role (for example, editor + triage, or
+emeritus editor + emeritus EiC). Add them to every team that applies.
 
 Reading these teams needs `GITHUB_TOKEN_TEAMS` (team/org read
 permission). In CI that value comes from
 `PYOS_READ_TEAM_MEMBERS_SECRET`.
 
+#### `manual-editorial-roster.yml` (hand-maintained exception)
+
+**What it is:** a small allowlist in the website repo at
+`data/manual-editorial-roster.yml` for people who **cannot or will not**
+be on GitHub org teams (left the org, never joined, cannot be invited).
+It is the only board-related YAML you should hand-edit.
+
+**What it is not:** Hugo does not read this file. CI never overwrites it.
+It is an **input** to `update-editorial-board` only.
+
+**How it works:** after team membership is fetched, pyosMeta merges this
+file via `merge_manual_roster`. Each login is written into
+`editorial-board.yml` or `emeritus-editors.yml` like a team member.
+Contributor flags/titles update the same way.
+
+**Keys (only set what is true):**
+
+| Key | Lands in |
+| --- | -------- |
+| `editor: true` | `editorial-board.yml` (active editor) |
+| `emeritus_editor: true` | `emeritus-editors.yml` |
+| Optional: `eic`, `peer_review_lead`, `triage`, `emeritus_eic`, … | Same specialty flags as team-derived rows |
+
+Optional `name` / `note` are for humans; the merge ignores them.
+
+**Team membership wins.** If someone is already on a GitHub team, their
+manual row is skipped.
+
+Example:
+
+```yaml
+jbencook:
+  name: Ben Cook
+  note: "Not on GitHub teams"
+  emeritus_editor: true
+
+dhomeier:
+  name: Derek Homeier
+  note: "Not on GitHub teams"
+  editor: true
+```
+
+Canonical file on the website:
+[manual-editorial-roster.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/manual-editorial-roster.yml).
+
 #### Rules and edge cases
 
 **Active membership wins over emeritus.** The active roster is the union
-of `editorial-board`, `eic-team`, and `peer-review-lead`. Anyone in an
+of `editorial-board`, `eic-team`, `peer-review-lead`, and
+`triage-team`. Anyone in an
 active team is removed from the emeritus set (`emeritus_only = emeritus -
 active`). So if a person is in *both* an active team and the
 `emeritus-editors` team, they are treated as **active** and written to
@@ -197,17 +291,18 @@ active`). So if a person is in *both* an active team and the
 both `peer-review-lead` and `emeritus-editors` appears only as an active
 peer review lead. To make them emeritus, remove them from the active team.
 
-**Emeritus is never removed from `contributors.yml`.** Anyone already
-flagged `emeritus_editor: true` in `contributors.yml` keeps that flag and
-their `Emeritus Editor` title even if they are not in any GitHub team
-(for example, people who never joined the org and so can't be added to a
-team). For these people the script only forces `editorial_board: false`.
-The trade-off: a *stale* emeritus flag will not self-correct and must be
-fixed by hand.
+**Prefer `manual-editorial-roster.yml` for people not on teams.** That
+keeps them in the generated board YAML and on the editorial page. As a
+safety net, anyone already flagged `emeritus_editor: true` in
+`contributors.yml` but missing from teams *and* the manual file still
+keeps that contributor flag (stale flags must be cleared by hand).
 
-**Historical role flags are preserved.** `emeritus_eic` and
-`emeritus_peer_review_lead` are read from the existing YAML because they
-are historical roles with no current GitHub team.
+**Emeritus specialty flags come from GitHub teams** (or from true keys in
+the manual file). ``emeritus_eic``, ``emeritus_peer_review_lead``, and
+``emeritus_triage`` are set from
+``emeritus-editor-in-chief``, ``emeritus-peer-review-lead``, and
+``emeritus-triage-team`` membership. Add or remove people on those teams
+to change their flags; existing generated YAML is not used as a fallback.
 
 ### How these scripts are used in production
 
@@ -219,6 +314,8 @@ Canonical data files:
 
 * [contributors.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/contributors.yml)
 * [packages.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/packages.yml)
+* [manual-editorial-roster.yml](https://github.com/pyOpenSci/pyopensci.github.io/blob/main/data/manual-editorial-roster.yml)
+  (hand-maintained; see above)
 
 ### Rate limiting
 

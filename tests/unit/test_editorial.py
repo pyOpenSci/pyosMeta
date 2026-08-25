@@ -14,6 +14,7 @@ from pyosmeta.editorial import (
     build_roster,
     editorial_titles,
     emeritus_yaml,
+    merge_manual_roster,
 )
 
 _ROLE_ATTRS = (
@@ -33,6 +34,9 @@ def _teams(**overrides):
         "eic_team": [],
         "peer_review_lead": [],
         "triage_team": [],
+        "emeritus_eic": [],
+        "emeritus_peer_review_lead": [],
+        "emeritus_triage": [],
     }
     base.update(overrides)
     return base
@@ -79,45 +83,47 @@ def test_build_roster_role_flags(teams, username, true_attrs):
 
 
 @pytest.mark.parametrize(
-    "previous, teams, username, expected_eic, expected_pr_lead, expected_triage",
+    "teams, username, expected_eic, expected_pr_lead, expected_triage",
     [
         (
-            {"cmarmo": {"emeritus_eic": True}},
-            _teams(emeritus_editors=["cmarmo"]),
+            _teams(emeritus_editors=["cmarmo"], emeritus_eic=["cmarmo"]),
             "cmarmo",
             True,
             False,
             False,
         ),
         (
-            {"oldlead": {"emeritus_peer_review_lead": True}},
-            _teams(emeritus_editors=["oldlead"]),
+            _teams(
+                emeritus_editors=["oldlead"],
+                emeritus_peer_review_lead=["oldlead"],
+            ),
             "oldlead",
             False,
             True,
             False,
         ),
         (
-            {"erin": {"emeritus_triage": True}},
-            _teams(emeritus_editors=["erin"]),
+            _teams(emeritus_editors=["erin"], emeritus_triage=["erin"]),
             "erin",
             False,
             False,
             True,
         ),
-        # Historical flags survive even when the person is active
+        # Emeritus specialty flags survive even when the person is active
         (
-            {"alice": {"emeritus_eic": True, "emeritus_triage": True}},
-            _teams(editorial_board=["alice"]),
+            _teams(
+                editorial_board=["alice"],
+                emeritus_eic=["alice"],
+                emeritus_triage=["alice"],
+            ),
             "alice",
             True,
             False,
             True,
         ),
-        # previous keys are case-normalized for lookup
+        # Team logins are case-normalized
         (
-            {"CMARMO": {"emeritus_eic": True}},
-            _teams(emeritus_editors=["Cmarmo"]),
+            _teams(emeritus_editors=["Cmarmo"], emeritus_eic=["CMARMO"]),
             "cmarmo",
             True,
             False,
@@ -125,15 +131,14 @@ def test_build_roster_role_flags(teams, username, true_attrs):
         ),
     ],
 )
-def test_build_roster_preserves_historical_flags(
-    previous,
+def test_build_roster_emeritus_specialty_from_teams(
     teams,
     username,
     expected_eic,
     expected_pr_lead,
     expected_triage,
 ):
-    entry = build_roster(teams, previous=previous)[username]
+    entry = build_roster(teams)[username]
     assert entry.emeritus_eic is expected_eic
     assert entry.emeritus_peer_review_lead is expected_pr_lead
     assert entry.emeritus_triage is expected_triage
@@ -174,10 +179,11 @@ def test_triage_only_lands_on_active_board_yaml():
 
 def test_emeritus_yaml_includes_emeritus_editor_flag():
     roster = build_roster(
-        _teams(emeritus_editors=["dave"]),
-        previous={
-            "dave": {"emeritus_eic": True, "emeritus_triage": True},
-        },
+        _teams(
+            emeritus_editors=["dave"],
+            emeritus_eic=["dave"],
+            emeritus_triage=["dave"],
+        ),
     )
     assert emeritus_yaml(roster)["dave"] == {
         "emeritus_editor": True,
@@ -185,6 +191,52 @@ def test_emeritus_yaml_includes_emeritus_editor_flag():
         "emeritus_eic": True,
         "emeritus_triage": True,
     }
+
+
+def test_merge_manual_roster_adds_editor_and_emeritus():
+    roster = build_roster(_teams(editorial_board=["alice"]))
+    merged = merge_manual_roster(
+        roster,
+        {
+            "dhomeier": {"name": "Derek", "note": "x", "editor": True},
+            "jbencook": {"emeritus_editor": True},
+            "kellyrowland": {
+                "emeritus_editor": True,
+                "emeritus_eic": True,
+            },
+        },
+    )
+    assert merged["dhomeier"].active_editor is True
+    assert merged["dhomeier"].is_active is True
+    assert merged["jbencook"].emeritus_editor is True
+    assert merged["jbencook"].is_active is False
+    assert merged["kellyrowland"].emeritus_eic is True
+    assert "dhomeier" in board_yaml(merged)
+    assert "jbencook" in emeritus_yaml(merged)
+    assert "kellyrowland" in emeritus_yaml(merged)
+
+
+def test_merge_manual_roster_team_wins():
+    roster = build_roster(_teams(editorial_board=["dhomeier"]))
+    merged = merge_manual_roster(
+        roster,
+        {"dhomeier": {"emeritus_editor": True}},
+    )
+    assert merged["dhomeier"].active_editor is True
+    assert merged["dhomeier"].emeritus_editor is False
+
+
+def test_merge_manual_roster_ignores_false_and_empty():
+    roster = build_roster(_teams())
+    merged = merge_manual_roster(
+        roster,
+        {
+            "skipme": {"editor": False, "emeritus_editor": False},
+            "alsoskip": {"name": "Only Name"},
+            "": {"editor": True},
+        },
+    )
+    assert merged == {}
 
 
 def test_editorial_titles_include_triage_and_base_editor():
@@ -365,7 +417,38 @@ def editorial_cli_data_dir(tmp_path, monkeypatch):
                 "contributor_type": ["editor"],
                 "title": "Emeritus Editor in Chief",
             },
+            {
+                "github_username": "dhomeier",
+                "name": "Derek Homeier",
+                "editorial_board": False,
+                "emeritus_editor": False,
+                "contributor_type": [],
+                "title": None,
+            },
+            {
+                "github_username": "jbencook",
+                "name": "Ben Cook",
+                "editorial_board": False,
+                "emeritus_editor": False,
+                "contributor_type": [],
+                "title": "Guest editor",
+            },
         ],
+    )
+    _dump_yaml(
+        data_dir / "manual-editorial-roster.yml",
+        {
+            "dhomeier": {
+                "name": "Derek Homeier",
+                "note": "manual active",
+                "editor": True,
+            },
+            "jbencook": {
+                "name": "Ben Cook",
+                "note": "manual emeritus",
+                "emeritus_editor": True,
+            },
+        },
     )
 
     team_members = {
@@ -374,6 +457,9 @@ def editorial_cli_data_dir(tmp_path, monkeypatch):
         "eic-team": [],
         "peer-review-lead": ["alice"],
         "triage-team": ["alice"],
+        "emeritus-editor-in-chief": ["cmarmo"],
+        "emeritus-peer-review-lead": [],
+        "emeritus-triage-team": [],
     }
     mock_api = Mock()
     mock_api.get_team_members.side_effect = lambda slug: team_members[slug]
@@ -409,6 +495,11 @@ def test_cli_writes_board_and_emeritus_yaml(editorial_cli_data_dir):
     assert emeritus["cmarmo"]["emeritus_editor"] is True
     assert emeritus["cmarmo"]["emeritus_eic"] is True
     assert emeritus["cmarmo"]["emeritus_triage"] is False
+    # Manual overrides land in the generated board files
+    assert board["dhomeier"]["peer_review_lead"] is False
+    assert emeritus["jbencook"]["emeritus_editor"] is True
+    # Manual file itself must not be rewritten away
+    assert (editorial_cli_data_dir / "manual-editorial-roster.yml").exists()
 
 
 def test_cli_updates_contributors_flags(editorial_cli_data_dir):
@@ -427,3 +518,7 @@ def test_cli_updates_contributors_flags(editorial_cli_data_dir):
     assert "editor" in [
         t.lower() for t in by_user["newbie"]["contributor_type"]
     ]
+    assert by_user["dhomeier"]["editorial_board"] is True
+    assert by_user["dhomeier"]["emeritus_editor"] is False
+    assert by_user["jbencook"]["emeritus_editor"] is True
+    assert by_user["jbencook"]["editorial_board"] is False

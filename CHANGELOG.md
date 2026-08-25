@@ -6,10 +6,13 @@ See [GitHub releases](https://github.com/pyOpenSci/pyosMeta/releases) page for a
 
 ## [Unreleased]
 
+* Fix: make sure emeritus positions are updated in the workflow including triage (@lwasser)
+
 [v1.8.1] - 2026-08-25
 
-* Fix: don't overwrite packages.yml if api endpoints are not found (@lwasser)
-* Docs: clarify README / CONTRIBUTING / development split; add workflow overview with Mermaid diagram; slim Usage section (@lwasser))
+* Fix: add manual editorial roster file to avoid overwriting with CI & ensure emeritus positions are updated in the workflow including triage (@lwasser)
+* Fix: don't overwrite packages.yml if API endpoints are not found (@lwasser)
+* Docs: clarify README / CONTRIBUTING / development split; add workflow overview with Mermaid diagram; slim Usage section (@lwasser)
 * Feat: Automate editorial board roster management using GitHub teams (@lwasser #393)
 
 This release adds a feature - automating editorial board roster management using

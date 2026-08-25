@@ -21,6 +21,8 @@ CONTRIBUTORS_FILE = "contributors.yml"
 PACKAGES_FILE = "packages.yml"
 EDITORIAL_BOARD_FILE = "editorial-board.yml"
 EMERITUS_EDITORS_FILE = "emeritus-editors.yml"
+# Hand-edited allowlist; never overwritten by update-editorial-board.
+MANUAL_EDITORIAL_ROSTER_FILE = "manual-editorial-roster.yml"
 
 # POSIX repo-relative locations of the data files *inside* the website repo.
 # Use these for git operations (e.g. `repo.git.show("<sha>:<path>")`) and to
@@ -34,6 +36,9 @@ CONTRIBUTORS_RAW_URL = f"{WEBSITE_DATA_RAW_URL}{CONTRIBUTORS_FILE}"
 PACKAGES_RAW_URL = f"{WEBSITE_DATA_RAW_URL}{PACKAGES_FILE}"
 EDITORIAL_BOARD_RAW_URL = f"{WEBSITE_DATA_RAW_URL}{EDITORIAL_BOARD_FILE}"
 EMERITUS_EDITORS_RAW_URL = f"{WEBSITE_DATA_RAW_URL}{EMERITUS_EDITORS_FILE}"
+MANUAL_EDITORIAL_ROSTER_RAW_URL = (
+    f"{WEBSITE_DATA_RAW_URL}{MANUAL_EDITORIAL_ROSTER_FILE}"
+)
 
 # Single source of truth for pyOpenSci repos whose all-contributors bot data
 # feeds into contributors.yml, and the contribution-type category each repo's
@@ -67,4 +72,7 @@ EDITORIAL_TEAMS: dict[str, str] = {
     "eic_team": "eic-team",
     "peer_review_lead": "peer-review-lead",
     "triage_team": "triage-team",
+    "emeritus_eic": "emeritus-editor-in-chief",
+    "emeritus_peer_review_lead": "emeritus-peer-review-lead",
+    "emeritus_triage": "emeritus-triage-team",
 }
