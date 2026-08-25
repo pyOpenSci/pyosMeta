@@ -172,19 +172,54 @@ writes three files under `data/` relative to the current working directory
 
 #### Source of truth: GitHub teams
 
-GitHub org teams decide who is an editor. The team slugs live in
+Editorial membership is managed on GitHub, not by hand-editing YAML. All
+editorial teams are nested under the org team
+[`peer-review-team`](https://github.com/orgs/pyOpenSci/teams/peer-review-team),
+which groups everyone who supports peer review (active and emeritus).
+
+When someone is **onboarded**, add them to the appropriate active team.
+When they **step down**, remove them from active teams and add them to
+`emeritus-editors` plus any emeritus specialty team that matches their
+former role (EiC, peer review lead, or triage). pyosMeta reads these
+teams on each run of `update-editorial-board` and writes:
+
+* `editorial-board.yml` / `emeritus-editors.yml` — role flags for the
+  [peer review editorial board page](https://www.pyopensci.org/about-peer-review/index.html#our-editorial-team)
+* `contributors.yml` — `editorial_board`, `emeritus_editor`, and title
+  strings used on the community page and elsewhere on the site
+
+Do not edit those YAML files by hand to add or remove editors; change
+GitHub team membership instead.
+
+Team slugs are defined in
 [`src/pyosmeta/constants.py`](./src/pyosmeta/constants.py) (`EDITORIAL_TEAMS`):
 
-| Team slug | Role |
-| --------- | ---- |
-| `editorial-board` | Active editorial board |
-| `emeritus-editors` | Emeritus editors |
-| `eic-team` | Editor in Chief |
-| `peer-review-lead` | Peer review lead |
-| `triage-team` | Active peer review triage |
-| `emeritus-editor-in-chief` | Emeritus Editor in Chief |
-| `emeritus-peer-review-lead` | Emeritus peer review lead |
-| `emeritus-triage-team` | Emeritus peer review triage |
+```mermaid
+flowchart TB
+  PR[peer-review-team]
+  PR --> EB[editorial-board]
+  PR --> EIC[eic-team]
+  PR --> PRL[peer-review-lead]
+  PR --> TRI[triage-team]
+  PR --> EE[emeritus-editors]
+  PR --> EEIC[emeritus-editor-in-chief]
+  PR --> EPRL[emeritus-peer-review-lead]
+  PR --> ETRI[emeritus-triage-team]
+```
+
+| Team slug | Role | When to use |
+| --------- | ---- | ----------- |
+| `editorial-board` | Active editor | Default team for current board editors |
+| `eic-team` | Editor in Chief | Current EiC(s) |
+| `peer-review-lead` | Peer review lead | Current peer review lead(s) |
+| `triage-team` | Peer review triage | Current triage volunteers |
+| `emeritus-editors` | Emeritus editor | Anyone who has stepped down from the board |
+| `emeritus-editor-in-chief` | Emeritus Editor in Chief | Former EiC(s) still listed with that title |
+| `emeritus-peer-review-lead` | Emeritus peer review lead | Former peer review lead(s) |
+| `emeritus-triage-team` | Emeritus peer review triage | Former triage volunteer(s) |
+
+A person can hold more than one role (for example, editor + triage, or
+emeritus editor + emeritus EiC). Add them to every team that applies.
 
 Reading these teams needs `GITHUB_TOKEN_TEAMS` (team/org read
 permission). In CI that value comes from
