@@ -21,7 +21,7 @@ dhomeier:
   note: "Not on GitHub teams; keep as active editor"
   editor: true
 
-kellyrowland:
-  name: Kelly L. Rowland
-  note: "Not in org / cannot invite; keep as emeritus editor"
+russbiggs:
+  name: Russ Biggs
+  note: "Not on GitHub teams; keep as emeritus editor"
   emeritus_editor: true
