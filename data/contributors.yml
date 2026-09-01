@@ -2,8 +2,8 @@
   github_username: lwasser
   github_image_id: 7649194
   title:
-    - Editor
-    - Peer Review Triage
+    - Emeritus Peer Review Lead
+    - Emeritus Editor in Chief
     - Executive Director & Founder
     - Emeritus editor
   sort: 1
@@ -11,8 +11,8 @@
       @pyOpenSci
   organization: pyOpenSci
   date_added: '2019-10-10'
-  editorial_board: true
-  emeritus_editor: false
+  editorial_board: false
+  emeritus_editor: true
   advisory: false
   emeritus_advisory: false
   twitter: leahawasser
@@ -543,7 +543,7 @@
 - name: Ariane Sasso
   github_username: arianesasso
   github_image_id: 3659681
-  title: Emeritus Editor
+  title: Emeritus Editor in Chief
   sort: 3
   bio: Researcher in Medical Informatics and Digital Health ⌚ 👩‍💻 🧬
   organization: '@hpi-dhc'
@@ -627,7 +627,9 @@
 - name: Chiara Marmo
   github_username: cmarmo
   github_image_id: 1662261
-  title: Emeritus Editor in Chief
+  title:
+    - Emeritus Editor in Chief
+    - Emeritus Peer Review Triage
   sort:
   bio:
   organization:
@@ -1178,10 +1180,10 @@
   website:
   board: false
   contributor_type:
+    - editor
     - peer-review
     - peer-review-guide
     - reviewer
-    - editor
   packages_eic:
   packages_editor:
   packages_submitted:
@@ -2668,6 +2670,7 @@
   github_username: jbencook
   github_image_id: 4348863
   title:
+    - Emeritus Editor
     - Guest editor
   sort:
   bio:
@@ -4233,7 +4236,9 @@
 - name: Isabel Zimmerman
   github_username: isabelizimm
   github_image_id: 54685329
-  title: Emeritus Editor in Chief
+  title:
+    - Emeritus Editor in Chief
+    - Emeritus Peer Review Triage
   sort: 2
   bio:
   organization: '@rstudio'
@@ -4276,7 +4281,9 @@
 - name: Eliot Robson
   github_username: eliotwrobson
   github_image_id: 1345068
-  title: Emeritus Editor
+  title:
+    - Emeritus Peer Review Lead
+    - Emeritus Editor in Chief
   sort: 0
   bio: I'm just this guy, you know?
   organization: UIUC
@@ -5214,12 +5221,12 @@
   board: false
   contributor_type:
     - community
+    - editor
     - maintainer
     - open-education
     - peer-review
     - submitting-author
     - web-contrib
-    - editor
   packages_eic:
   packages_editor:
   packages_submitted:
@@ -5974,12 +5981,12 @@
 - name: Derek Homeier
   github_username: dhomeier
   github_image_id: 709020
-  title:
+  title: Editor
   sort: 2
   bio:
   organization:
   date_added:
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -7670,7 +7677,7 @@
 - name: Russ Biggs
   github_username: russbiggs
   github_image_id: 8487728
-  title:
+  title: Emeritus Editor
   sort:
   bio:
   organization:
@@ -7695,13 +7702,13 @@
 - name: Kelly L. Rowland
   github_username: kellyrowland
   github_image_id: 5440574
-  title:
+  title: Emeritus Editor
   sort: 2
   bio:
   organization:
   date_added:
   editorial_board: false
-  emeritus_editor: false
+  emeritus_editor: true
   advisory: false
   emeritus_advisory: false
   twitter:
@@ -10153,7 +10160,9 @@
 - name: James J Balamuta
   github_username: coatless
   github_image_id: 833642
-  title: Editor
+  title:
+    - Editor
+    - Emeritus Editor in Chief
   sort:
   bio: 'omnipresent explorer of the unknown, fashionably caffeinated informatics
       phd, amorous cavalier. design, build, analyze. #rstats #python @tmsalab'
@@ -10170,10 +10179,10 @@
   website: https://thecoatlessprofessor.com
   board: false
   contributor_type:
+    - editor
     - eic
     - peer-review
     - peer-review-guide
-    - editor
   packages_eic:
     - blockingpy
     - c4dynamics
@@ -10813,9 +10822,9 @@
   website:
   board: false
   contributor_type:
+    - editor
     - peer-review
     - reviewer
-    - editor
   packages_eic:
   packages_editor:
   packages_submitted:
@@ -11424,11 +11433,13 @@
   github_username: shaunagm
   github_image_id: 1179362
   title:
+    - Editor
+    - Peer Review Lead
   sort:
   bio:
   organization:
   date_added: '2026-08-05'
-  editorial_board: false
+  editorial_board: true
   emeritus_editor: false
   advisory: false
   emeritus_advisory: false
@@ -11439,6 +11450,7 @@
   website: https://www.shaunagm.net
   board: false
   contributor_type:
+    - editor
     - web-contrib
   packages_eic:
   packages_editor:
@@ -11731,6 +11743,32 @@
   packages_editor:
   packages_submitted:
     - milespy
+  packages_reviewed:
+  location:
+  email:
+- name:
+  github_username: bluedotblue
+  github_image_id: 121519363
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2026-09-01'
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - open-education
+  packages_eic:
+  packages_editor:
+  packages_submitted:
   packages_reviewed:
   location:
   email:

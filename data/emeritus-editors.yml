@@ -11,7 +11,7 @@ anitagraser:
 arianesasso:
   emeritus_editor: true
   emeritus_peer_review_lead: false
-  emeritus_eic: false
+  emeritus_eic: true
   emeritus_triage: false
 banesullivan:
   emeritus_editor: true
@@ -27,18 +27,28 @@ cmarmo:
   emeritus_editor: true
   emeritus_peer_review_lead: false
   emeritus_eic: true
-  emeritus_triage: false
+  emeritus_triage: true
 eliotwrobson:
   emeritus_editor: true
-  emeritus_peer_review_lead: false
-  emeritus_eic: false
+  emeritus_peer_review_lead: true
+  emeritus_eic: true
   emeritus_triage: false
 isabelizimm:
   emeritus_editor: true
   emeritus_peer_review_lead: false
   emeritus_eic: true
+  emeritus_triage: true
+jbencook:
+  emeritus_editor: true
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
   emeritus_triage: false
 jlpalomino:
+  emeritus_editor: true
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
+  emeritus_triage: false
+kellyrowland:
   emeritus_editor: true
   emeritus_peer_review_lead: false
   emeritus_eic: false
@@ -47,6 +57,11 @@ luizirber:
   emeritus_editor: true
   emeritus_peer_review_lead: false
   emeritus_eic: false
+  emeritus_triage: false
+lwasser:
+  emeritus_editor: true
+  emeritus_peer_review_lead: true
+  emeritus_eic: true
   emeritus_triage: false
 mjhajharia:
   emeritus_editor: true
@@ -64,6 +79,11 @@ nimasarajpoor:
   emeritus_eic: false
   emeritus_triage: false
 ocefpaf:
+  emeritus_editor: true
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
+  emeritus_triage: false
+russbiggs:
   emeritus_editor: true
   emeritus_peer_review_lead: false
   emeritus_eic: false

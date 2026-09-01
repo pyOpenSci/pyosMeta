@@ -10,7 +10,7 @@ coatless:
   eic: false
   triage: false
   emeritus_peer_review_lead: false
-  emeritus_eic: false
+  emeritus_eic: true
   emeritus_triage: false
 crhea93:
   peer_review_lead: false
@@ -20,6 +20,13 @@ crhea93:
   emeritus_eic: false
   emeritus_triage: false
 ctb:
+  peer_review_lead: false
+  eic: false
+  triage: false
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
+  emeritus_triage: false
+dhomeier:
   peer_review_lead: false
   eic: false
   triage: false
@@ -61,15 +68,15 @@ kysolvik:
   emeritus_peer_review_lead: false
   emeritus_eic: false
   emeritus_triage: false
-lwasser:
+rcaneill:
   peer_review_lead: false
   eic: false
-  triage: true
+  triage: false
   emeritus_peer_review_lead: false
   emeritus_eic: false
   emeritus_triage: false
-rcaneill:
-  peer_review_lead: false
+shaunagm:
+  peer_review_lead: true
   eic: false
   triage: false
   emeritus_peer_review_lead: false
