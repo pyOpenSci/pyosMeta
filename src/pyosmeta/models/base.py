@@ -305,7 +305,7 @@ class ReviewModel(BaseModel):
     submitting_author: ReviewUser | None = None
     all_current_maintainers: list[ReviewUser] = Field(default_factory=list)
     # Support presubmissions with an alias
-    repository_link: str = Field(..., alias="repository_link_(if_existing)")
+    repository_link: str | None = Field(..., alias="repository_link_(if_existing)")
     repository_host: RepositoryHost = Field(default=None)
     version_submitted: Optional[str] = None
     categories: Optional[list[str]] = None
@@ -342,20 +342,17 @@ class ReviewModel(BaseModel):
         mode="before",
     )
     @classmethod
-    def clean_date_review(cls, a_date: Optional[str]) -> str:
-        """Clean a manually added datetime that is added to a review by an
-        editor when the review package is accepted.
+    def clean_date_review(value):
+        if not value:
+            return None
 
-        """
-        if a_date is None or a_date in ["missing", "TBD"]:
-            return "missing"
-        else:
-            new_date = a_date.replace("/", "-").split("-")
-            if len(new_date[0]) == 4:
-                return f"{new_date[0]}-{new_date[1]}-{new_date[2]}"
-            else:
-                return f"{new_date[2]}-{new_date[0]}-{new_date[1]}"
+        parts = str(value).strip().split("-")
+        if len(parts) != 3:
+            logger.warning("Invalid review date %r; using None", value)
+            return None
 
+        month, day, year = parts
+        return f"{year}-{month}-{day}"
     @field_validator(
         "package_name",
         mode="before",
