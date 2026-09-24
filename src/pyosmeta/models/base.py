@@ -305,7 +305,9 @@ class ReviewModel(BaseModel):
     submitting_author: ReviewUser | None = None
     all_current_maintainers: list[ReviewUser] = Field(default_factory=list)
     # Support presubmissions with an alias
-    repository_link: str | None = Field(..., alias="repository_link_(if_existing)")
+    repository_link: str | None = Field(
+        ..., alias="repository_link_(if_existing)"
+    )
     repository_host: RepositoryHost = Field(default=None)
     version_submitted: Optional[str] = None
     categories: Optional[list[str]] = None
@@ -353,6 +355,7 @@ class ReviewModel(BaseModel):
 
         month, day, year = parts
         return f"{year}-{month}-{day}"
+
     @field_validator(
         "package_name",
         mode="before",
