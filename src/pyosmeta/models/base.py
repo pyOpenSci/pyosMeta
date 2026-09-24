@@ -344,16 +344,19 @@ class ReviewModel(BaseModel):
         mode="before",
     )
     @classmethod
-    def clean_date_review(value):
+    def clean_date_review(cls, value):
         if not value:
             return None
 
-        parts = str(value).strip().split("-")
+        parts = str(value).strip().replace("/", "-").split("-")
         if len(parts) != 3:
             logger.warning("Invalid review date %r; using None", value)
             return None
 
-        month, day, year = parts
+        if len(parts[0]) == 4:
+            year, month, day = parts
+        else:
+            month, day, year = parts
         return f"{year}-{month}-{day}"
 
     @field_validator(
