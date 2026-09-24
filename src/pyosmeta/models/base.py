@@ -386,17 +386,20 @@ class ReviewModel(BaseModel):
         mode="before",
     )
     @classmethod
-    def clean_markdown_url(cls, repo: str) -> str:
+    def clean_markdown_url(cls, repo: str | None) -> str | None:
         """Remove markdown link remnants from gh usernames and name.
 
         Sometimes editors and reviewers add names using github links.
-        Remove the link data.
+        Remove the link data. Also remove wrapping quotes, backticks or
+        angle brackets (e.g. ``"https://github.com/owner/repo"``).
         """
+        if not repo:
+            return None
 
+        repo = repo.strip()
         if repo.startswith("["):
-            return repo.split("](")[0].replace("[", "")
-        else:
-            return repo
+            repo = repo.split("](")[0].replace("[", "")
+        return repo.strip("\"'`<> ")
 
     @field_validator(
         "categories",
