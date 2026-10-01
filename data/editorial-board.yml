@@ -33,6 +33,13 @@ dhomeier:
   emeritus_peer_review_lead: false
   emeritus_eic: false
   emeritus_triage: false
+dosvk:
+  peer_review_lead: false
+  eic: false
+  triage: false
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
+  emeritus_triage: false
 hamogu:
   peer_review_lead: false
   eic: false
@@ -77,6 +84,13 @@ rcaneill:
   emeritus_triage: false
 shaunagm:
   peer_review_lead: true
+  eic: false
+  triage: false
+  emeritus_peer_review_lead: false
+  emeritus_eic: false
+  emeritus_triage: false
+shrishar:
+  peer_review_lead: false
   eic: false
   triage: false
   emeritus_peer_review_lead: false
