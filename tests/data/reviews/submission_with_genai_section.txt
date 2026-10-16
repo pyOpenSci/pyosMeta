@@ -1,0 +1,68 @@
+Submitting Author: Author Name (@username)
+All current maintainers: (@username, @username2)
+Package Name: genai_test_package
+One-Line Description of Package: A package that used GenAI during development
+Repository Link:  https://github.com/username/genai_test_package
+Version submitted:  v.0.1.0
+Editor: @editoruser
+Reviewer 1: @reviewer1
+Reviewer 2: @reviewer2
+Archive: TBD
+JOSS DOI: TBD
+Version accepted: v.0.1.0
+Date accepted (month/day/year): 04/21/2024
+
+---
+
+## Code of Conduct & Commitment to Maintain Package
+
+- [x] I agree to abide by [pyOpenSci's Code of Conduct][PyOpenSciCodeOfConduct] during the review process and in maintaining my package after should it be accepted.
+- [x] I have read and will commit to package maintenance after the review as per the [pyOpenSci Policies Guidelines][Commitment].
+
+## Development Best Practices & GenerativeAI Use Disclosure
+
+- [x] This package has a public development history spanning 3-6 months, with commits distributed over time that reflect **iterative, thoughtful development.**
+- [x] All code in this package has been **carefully reviewed by a human**. Its implementation is also understood by the authors submitting the package.
+- [x] All communication on this issue will be written by a human (someone on your maintainer team). We embrace the use of LLMs for translation and grammar correction. We prefer honest interactions over ones that prioritize perfect language and grammar. As little aid from a LLM as possible.
+- [x] **Generative AI tools were used to develop and maintain this package.**
+
+### Please list the tools and frameworks that you used below (Examples include Claude Code, Cursor, OpenClaw, ChatGPT, VSCode + Copilot)
+
+Cursor, GitHub Copilot for autocomplete.
+
+### Describe the nature and scope of support that LLMs provided. Examples include code generation, autocomplete, documentation development, refactoring, test development
+
+Used for autocomplete and documentation drafting. No code generation.
+
+## Description
+
+Description of package that used GenAI during development.
+
+## Scope
+
+- Please indicate which category or categories.
+Check out our [package scope page][PackageCategories] to learn more about our
+scope. (If you are unsure of which category you fit, we suggest you make a pre-submission inquiry):
+
+	- [ ] Data retrieval
+	- [ ] Data extraction
+	- [x] Data processing/munging
+	- [ ] Data deposition
+	- [ ] Data validation and testing
+	- [ ] Data visualization[^1]
+	- [ ] Workflow automation
+	- [ ] Citation management and bibliometrics
+	- [ ] Scientific software wrappers
+	- [ ] Database interoperability
+
+## Domain Specific
+
+- [ ] Geospatial
+- [ ] Education
+
+## Community Partnerships
+If your package is associated with an
+existing community please check below:
+
+- [x] Astropy: Link coming soon to standards
+- [ ] Pangeo: My package adheres to the [Pangeo standards listed in the pyOpenSci peer review guidebook][PangeoCollaboration]
