@@ -379,6 +379,7 @@
   board: false
   contributor_type:
     - editor
+    - eic
     - guidebook-contrib
     - leadership
     - package-guide
@@ -386,6 +387,7 @@
     - reviewer
     - web-contrib
   packages_eic:
+    - xnemogcm
   packages_editor:
     - afscgap
     - xnemogcm
@@ -11938,7 +11940,7 @@
   sort:
   bio:
   organization:
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -11967,7 +11969,7 @@
   bio: Professional Research Assistant at the National Snow and Ice Data
       Center, University of Colorado at Boulder, Boulder, CO.
   organization: National Snow and Ice Data Center
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -11995,7 +11997,7 @@
   sort:
   bio:
   organization:
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12024,7 +12026,7 @@
   bio: Senior Solutions Architect @NVIDIA. @dask core developer. Previously
       @coiled and @quansight.@zarr-developers emeritus core developer.
   organization: '@NVIDIA'
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12052,7 +12054,7 @@
   sort:
   bio:
   organization: '@umbc'
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12080,7 +12082,7 @@
   sort:
   bio: Data Engineer at Development Seed
   organization: '@developmentseed'
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12110,7 +12112,7 @@
       Science and Environment.Volunteer open source developer and
       maintainer.🏳️‍🌈
   organization: '@SchmidtDSE'
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12138,7 +12140,7 @@
   sort:
   bio: Infinite Code Monkey
   organization:
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12166,7 +12168,7 @@
   sort:
   bio:
   organization: Openscapes
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12194,7 +12196,7 @@
   sort:
   bio: 'ORCID: 0000-0002-3421-4459'
   organization: University of New Hampshire
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12223,7 +12225,7 @@
   bio: Data Services Engineer at the National Snow and Ice Data Center,
       University of Colorado at Boulder
   organization: National Snow and Ice Data Center
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12251,7 +12253,7 @@
   sort:
   bio: Making data work harder than it wants to.
   organization:
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12279,7 +12281,7 @@
   sort:
   bio:
   organization:
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12307,7 +12309,7 @@
   sort:
   bio: Graduate student at Université de Montréal studying Solar Physics
   organization:
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12335,7 +12337,7 @@
   sort:
   bio:
   organization: '@cds-astro'
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12364,7 +12366,7 @@
   sort:
   bio:
   organization: '@cds-astro'
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12392,7 +12394,7 @@
   sort:
   bio: Software engineer at Centre de Données astronomiques de Strasbourg
   organization:
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12422,7 +12424,7 @@
       located in Strasbourg (CDS) where I develop libraries and tools for the
       astronomical community
   organization: CNRS - Astronomical Observatory of Strasbourg
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12450,7 +12452,7 @@
   sort:
   bio: Geospatial open source
   organization: '@developmentseed'
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12478,7 +12480,7 @@
   sort:
   bio:
   organization:
-  date_added: '2026-10-01'
+  date_added: '2026-09-29'
   editorial_board: false
   emeritus_editor: false
   advisory: false
@@ -12498,4 +12500,30 @@
     - blackmarblepy
   packages_reviewed:
   location: Washington, DC
+  email:
+- name:
+  github_username: patelnikit16
+  github_image_id: 24692584
+  title: Editor
+  sort:
+  bio:
+  organization:
+  date_added:
+  editorial_board: true
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - editor
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+  location:
   email:
