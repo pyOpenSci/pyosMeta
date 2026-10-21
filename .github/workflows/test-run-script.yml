@@ -11,7 +11,7 @@ concurrency:
 jobs:
   test_run_script_job:
     name: Test run-script
-    uses: ./.github/workflows/run-script.yml
+    uses: $/.github/workflows/run-script.yml
     permissions:
       contents: read
     secrets:
