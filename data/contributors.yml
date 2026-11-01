@@ -5,7 +5,6 @@
     - Emeritus Peer Review Lead
     - Emeritus Editor in Chief
     - Executive Director & Founder
-    - Emeritus editor
   sort: 1
   bio: Open education, Open source and Open Science.Executive Director
       @pyOpenSci
@@ -197,15 +196,15 @@
 - name: Erin Robinson
   github_username: erinmr
   github_image_id: 2915555
-  title: Advisory Council
+  title: Emeritus Advisory Council
   sort:
   bio:
   organization:
   date_added: '2023-06-15'
   editorial_board: false
   emeritus_editor: false
-  advisory: true
-  emeritus_advisory: false
+  advisory: false
+  emeritus_advisory: true
   twitter: connector_erin
   mastodon:
   orcidid:
@@ -231,8 +230,8 @@
   date_added: '2019-10-10'
   editorial_board: false
   emeritus_editor: false
-  advisory: true
-  emeritus_advisory: false
+  advisory: false
+  emeritus_advisory: true
   twitter: choldgraf
   mastodon:
   orcidid:
@@ -272,6 +271,7 @@
   website:
   board: false
   contributor_type:
+    - community
     - leadership
     - package-guide
     - peer-review-guide
@@ -289,7 +289,7 @@
   sort:
   bio: "@pypa member, @psf fellow, @toml-lang core, @sphinx-doc contributor. Past
       intern at @enthought and IITB.Don't email or tweet me for tech support."
-  organization: '@bloomberg Python Infrastructure'
+  organization: Bloomberg Python Infrastructure
   date_added: '2023-03-01'
   editorial_board: false
   emeritus_editor: false
@@ -324,7 +324,7 @@
   date_added: '2019-10-15'
   editorial_board: false
   emeritus_editor: true
-  advisory: true
+  advisory: false
   emeritus_advisory: false
   twitter: xmnlab
   mastodon:
@@ -369,8 +369,8 @@
   date_added: '2019-10-17'
   editorial_board: false
   emeritus_editor: true
-  advisory: true
-  emeritus_advisory: false
+  advisory: false
+  emeritus_advisory: true
   twitter: ocefpaf
   mastodon:
   orcidid: 0000-0003-4165-2913
@@ -463,8 +463,8 @@
   date_added: '2020-04-09'
   editorial_board: false
   emeritus_editor: false
-  advisory: true
-  emeritus_advisory: false
+  advisory: false
+  emeritus_advisory: true
   twitter: martinfleis
   mastodon: https://fosstodon.org/@martinfleis
   orcidid: 0000-0003-3319-3366
@@ -1042,9 +1042,12 @@
     - reviewer
   packages_eic:
     - earthaccess
+    - weitsicht
   packages_editor:
     - earthaccess
     - lintquarto
+    - phasecurvefit
+    - weitsicht
   packages_submitted:
   packages_reviewed:
     - nbless
@@ -6713,14 +6716,14 @@
 - name: Felipe Moreno
   github_username: flpm
   github_image_id: 17676929
-  title:
+  title: Advisory Council
   sort:
   bio: Security + Python + Design
-  organization: Bloomberg LP
+  organization: Bloomberg
   date_added: '2024-06-01'
   editorial_board: false
   emeritus_editor: false
-  advisory: false
+  advisory: true
   emeritus_advisory: false
   twitter:
   mastodon:
@@ -6996,7 +6999,7 @@
   sort:
   bio: Software Engineer | Speaker | Author of "Hands-On Data Analysis with
       Pandas"
-  organization: '@Bloomberg'
+  organization: Bloomberg
   date_added: '2024-07-04'
   editorial_board: false
   emeritus_editor: false
@@ -9435,6 +9438,7 @@
     - c4dynamics
     - milespy
     - nsevdx
+    - phasecurvefit
     - pyhctsa
     - solar-wavelength-calibration
     - tanml
@@ -9450,6 +9454,7 @@
   packages_submitted:
   packages_reviewed:
     - felupe
+    - phasecurvefit
     - pyinterpolate
   location: Montreal, QC, CANADA
   email:
@@ -11458,7 +11463,8 @@
   title:
     - Editor
     - Peer Review Lead
-  sort:
+    - Community & Research Lead
+  sort: 3
   bio:
   organization:
   date_added: '2026-08-05'
@@ -11471,7 +11477,7 @@
   orcidid:
   partners:
   website: https://www.shaunagm.net
-  board: false
+  board: true
   contributor_type:
     - editor
     - web-contrib
@@ -12526,4 +12532,177 @@
   packages_submitted:
   packages_reviewed:
   location:
+  email:
+- name: Sujata Goswami
+  github_username: SujataSaurabh
+  github_image_id: 35897531
+  title:
+  sort:
+  bio: Scientific  + Generalist Software Developer.
+  organization: Lawrence Berkeley National Laboratory
+  date_added: '2026-10-19'
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - phasecurvefit
+  location: Berkeley
+  email:
+- name: Nathaniel Starkman
+  github_username: nstarman
+  github_image_id: 8949649
+  title:
+  sort:
+  bio: Nathaniel Starkman — Brinson Prize Fellow & Astrophysics Postdoc @
+      MIT.Maintainer for @astropy, @GalacticDynamics, @cosmology-api.
+  organization: MIT
+  date_added: '2026-10-19'
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://nstarkman.space
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - phasecurvefit
+  packages_reviewed:
+  location:
+  email:
+- name: Jacob Nibauer
+  github_username: jnibauer
+  github_image_id: 35147827
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2026-10-19'
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website: https://jnibauer.github.io
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - phasecurvefit
+  packages_reviewed:
+  location:
+  email:
+- name: Miko Parkkinen
+  github_username: Miko997
+  github_image_id: 141511110
+  title:
+  sort:
+  bio: Simulation & robotics software engineer | Creator of Metriplane |
+      Digital twins, reproducible evaluation and physical AI
+  organization:
+  date_added: '2026-10-26'
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+      https://store.steampowered.com/app/2713550/Cursed_Dawn/?curator_clanid=4777282
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - weitsicht
+  location: Helsinki
+  email:
+- name: Bob McNabb
+  github_username: iamdonovan
+  github_image_id: 5552374
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2026-10-26'
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - peer-review
+    - reviewer
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+  packages_reviewed:
+    - weitsicht
+  location: Coleraine, Northern Ireland
+  email:
+- name: Martin W
+  github_username: MartinW-S2M
+  github_image_id: 117808574
+  title:
+  sort:
+  bio:
+  organization:
+  date_added: '2026-10-26'
+  editorial_board: false
+  emeritus_editor: false
+  advisory: false
+  emeritus_advisory: false
+  twitter:
+  mastodon:
+  orcidid:
+  partners:
+  website:
+  board: false
+  contributor_type:
+    - maintainer
+    - peer-review
+    - submitting-author
+  packages_eic:
+  packages_editor:
+  packages_submitted:
+    - weitsicht
+  packages_reviewed:
+  location: Vienna
   email:
