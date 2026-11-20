@@ -1,6 +1,7 @@
 import pytest
 
 from pyosmeta.models import ReviewModel
+from pyosmeta.models.base import RepositoryHost
 
 
 # We could setup some example data using fixtures and a conf.py
@@ -41,3 +42,27 @@ def test_alias_choices_validation(review_data):
     assert new.date_accepted == "2024-01-18"
     assert new.package_description == "Python for Solar Physics"
     assert new.eic.github_username == "cmarmo"
+
+
+@pytest.mark.parametrize(
+    "repo_link",
+    [
+        '"https://github.com/earthaccess-dev/earthaccess"',
+        "`https://github.com/earthaccess-dev/earthaccess`",
+        "<https://github.com/earthaccess-dev/earthaccess>",
+        "[https://github.com/earthaccess-dev/earthaccess](https://github.com/earthaccess-dev/earthaccess)",
+    ],
+)
+def test_repository_link_cleaned(review_data, repo_link):
+    """Test that wrapping quotes/markdown are removed from repo links"""
+
+    review_data["repository_link"] = repo_link
+    new = ReviewModel(**review_data)
+    assert (
+        new.repository_link == "https://github.com/earthaccess-dev/earthaccess"
+    )
+    host = RepositoryHost(new.repository_host)
+    assert host.parse_url(new.repository_link) == (
+        "earthaccess-dev",
+        "earthaccess",
+    )
